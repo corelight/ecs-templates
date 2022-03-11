@@ -1,0 +1,21 @@
+PUT /_component_template/corelight-ds-component_template-main_logs-base-settings
+{
+  "version": 11201,
+  "template": {
+    "settings": {
+      "index": {
+        "mapping": {
+          "coerce": true,
+          "total_fields.limit": 10000
+        },
+        "refresh_interval": "15s"
+      },
+      "number_of_shards": "1",
+      "number_of_replicas": "0"
+    }
+  },
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+    "version": 11201
+  }
+}

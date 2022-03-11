@@ -1,0 +1,20 @@
+{
+  "order" : 10,
+  "index_patterns": [
+    "*ecs-corelight*",
+    "*single-corelight*"
+  ],
+  "version": 11201,
+  "settings": {
+    "index": {
+      "mapping": {
+        "coerce": true,
+        "ignore_malformed": true,
+        "total_fields.limit": 10000
+      },
+      "refresh_interval": "15s"
+    },
+    "number_of_shards": "1",
+    "number_of_replicas": "0"
+  }
+}
