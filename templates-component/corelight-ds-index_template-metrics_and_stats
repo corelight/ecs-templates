@@ -1,0 +1,19 @@
+PUT /_index_template/corelight-ds-index_template-metrics_and_stats
+{
+  "index_patterns": [
+    "zeek-corelight-ds*"
+  ]
+  ,
+  "data_stream": { },
+  "composed_of": [
+    "corelight-ds-component_template-metrics_and_stats-create_zeek_corelight-aliases",
+    "corelight-ds-component_template-metrics_and_stats-base-settings",
+    "corelight-ds-component_template-metrics_and_stats-ilm-settings",
+    "corelight-ds-component_template-metrics_and_stats-mappings"
+  ],
+  "priority": 900,
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+    "version": 11201
+  }
+}
