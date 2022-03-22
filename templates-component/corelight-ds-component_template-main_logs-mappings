@@ -1,6 +1,6 @@
 PUT /_component_template/corelight-ds-component_template-main_logs-mappings
 {
-  "version": 11201,
+  "version": 11202,
   "template": {
     "mappings": {
       "dynamic_templates": [
@@ -236,6 +236,9 @@ PUT /_component_template/corelight-ds-component_template-main_logs-mappings
             "id": {
               "ignore_above": 4096,
               "type": "keyword"
+            },
+            "ingested": {
+              "type": "date"
             },
             "kind": {
               "ignore_above": 4096,

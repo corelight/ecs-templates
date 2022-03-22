@@ -7,7 +7,7 @@
     "*zeek-corelight-stats*",
     "*zeek-corelight-system*"
   ],
-  "version": 11201,
+  "version": 11202,
   "settings": {
     "index": {
       "mapping": {
@@ -155,6 +155,9 @@
           "id": {
             "ignore_above": 1024,
             "type": "keyword"
+          },
+          "ingested": {
+            "type": "date"
           },
           "kind": {
             "ignore_above": 1024,

@@ -1,6 +1,6 @@
 {
   "order": 99,
-  "version": 11201,
+  "version": 11202,
   "index_patterns": [
     "parse-failures-corelight-*"
   ],
@@ -162,6 +162,9 @@
           "id": {
             "ignore_above": 1024,
             "type": "keyword"
+          },
+          "ingested": {
+            "type": "date"
           },
           "kind": {
             "ignore_above": 1024,

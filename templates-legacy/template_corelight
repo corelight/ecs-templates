@@ -4,7 +4,7 @@
     "*ecs-corelight*",
     "*single-corelight*"
   ],
-  "version": 11201,
+  "version": 11202,
   "mappings": {
     "dynamic_templates": [
       {
@@ -238,6 +238,9 @@
           "id": {
             "ignore_above": 4096,
             "type": "keyword"
+          },
+          "ingested": {
+            "type": "date"
           },
           "kind": {
             "ignore_above": 4096,

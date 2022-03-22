@@ -1,6 +1,6 @@
 PUT /_component_template/corelight-ds-component_template-parse_failures-mappings
 {
-  "version": 11201,
+  "version": 11202,
   "template": {
     "mappings": {
       "date_detection": false,
@@ -162,6 +162,9 @@ PUT /_component_template/corelight-ds-component_template-parse_failures-mappings
             "id": {
               "ignore_above": 1024,
               "type": "keyword"
+            },
+            "ingested": {
+              "type": "date"
             },
             "kind": {
               "ignore_above": 1024,
