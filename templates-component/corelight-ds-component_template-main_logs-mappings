@@ -1,6 +1,6 @@
 PUT /_component_template/corelight-ds-component_template-main_logs-mappings
 {
-  "version": 11202,
+  "version": 11203,
   "template": {
     "mappings": {
       "dynamic_templates": [
@@ -1497,8 +1497,8 @@ PUT /_component_template/corelight-ds-component_template-main_logs-mappings
         "client": {
           "properties": {
             "address": {
-              "ignore_above": 32000,
-              "type": "keyword"
+              "type": "alias",
+              "path": "source.address"
             },
             "as": {
               "properties": {
@@ -2687,8 +2687,8 @@ PUT /_component_template/corelight-ds-component_template-main_logs-mappings
         "server": {
           "properties": {
             "address": {
-              "ignore_above": 32000,
-              "type": "keyword"
+              "type": "alias",
+              "path": "destination.address"
             },
             "as": {
               "properties": {

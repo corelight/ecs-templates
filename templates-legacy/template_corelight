@@ -4,7 +4,7 @@
     "*ecs-corelight*",
     "*single-corelight*"
   ],
-  "version": 11202,
+  "version": 11203,
   "mappings": {
     "dynamic_templates": [
       {
@@ -1499,8 +1499,8 @@
       "client": {
         "properties": {
           "address": {
-            "ignore_above": 32000,
-            "type": "keyword"
+            "type": "alias",
+            "path": "source.address"
           },
           "as": {
             "properties": {
