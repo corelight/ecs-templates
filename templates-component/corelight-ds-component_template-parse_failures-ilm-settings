@@ -1,4 +1,4 @@
-PUT /_component_template/corelight-ds-component_template-parse_failures-ilm-settings
+//PUT /_component_template/corelight-ds-component_template-parse_failures-ilm-settings
 {
   "version": 11201,
   "template": {

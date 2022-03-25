@@ -1,3 +1,4 @@
+//PUT /_template/template_corelight_base_settings
 {
   "order" : 10,
   "index_patterns": [

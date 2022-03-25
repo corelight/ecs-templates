@@ -1,4 +1,4 @@
-PUT /_index_template/corelight-ds-index_template-metrics_and_stats
+//PUT /_index_template/corelight-ds-index_template-metrics_and_stats
 {
   "index_patterns": [
     "zeek-corelight-ds*"

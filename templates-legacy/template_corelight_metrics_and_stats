@@ -1,3 +1,4 @@
+//PUT /_template/template_corelight_metrics_and_stats
 {
   "order" : 99,
   "index_patterns": [
