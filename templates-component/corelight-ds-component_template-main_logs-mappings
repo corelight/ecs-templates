@@ -1,6 +1,6 @@
 //PUT /_component_template/corelight-ds-component_template-main_logs-mappings
 {
-  "version": 11205,
+  "version": 11206,
   "template": {
     "mappings": {
       "dynamic_templates": [
