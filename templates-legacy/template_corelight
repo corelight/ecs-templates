@@ -1,3 +1,4 @@
+//PUT /_template/template_corelight
 {
   "order" : 10,
   "index_patterns": [
@@ -1383,7 +1384,7 @@
                 "type": "ip",
                 "copy_to": "related.ip"
               },
-              "san_url": {
+              "san_uri": {
                 "type": "keyword",
                 "fields": {
                   "text": {
@@ -2689,8 +2690,8 @@
       "server": {
         "properties": {
           "address": {
-            "ignore_above": 32000,
-            "type": "keyword"
+            "type": "alias",
+            "path": "destination.address"
           },
           "as": {
             "properties": {

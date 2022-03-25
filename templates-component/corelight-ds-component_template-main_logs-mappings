@@ -1381,7 +1381,7 @@ PUT /_component_template/corelight-ds-component_template-main_logs-mappings
                   "type": "ip",
                   "copy_to": "related.ip"
                 },
-                "san_url": {
+                "san_uri": {
                   "type": "keyword",
                   "fields": {
                     "text": {
