@@ -1,6 +1,6 @@
 PUT /_component_template/corelight-ds-component_template-main_logs-mappings
 {
-  "version": 11203,
+  "version": 11204,
   "template": {
     "mappings": {
       "dynamic_templates": [
@@ -1011,6 +1011,36 @@ PUT /_component_template/corelight-ds-component_template-main_logs-mappings
                 "type": {
                   "ignore_above": 4096,
                   "type": "keyword"
+                }
+              }
+            },
+            "flags": {
+              "properties": {
+                "authoritative": {
+                  "type": "boolean"
+                },
+                "recursion": {
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "desired": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "truncated": {
+                  "properties": {
+                    "response": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "rejected": {
+                  "type": "boolean"
+                },
+                "z_bit": {
+                  "type": "integer"
                 }
               }
             },
