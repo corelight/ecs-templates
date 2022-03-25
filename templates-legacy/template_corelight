@@ -1,10 +1,11 @@
+//PUT /_template/template_corelight
 {
   "order" : 10,
   "index_patterns": [
     "*ecs-corelight*",
     "*single-corelight*"
   ],
-  "version": 11203,
+  "version": 11206,
   "mappings": {
     "dynamic_templates": [
       {
@@ -1015,6 +1016,36 @@
                 "type": "keyword"
               }
             }
+          },            
+          "flags": {
+            "properties": {
+              "authoritative": {
+                "type": "boolean"
+              },
+              "recursion": {
+                "properties": {
+                  "available": {
+                    "type": "boolean"
+                  },
+                  "desired": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "truncated": {
+                "properties": {
+                  "response": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "rejected": {
+                "type": "boolean"
+              },
+              "z_bit": {
+                "type": "integer"
+              }
+            }
           },
           "header_flags": {
             "ignore_above": 4096,
@@ -1383,7 +1414,7 @@
                 "type": "ip",
                 "copy_to": "related.ip"
               },
-              "san_url": {
+              "san_uri": {
                 "type": "keyword",
                 "fields": {
                   "text": {
@@ -2689,8 +2720,8 @@
       "server": {
         "properties": {
           "address": {
-            "ignore_above": 32000,
-            "type": "keyword"
+            "type": "alias",
+            "path": "destination.address"
           },
           "as": {
             "properties": {
@@ -2944,11 +2975,108 @@
           "auth_attempts": {
             "type": "long"
           },
+          "cipher": {
+            "ignore_above": 32000,
+            "type": "keyword",
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            }
+          },
+          "client": {
+            "ignore_above": 32000,
+            "type": "keyword",
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            }
+          },
+          "compression_algorithm": {
+            "ignore_above": 32000,
+            "type": "keyword",
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            }
+          },
+          "cshka": {
+            "type": "keyword"
+          },
+          "hassh": {
+            "type": "keyword"
+          },
+          "hasshAlgorithms": {
+            "ignore_above": 32000,
+            "type": "keyword",
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            }
+          },
+          "hasshServer": {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "hasshServerAlgorithms": {
+            "ignore_above": 32000,
+            "type": "keyword",
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            }
+          },
+          "hasshVersion": {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "host_key": {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "key_algorithm": {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
           "inferences": {
             "type": "keyword"
           },
           "inferences_detailed": {
             "type": "keyword"
+          },
+          "key_exchange_algorithm": {
+            "ignore_above": 32000,
+            "type": "keyword",
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            }
+          },
+          "mac_algorithm": {
+            "ignore_above": 32000,
+            "type": "keyword",
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            }
+          },
+          "remote_location": {
+            "type": "keyword"
+          },
+          "server": {
+            "ignore_above": 32000,
+            "type": "keyword",
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            }
           },
           "stepping": {
             "properties": {
@@ -2959,6 +3087,10 @@
                 "type": "float"
               }
             }
+          },
+          "version": {
+            "ignore_above": 32000,
+            "type": "keyword"
           }
         }
       },

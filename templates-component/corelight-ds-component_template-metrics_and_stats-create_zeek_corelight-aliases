@@ -1,4 +1,4 @@
-PUT /_component_template/corelight-ds-component_template-metrics_and_stats-create_zeek_corelight-aliases
+//PUT /_component_template/corelight-ds-component_template-metrics_and_stats-create_zeek_corelight-aliases
 {
   "template": {
     "aliases": {

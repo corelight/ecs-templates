@@ -1,4 +1,4 @@
-PUT /_index_template/corelight-ds-index_template-main_logs
+//PUT /_index_template/corelight-ds-index_template-main_logs
 {
   "index_patterns": [
     "corelight-ds*"
