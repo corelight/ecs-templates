@@ -2978,6 +2978,9 @@ PUT /_component_template/corelight-ds-component_template-main_logs-mappings
             "inferences_detailed": {
               "type": "keyword"
             },
+            "remote_location": {
+              "type": "keyword"
+            },
             "stepping": {
               "properties": {
                 "direct": {

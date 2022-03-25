@@ -2981,6 +2981,9 @@
           "inferences_detailed": {
             "type": "keyword"
           },
+          "remote_location": {
+            "type": "keyword"
+          },
           "stepping": {
             "properties": {
               "direct": {
