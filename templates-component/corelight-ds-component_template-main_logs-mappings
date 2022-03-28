@@ -1,6 +1,6 @@
 //PUT /_component_template/corelight-ds-component_template-main_logs-mappings
 {
-  "version": 11206,
+  "version": 11207,
   "template": {
     "mappings": {
       "dynamic_templates": [
@@ -721,6 +721,9 @@
               "type": "ip",
               "copy_to": "related.ip"
             },
+            "ip_rfc": {
+              "type": "keyword"
+            },
             "ip_public": {
               "type": "boolean"
             },
@@ -729,6 +732,9 @@
             },
             "ip_version": {
               "type": "keyword"
+            },
+            "is_ipv6": {
+              "type": "boolean"
             },
             "mac": {
               "copy_to": "related.mac",
@@ -928,6 +934,9 @@
               "type": "ip",
               "copy_to": "related.ip"
             },
+            "ip_rfc": {
+              "type": "keyword"
+            },
             "ip_public": {
               "type": "boolean"
             },
@@ -936,6 +945,9 @@
             },
             "ip_version": {
               "type": "keyword"
+            },
+            "is_ipv6": {
+              "type": "boolean"
             },
             "mac": {
               "copy_to": "related.mac",
@@ -1514,6 +1526,21 @@
             "ip": {
               "type": "ip",
               "copy_to": "related.ip"
+            },
+            "ip_rfc": {
+              "type": "keyword"
+            },
+            "ip_public": {
+              "type": "boolean"
+            },
+            "ip_type": {
+              "type": "keyword"
+            },
+            "ip_version": {
+              "type": "keyword"
+            },
+            "is_ipv6": {
+              "type": "boolean"
             },
             "port": {
               "type": "long"
