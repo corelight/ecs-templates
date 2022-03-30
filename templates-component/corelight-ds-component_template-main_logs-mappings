@@ -1,6 +1,6 @@
 //PUT /_component_template/corelight-ds-component_template-main_logs-mappings
 {
-  "version": 11207,
+  "version": 11208,
   "template": {
     "mappings": {
       "dynamic_templates": [
@@ -358,6 +358,11 @@
                   "copy_to": "related.id"
                 },
                 "suri_id": {
+                  "ignore_above": 2048,
+                  "type": "keyword",
+                  "copy_to": "related.id"
+                },
+                "suri_ids": {
                   "ignore_above": 2048,
                   "type": "keyword",
                   "copy_to": "related.id"

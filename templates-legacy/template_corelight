@@ -365,6 +365,11 @@
                 "type": "keyword",
                 "copy_to": "related.id"
               },
+              "suri_ids": {
+                "ignore_above": 2048,
+                "type": "keyword",
+                "copy_to": "related.id"
+              },
               "tx_id": {
                 "ignore_above": 2048,
                 "type": "keyword",
