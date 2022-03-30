@@ -1,6 +1,6 @@
 //PUT /_component_template/corelight-ds-component_template-main_logs-mappings
 {
-  "version": 11208,
+  "version": 11209,
   "template": {
     "mappings": {
       "dynamic_templates": [
@@ -2254,6 +2254,14 @@
             },
             "client": {
               "properties": {
+                "cert_chain_fingerprints": {
+                  "properties": {
+                    "sha1": {
+                      "ignore_above": 4096,
+                      "type": "keyword"
+                    }
+                  }
+                },
                 "hash": {
                   "properties": {
                     "sha1": {
@@ -2315,6 +2323,14 @@
             },
             "server": {
               "properties": {
+                "cert_chain_fingerprints": {
+                  "properties": {
+                    "sha1": {
+                      "ignore_above": 4096,
+                      "type": "keyword"
+                    }
+                  }
+                },
                 "hash": {
                   "properties": {
                     "sha1": {

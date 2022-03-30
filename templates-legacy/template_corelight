@@ -5,7 +5,7 @@
     "*ecs-corelight*",
     "*single-corelight*"
   ],
-  "version": 11207,
+  "version": 11209,
   "mappings": {
     "dynamic_templates": [
       {
@@ -787,7 +787,7 @@
             }
           }
         }
-        },
+      },
       "source": {
         "properties": {
           "address": {
@@ -1033,7 +1033,7 @@
                 "type": "keyword"
               }
             }
-          },            
+          },
           "flags": {
             "properties": {
               "authoritative": {
@@ -2257,6 +2257,14 @@
           },
           "client": {
             "properties": {
+              "cert_chain_fingerprints": {
+                "properties": {
+                  "sha1": {
+                    "ignore_above": 4096,
+                    "type": "keyword"
+                  }
+                }
+              },
               "hash": {
                 "properties": {
                   "sha1": {
@@ -2318,6 +2326,14 @@
           },
           "server": {
             "properties": {
+              "cert_chain_fingerprints": {
+                "properties": {
+                  "sha1": {
+                    "ignore_above": 4096,
+                    "type": "keyword"
+                  }
+                }
+              },
               "hash": {
                 "properties": {
                   "sha1": {
