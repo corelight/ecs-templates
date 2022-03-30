@@ -610,6 +610,25 @@
               "ignore_above": 32000,
               "type": "keyword"
             },
+            "software": {
+              "properties": {
+                "major_version": {
+                  "type": "keyword"
+                },
+                "minor_version": {
+                  "type": "keyword"
+                },
+                "original": {
+                  "fields": {
+                    "text": {
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32766,
+                  "type": "keyword"
+                }
+              }
+            },
             "subdomain": {
               "ignore_above": 32000,
               "type": "keyword"
@@ -2493,6 +2512,68 @@
             }
           }
         },
+        "software": {
+          "properties": {
+            "additional_info": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32766,
+              "type": "keyword"
+            },
+            "ip": {
+              "type": "keyword"
+            },
+            "name": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32766,
+              "type": "keyword"
+            },
+            "original": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32766,
+              "type": "keyword"
+            },
+            "port": {
+              "type": "long"
+            },
+            "type": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32766,
+              "type": "keyword"
+            },
+            "version": {
+              "properties": {
+                "major": {
+                  "type": "long"
+                },
+                "minor": {
+                  "type": "long"
+                },
+                "minor2": {
+                  "type": "long"
+                },
+                "minor3": {
+                  "type": "long"
+                }
+              }
+            }
+          }
+        },
         "source": {
           "properties": {
             "address": {
@@ -2686,6 +2767,25 @@
             "port": {
               "type": "long"
             },
+            "software": {
+              "properties": {
+                "major_version": {
+                  "type": "keyword"
+                },
+                "minor_version": {
+                  "type": "keyword"
+                },
+                "original": {
+                  "fields": {
+                    "text": {
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32766,
+                  "type": "keyword"
+                }
+              }
+            },
             "user": {
               "properties": {
                 "full_name": {
@@ -2846,6 +2946,36 @@
             }
           }
         },
+        "ssl" : {
+          "properties" : {
+            "connection_history" : {
+              "type" : "keyword",
+              "ignore_above" : 4096
+            },
+            "connection_history_detailed" : {
+              "type" : "keyword",
+              "ignore_above" : 4096,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "last_alert" : {
+              "type" : "keyword",
+              "ignore_above" : 4096
+            },
+            "validation_status" : {
+              "type" : "keyword",
+              "ignore_above" : 4096,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            }
+          }
+        },
         "suricata": {
           "properties": {
             "metadata": {
@@ -2880,6 +3010,19 @@
                 "cert_chain_fingerprints": {
                   "ignore_above": 4096,
                   "type": "keyword"
+                },
+                "connection_history" : {
+                  "type" : "keyword",
+                  "ignore_above" : 4096
+                },
+                "connection_history_detailed" : {
+                  "type" : "keyword",
+                  "ignore_above" : 4096,
+                  "fields" : {
+                    "text" : {
+                      "type" : "text"
+                    }
+                  }
                 },
                 "hash": {
                   "properties": {
@@ -2945,6 +3088,19 @@
                 "cert_chain_fingerprints": {
                   "ignore_above": 4096,
                   "type": "keyword"
+                },
+                "connection_history" : {
+                  "type" : "keyword",
+                  "ignore_above" : 4096
+                },
+                "connection_history_detailed" : {
+                  "type" : "keyword",
+                  "ignore_above" : 4096,
+                  "fields" : {
+                    "text" : {
+                      "type" : "text"
+                    }
+                  }
                 },
                 "hash": {
                   "properties": {
@@ -3223,6 +3379,7 @@
             }
           }
         }
+      }
       }
     }
   },
