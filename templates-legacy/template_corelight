@@ -2258,12 +2258,8 @@
           "client": {
             "properties": {
               "cert_chain_fingerprints": {
-                "properties": {
-                  "sha1": {
-                    "ignore_above": 4096,
-                    "type": "keyword"
-                  }
-                }
+                "ignore_above": 4096,
+                "type": "keyword"
               },
               "hash": {
                 "properties": {
@@ -2327,12 +2323,8 @@
           "server": {
             "properties": {
               "cert_chain_fingerprints": {
-                "properties": {
-                  "sha1": {
-                    "ignore_above": 4096,
-                    "type": "keyword"
-                  }
-                }
+                "ignore_above": 4096,
+                "type": "keyword"
               },
               "hash": {
                 "properties": {
