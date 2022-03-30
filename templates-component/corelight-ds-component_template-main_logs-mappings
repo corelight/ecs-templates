@@ -469,6 +469,19 @@
             "bytes": {
               "type": "long"
             },
+            "connection_history" : {
+              "type" : "keyword",
+              "ignore_above" : 2048
+            },
+            "connection_history_detailed" : {
+              "type" : "keyword",
+              "ignore_above" : 4096,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
             "domain": {
               "ignore_above": 32000,
               "fields": {
@@ -818,6 +831,19 @@
             },
             "bytes": {
               "type": "long"
+            },
+            "connection_history" : {
+              "type" : "keyword",
+              "ignore_above" : 2048
+            },
+            "connection_history_detailed" : {
+              "type" : "keyword",
+              "ignore_above" : 4096,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
             },
             "domain": {
               "ignore_above": 32000,
@@ -1914,6 +1940,36 @@
             "community_id": {
               "ignore_above": 4096,
               "type": "keyword"
+            },
+            "connection" : {
+              "properties" : {
+                "history" : {
+                  "ignore_above" : 2048,
+                  "type" : "keyword"
+                },
+                "history_detailed" : {
+                  "ignore_above" : 4096,
+                  "type" : "keyword",
+                  "fields" : {
+                    "text" : {
+                      "type" : "text"
+                    }
+                  }
+                },
+                "state" : {
+                  "ignore_above" : 2048,
+                  "type" : "keyword"
+                },
+                "state_description" : {
+                  "ignore_above" : 4096,
+                  "type" : "keyword",
+                  "fields" : {
+                    "text" : {
+                      "type" : "text"
+                    }
+                  }
+                }
+              }
             },
             "direction": {
               "ignore_above": 4096,
