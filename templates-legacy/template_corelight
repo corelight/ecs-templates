@@ -7,6 +7,7 @@
   ],
   "version": 11209,
   "mappings": {
+    "date_detection": true,
     "dynamic_templates": [
       {
         "strings_as_keyword": {
