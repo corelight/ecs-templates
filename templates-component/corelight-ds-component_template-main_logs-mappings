@@ -3,6 +3,7 @@
   "version": 11209,
   "template": {
     "mappings": {
+      "date_detection": true,
       "dynamic_templates": [
         {
           "strings_as_keyword": {
@@ -1867,6 +1868,18 @@
         },
         "network": {
           "properties": {
+            "application": {
+              "ignore_above": 8192,
+              "type": "keyword",
+              "fields": {
+                "text": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer",
+                  "index_options": "docs",
+                  "norms": "false"
+                }
+              }
+            },
             "bytes": {
               "type": "long"
             },
