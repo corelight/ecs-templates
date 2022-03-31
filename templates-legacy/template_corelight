@@ -1604,6 +1604,70 @@
           }
         }
       },
+        "kerberos" : {
+          "properties" : {
+            "error_message" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "request" : {
+              "properties" : {
+                "client" : {
+                  "type" : "keyword",
+                  "ignore_above" : 32000,
+                  "fields" : {
+                    "text" : {
+                      "type" : "text"
+                    }
+                  }
+                },
+                "successful" : {
+                  "type" : "boolean"
+                },
+                "ticket" : {
+                  "properties" : {
+                    "forwardable" : {
+                      "type" : "boolean"
+                    },
+                    "renewable" : {
+                      "type" : "boolean"
+                    }
+                  }
+                },
+                "type" : {
+                  "type" : "keyword",
+                  "ignore_above" : 8192,
+                  "fields" : {
+                    "text" : {
+                      "type" : "text"
+                    }
+                  }
+                }
+              }
+            },
+            "ticket" : {
+              "properties" : {
+                "service" : {
+                  "type" : "keyword",
+                  "ignore_above" : 32000,
+                  "fields" : {
+                    "text" : {
+                      "type" : "text"
+                    }
+                  }
+                },
+                "valid_till" : {
+                  "type" : "date"
+                }
+              }
+            }
+          }
+        },
       "labels": {
         "properties": {
           "corelight": {
@@ -1876,10 +1940,7 @@
             "type": "keyword",
             "fields": {
               "text": {
-                "type": "text",
-                "analyzer": "es_stk_analyzer",
-                "index_options": "docs",
-                "norms": "false"
+                  "type": "text"
               }
             }
           },
@@ -1982,6 +2043,111 @@
           }
         }
       },
+        "notice" : {
+          "properties" : {
+            "actions" : {
+              "type" : "keyword",
+              "ignore_above" : 8192,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "dst_ip" : {
+              "type" : "ip"
+            },
+            "message" : {
+              "type" : "keyword",
+              "ignore_above" : 8192,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "note" : {
+              "type" : "keyword",
+              "ignore_above" : 8192,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "p" : {
+              "type" : "long"
+            },
+            "peer_description" : {
+              "type" : "keyword",
+              "ignore_above" : 8192,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "src_ip" : {
+              "type" : "ip"
+            },
+            "sub_message" : {
+              "type" : "keyword",
+              "ignore_above" : 8192,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "suppress_duration" : {
+              "type" : "double"
+            }
+          }
+        },        
+        "ntp" : {
+          "properties" : {
+            "mode" : {
+              "type" : "long"
+            },
+            "num_exts" : {
+              "type" : "long"
+            },
+            "org_time" : {
+              "type" : "date"
+            },
+            "poll" : {
+              "type" : "double"
+            },
+            "precision" : {
+              "type" : "double"
+            },
+            "rec_time" : {
+              "type" : "date"
+            },
+            "ref_id" : {
+              "type" : "keyword",
+              "ignore_above" : 8192
+            },
+            "ref_time" : {
+              "type" : "date"
+            },
+            "root_delay" : {
+              "type" : "double"
+            },
+            "root_disp" : {
+              "type" : "double"
+            },
+            "stratum" : {
+              "type" : "long"
+            },
+            "version" : {
+              "type" : "long"
+            },
+            "xmt_time" : {
+              "type" : "date"
+            }
+          }
+        },
       "observer": {
         "properties": {
           "hostname": {
@@ -2486,6 +2652,139 @@
         },
         "type": "object"
       },
+        "smtp" : {
+          "properties" : {
+            "cc" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "date" : {
+              "type" : "date"
+            },
+            "first_received" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "from" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "helo" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "in_reply_to" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "is_webmail" : {
+              "type" : "boolean"
+            },
+            "last_reply" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "mailfrom" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "msg_id" : {
+              "type" : "keyword",
+              "ignore_above" : 8192
+            },
+            "path" : {
+              "copy_to" : "related.ip",
+              "type" : "ip"
+            },
+            "rcptto" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "second_received" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "subject" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "subject_has_non_ascii" : {
+              "type" : "boolean"
+            },
+            "subject_length" : {
+              "type" : "long"
+            },
+            "tls" : {
+              "type" : "boolean"
+            },
+            "to" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "trans_depth" : {
+              "type" : "long"
+            },
+            "x_originating_ip" : {
+              "copy_to" : "related.ip",
+              "type" : "ip"
+            }
+          }
+        },
       "socks": {
         "properties": {
           "bound": {
