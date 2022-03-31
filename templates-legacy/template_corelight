@@ -2103,7 +2103,7 @@
             "type" : "double"
           }
         }
-      },        
+      },
       "ntp" : {
         "properties" : {
           "mode" : {
