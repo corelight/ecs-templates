@@ -2672,6 +2672,10 @@
           "date" : {
             "type" : "date"
           },
+          "date_non_formatted_date" : {
+            "type" : "keyword",
+            "ignore_above" : 8192
+          },
           "first_received" : {
             "type" : "keyword",
             "ignore_above" : 32000,
