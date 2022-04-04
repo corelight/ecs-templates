@@ -525,6 +525,9 @@
           "ip_type": {
             "type": "keyword"
           },
+          "ip_valid_count": {
+            "type": "integer"
+          },
           "ip_version": {
             "type": "keyword"
           },
@@ -1447,6 +1450,9 @@
           "ip_type": {
             "type": "keyword"
           },
+          "ip_valid_count": {
+            "type": "integer"
+          },
           "ip_version": {
             "type": "keyword"
           },
@@ -1940,7 +1946,7 @@
             "type": "keyword",
             "fields": {
               "text": {
-                  "type": "text"
+                "type": "text"
               }
             }
           },
@@ -3064,6 +3070,9 @@
           },
           "ip_type": {
             "type": "keyword"
+          },
+          "ip_valid_count": {
+            "type": "integer"
           },
           "ip_version": {
             "type": "keyword"
