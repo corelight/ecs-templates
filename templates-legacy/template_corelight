@@ -1510,6 +1510,11 @@
                 "type": "keyword"
               },
               "method": {
+                "fields": {
+                  "text": {
+                    "type": "text"
+                  }
+                },
                 "ignore_above": 10000,
                 "type": "keyword"
               },
