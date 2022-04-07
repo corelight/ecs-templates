@@ -1755,6 +1755,29 @@
                   "norms": false,
                   "type": "keyword"
                 },
+                "kafka": {
+                  "type": "object",
+                  "properties": {
+                    "consumer_group": {
+                      "ignore_above": 4096,
+                      "type": "keyword"
+                    },
+                    "partition": {
+                      "type": "integer"
+                    },
+                    "offset": {
+                      "type": "long"
+                    },
+                    "topic": {
+                      "ignore_above": 4096,
+                      "type": "keyword"
+                    },
+                    "time": {
+                      "format": "epoch_millis",
+                      "type": "date"
+                    }
+                  }
+                },
                 "pipeline": {
                   "doc_values": false,
                   "norms": false,
