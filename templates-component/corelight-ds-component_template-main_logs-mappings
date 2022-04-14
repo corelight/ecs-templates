@@ -2418,11 +2418,6 @@
               "type": "keyword"
             },
             "id": {
-              "fields": {
-                "text": {
-                  "type": "text"
-                }
-              },
               "type": "keyword"
             },
             "license": {
@@ -2442,11 +2437,6 @@
               "type": "keyword"
             },
             "reference": {
-              "fields": {
-                "text": {
-                  "type": "text"
-                }
-              },
               "type": "keyword"
             },
             "ruleset": {
@@ -2458,19 +2448,9 @@
               "type": "keyword"
             },
             "uuid": {
-              "fields": {
-                "text": {
-                  "type": "text"
-                }
-              },
               "type": "keyword"
             },
             "version": {
-              "fields": {
-                "text": {
-                  "type": "text"
-                }
-              },
               "type": "keyword"
             }
           }
@@ -3331,6 +3311,130 @@
         },
         "suricata": {
           "properties": {
+            "alert": {
+              "properties": {
+                "action": {
+                  "ignore_above" : 8192,
+                  "type": "keyword"
+                },
+                "metadata_original": {
+                  "ignore_above" : 12192,
+                  "type": "keyword"
+                },
+                "metadata": {
+                  "properties": {
+                    "affected_product": {
+                      "fields": {
+                        "text": {
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "attack_target": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "capec_id": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "classtype": {
+                      "fields": {
+                        "text": {
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "created_at": {
+                      "type" : "date"
+                    },
+                    "cvss_v2_base": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "cvss_v2_temporal": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "cvss_v3_base": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "cvss_v3_temporal": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "cwe_id": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "deployment": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "deprecation_reason": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "former_category": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "hostile": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "malware_family": {
+                      "fields": {
+                        "text": {
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "metadata_original": {
+                      "ignore_above" : 4096,
+                      "type": "keyword"
+                    },
+                    "performance_impact": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "priority": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "protocols": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "rule_source": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "sid": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "signature_severity": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "tag": {
+                      "ignore_above" : 8192,
+                      "type": "keyword"
+                    },
+                    "updated_at": {
+                      "type": "date"
+                    }
+                  }
+                }
+              }
+            },
             "metadata": {
               "fields": {
                 "text": {
@@ -3346,6 +3450,77 @@
         },
         "tags": {
           "type": "keyword"
+        },
+        "threat": {
+          "properties": {
+            "framework": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "tactic": {
+              "properties": {
+                "id": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "text": {
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 8192,
+                  "type": "keyword"
+                },
+                "reference": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                }
+              }
+            },
+            "technique": {
+              "properties": {
+                "id": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "text": {
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 8192,
+                  "type": "keyword"
+                },
+                "reference": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "subtechnique": {
+                  "properties": {
+                    "id": {
+                      "ignore_above": 1024,
+                      "type": "keyword"
+                    },
+                    "name": {
+                      "fields": {
+                        "text": {
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "reference": {
+                      "ignore_above": 4096,
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
         "tls": {
           "properties": {
