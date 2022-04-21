@@ -1943,6 +1943,10 @@
                     }
                   }
                 },
+                "message": {
+                  "norms": false,
+                  "type": "text"
+                },
                 "priority": {
                   "type": "long"
                 },
