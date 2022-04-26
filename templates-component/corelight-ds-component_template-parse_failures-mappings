@@ -1,6 +1,6 @@
 //PUT /_component_template/corelight-ds-component_template-parse_failures-mappings
 {
-  "version": 11202,
+  "version": 11221,
   "template": {
     "mappings": {
       "date_detection": false,

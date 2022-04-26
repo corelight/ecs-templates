@@ -8,7 +8,7 @@
     "*zeek-corelight-stats*",
     "*zeek-corelight-system*"
   ],
-  "version": 11202,
+  "version": 11221,
   "settings": {
     "index": {
       "mapping": {

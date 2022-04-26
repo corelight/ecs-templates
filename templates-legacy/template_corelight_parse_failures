@@ -1,7 +1,7 @@
 //PUT /_template/template_corelight_parse_failures
 {
   "order": 99,
-  "version": 11202,
+  "version": 11221,
   "index_patterns": [
     "parse-failures-corelight-*"
   ],
