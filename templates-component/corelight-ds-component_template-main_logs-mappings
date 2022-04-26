@@ -1,6 +1,6 @@
 //PUT /_component_template/corelight-ds-component_template-main_logs-mappings
 {
-  "version": 11209,
+  "version": 11221,
   "template": {
     "mappings": {
       "date_detection": true,
@@ -3917,6 +3917,6 @@
   },
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-    "version": 11209
+    "version": 11221
   }
 }

@@ -13,6 +13,6 @@
   "priority": 900,
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-    "version": 11209
+    "version": 11221
   }
 }
