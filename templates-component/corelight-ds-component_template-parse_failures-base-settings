@@ -1,6 +1,6 @@
 //PUT /_component_template/corelight-ds-component_template-parse_failures-base-settings
 {
-  "version": 11201,
+  "version": 11209,
   "template": {
     "settings": {
       "index": {
@@ -16,6 +16,6 @@
   },
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-    "version": 11201
+    "version": 11209
   }
 }

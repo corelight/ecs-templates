@@ -7,6 +7,6 @@
   },
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-    "version": 11201
+    "version": 11209
   }
 }
