@@ -2,6 +2,7 @@
 
 ## Elasticsearch templates (This Repository)
 Index templates, component templates, settings, mappings
+https://github.com/corelight/ecs-templates
 
 ## Logstash Pipeline 
 logstash pipeline configurations
