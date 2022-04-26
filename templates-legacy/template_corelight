@@ -1,6 +1,6 @@
 //PUT /_template/template_corelight
 {
-  "order" : 10,
+  "order" : 12,
   "index_patterns": [
     "*ecs-corelight*",
     "*single-corelight*"
