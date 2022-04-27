@@ -1,0 +1,13 @@
+//PUT /_component_template/corelight-non-ds-component_template-metrics_and_stats-ilm-settings
+{
+  "version": 11221,
+  "template": {
+    "settings": {
+      "index.lifecycle.name": "corelight-non-ds-ilm_policy-metrics_and_stats"
+    }
+  },
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+    "version": 11221
+  }
+}

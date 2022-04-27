@@ -1,0 +1,15 @@
+//PUT /_index_template/corelight-non-ds-index_template-main_logs_use_ingest_pipeline
+{
+  "index_patterns": [
+    "ecs-corelight-*"
+  ]
+  ,
+  "composed_of": [
+    "corelight-non-ds-component_template-use_ingest_pipeline-settings"
+  ],
+  "priority": 900,
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+    "version": 11221
+  }
+}
