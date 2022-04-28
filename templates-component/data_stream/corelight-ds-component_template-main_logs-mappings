@@ -1414,6 +1414,9 @@
             "timedout": {
               "type": "boolean"
             },
+            "red_ts_original": {
+              "type": "date"
+            },
             "tx_hosts": {
               "ignore_above": 32000,
               "type": "keyword"
