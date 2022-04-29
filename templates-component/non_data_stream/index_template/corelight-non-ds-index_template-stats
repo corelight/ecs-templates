@@ -1,10 +1,10 @@
-PUT /_index_template/corelight-non-ds-index_template-metrics
+//PUT /_index_template/corelight-non-ds-index_template-stats
 {
   "index_patterns": [
-    "zeek-corelight-metrics-*"
+    "zeek-corelight-stats-*"
   ],
   "composed_of": [
-    "corelight-non-ds-component_template-metrics-ilm-settings",
+    "corelight-non-ds-component_template-stats-ilm-settings",
     "corelight-non-ds-component_template-metrics_and_stats-create_zeek_corelight-aliases",
     "corelight-non-ds-component_template-metrics_and_stats-base-settings",
     "corelight-non-ds-component_template-metrics_and_stats-mappings"

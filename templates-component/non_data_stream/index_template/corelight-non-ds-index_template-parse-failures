@@ -1,4 +1,4 @@
-PUT /_index_template/corelight-non-ds-index_template-parse-failures
+//PUT /_index_template/corelight-non-ds-index_template-parse-failures
 {
   "index_patterns": [
     "parse-failures-corelight-*"
