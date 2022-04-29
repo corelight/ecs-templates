@@ -1,7 +1,10 @@
 //PUT /_index_template/corelight-non-ds-index_template-metrics_and_stats
 {
   "index_patterns": [
-    "zeek-corelight-ds*"
+    "zeek-corelight-metrics-*",
+    "zeek-corelight-netcontrol-*",
+    "zeek-corelight-stats-*",
+    "zeek-corelight-system-*"
   ]
   ,
   "composed_of": [

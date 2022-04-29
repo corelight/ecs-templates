@@ -2,7 +2,7 @@
 {
   "template": {
     "aliases": {
-      "ecs-corelight-ds": {}
+      "ecs-corelight-non-ds": {}
     }
   },
   "_meta": {

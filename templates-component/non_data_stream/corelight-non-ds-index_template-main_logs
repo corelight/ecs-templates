@@ -1,7 +1,7 @@
 //PUT /_index_template/corelight-non-ds-index_template-main_logs
 {
   "index_patterns": [
-    "corelight-ds*"
+    "corelight-non-ds-*"
   ]
   ,
   "composed_of": [
