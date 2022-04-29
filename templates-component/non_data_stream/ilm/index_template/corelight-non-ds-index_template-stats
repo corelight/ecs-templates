@@ -9,7 +9,7 @@ PUT /_index_template/corelight-non-ds-index_template-stats
     "corelight-non-ds-component_template-metrics_and_stats-base-settings",
     "corelight-non-ds-component_template-metrics_and_stats-mappings"
   ],
-  "priority": 910,
+  "priority": 920,
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
     "version": 11221
