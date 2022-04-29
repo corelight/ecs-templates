@@ -3,6 +3,8 @@
   "version": 11221,
   "template": {
     "mappings": {
+      "date_detection": true,
+      "dynamic": "true",
       "dynamic_templates": [
         {
           "strings_as_keyword": {
@@ -14,7 +16,7 @@
           }
         },
         {
-          "numeric_long_fields": {
+          "numeric_long_fields_as_long": {
             "match_mapping_type": "long",
             "mapping": {
               "type": "long"
@@ -22,18 +24,18 @@
           }
         },
         {
-          "numeric_double_fields_as_string": {
+          "numeric_double_fields_as_float": {
             "match_mapping_type": "double",
             "mapping": {
-              "type": "double"
+              "type": "float"
             }
           }
         },
         {
-          "boolean_fields_as_string": {
+          "boolean_fields_as_boolean": {
             "match_mapping_type": "boolean",
             "mapping": {
-              "type": "keyword"
+              "type": "boolean"
             }
           }
         }
@@ -203,25 +205,6 @@
             "timezone": {
               "ignore_above": 1024,
               "type": "keyword"
-            }
-          }
-        },
-        "utilization.": {
-          "type": "object",
-          "properties": {
-            "corelight": {
-              "type": "object",
-              "properties": {
-                "smartpcap": {
-                  "type": "float"
-                },
-                "suricata": {
-                  "type": "float"
-                },
-                "sensor": {
-                  "type": "float"
-                }
-              }
             }
           }
         }
