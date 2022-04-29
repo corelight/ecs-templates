@@ -5,7 +5,11 @@
   ]
   ,
   "composed_of": [
-    "corelight-non-ds-component_template-temporary-non_normalized-event_dataset-ilm-settings"
+    "corelight-non-ds-component_template-temporary-non_normalized-event_dataset-ilm-settings",
+    "corelight-non-ds-component_template-main_logs-create_ecs_corelight-aliases",
+    "corelight-non-ds-component_template-main_logs-base-settings",
+    "corelight-non-ds-component_template-main_logs-ilm-settings",
+    "corelight-non-ds-component_template-main_logs-mappings"
   ],
   "priority": 910,
   "_meta": {
