@@ -5,8 +5,7 @@
     "zeek-corelight-netcontrol-*",
     "zeek-corelight-stats-*",
     "zeek-corelight-system-*"
-  ]
-  ,
+  ],
   "composed_of": [
     "corelight-non-ds-component_template-metrics_and_stats-create_zeek_corelight-aliases",
     "corelight-non-ds-component_template-metrics_and_stats-base-settings",

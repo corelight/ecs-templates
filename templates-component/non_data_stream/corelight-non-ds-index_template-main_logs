@@ -2,8 +2,7 @@
 {
   "index_patterns": [
     "corelight-non-ds-*"
-  ]
-  ,
+  ],
   "composed_of": [
     "corelight-non-ds-component_template-main_logs-create_ecs_corelight-aliases",
     "corelight-non-ds-component_template-main_logs-base-settings",
