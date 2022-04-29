@@ -2,7 +2,7 @@
 {
   "order" : 12,
   "index_patterns": [
-    "*ecs-corelight*"
+    "ecs-corelight-*"
   ],
   "version": 11221,
   "mappings": {

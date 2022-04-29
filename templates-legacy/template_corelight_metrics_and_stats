@@ -2,11 +2,10 @@
 {
   "order" : 99,
   "index_patterns": [
-    "*zeek-corelight-audit*",
-    "*zeek-corelight-metrics*",
-    "*zeek-corelight-netcontrol*",
-    "*zeek-corelight-stats*",
-    "*zeek-corelight-system*"
+    "zeek-corelight-metrics-*",
+    "zeek-corelight-netcontrol-*",
+    "zeek-corelight-stats-*",
+    "zeek-corelight-system-*"
   ],
   "version": 11221,
   "settings": {
