@@ -3,7 +3,6 @@
   "order" : 12,
   "index_patterns": [
     "*ecs-corelight*",
-    "*single-corelight*",
     "*zeek-corelight*"
   ],
   "version": 11221,
