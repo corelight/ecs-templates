@@ -3,6 +3,7 @@
   "version": 11221,
   "template": {
     "settings": {
+      "index.lifecycle.name": "corelight-non-ds-ilm_policy-main_logs",
       "index.lifecycle.rollover_alias": "corelight-non-ds-suricata"
     }
   },

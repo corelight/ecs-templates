@@ -1,10 +1,10 @@
-PUT /_component_template/corelight-non-ds-component_template-netcontrol-ilm-settings
+//PUT /_component_template/corelight-non-ds-component_template-parse-failures-ilm-settings
 {
   "version": 11221,
   "template": {
     "settings": {
-      "index.lifecycle.name": "corelight-non-ds-ilm_policy-main_logs",
-      "index.lifecycle.rollover_alias": "zeek-corelight-netcontrol"
+      "index.lifecycle.name": "corelight-non-ds-ilm_policy-parse_failures",
+      "index.lifecycle.rollover_alias": "parse-failures-corelight"
     }
   },
   "_meta": {

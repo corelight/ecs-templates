@@ -1,11 +1,12 @@
-//PUT /_index_template/corelight-non-ds-index_template-parse-failures-roll_over_alias
+PUT /_index_template/corelight-non-ds-index_template-parse-failures
 {
   "index_patterns": [
     "parse-failures-corelight-*"
-  ]
-  ,
+  ],
   "composed_of": [
-    "corelight-non-ds-component_template-parse-failures-ilm-settings"
+    "corelight-non-ds-component_template-parse-failures-ilm-settings",
+    "corelight-non-ds-component_template-parse_failures-base-settings",
+    "corelight-non-ds-component_template-parse_failures-mappings"
   ],
   "priority": 910,
   "_meta": {

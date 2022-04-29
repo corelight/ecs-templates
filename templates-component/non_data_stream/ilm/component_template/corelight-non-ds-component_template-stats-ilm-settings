@@ -1,9 +1,10 @@
-//PUT /_component_template/corelight-non-ds-component_template-parse_failures-ilm-settings
+PUT /_component_template/corelight-non-ds-component_template-stats-ilm-settings
 {
   "version": 11221,
   "template": {
     "settings": {
-      "index.lifecycle.name": "corelight-non-ds-ilm_policy-parse_failures"
+      "index.lifecycle.name": "corelight-non-ds-ilm_policy-metrics_and_stats",
+      "index.lifecycle.rollover_alias": "zeek-corelight-stats"
     }
   },
   "_meta": {

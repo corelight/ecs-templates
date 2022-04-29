@@ -1,10 +1,10 @@
-PUT /_component_template/corelight-non-ds-component_template-stats-ilm-settings
+PUT /_component_template/corelight-non-ds-component_template-netcontrol-ilm-settings
 {
   "version": 11221,
   "template": {
     "settings": {
-      "index.lifecycle.name": "corelight-non-ds-ilm_policy-main_logs",
-      "index.lifecycle.rollover_alias": "zeek-corelight-stats"
+      "index.lifecycle.name": "corelight-non-ds-ilm_policy-metrics_and_stats",
+      "index.lifecycle.rollover_alias": "zeek-corelight-netcontrol"
     }
   },
   "_meta": {
