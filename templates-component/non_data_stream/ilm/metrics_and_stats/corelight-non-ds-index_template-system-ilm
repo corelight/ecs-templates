@@ -1,4 +1,4 @@
-//PUT /_index_template/corelight-non-ds-index_template-system-roll_over_alias
+PUT /_index_template/corelight-non-ds-index_template-system-roll_over_alias
 {
   "index_patterns": [
     "zeek-corelight-system-*"
