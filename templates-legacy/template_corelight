@@ -70,6 +70,10 @@
       "@timestamp": {
         "type": "date"
       },
+      "@version": {
+        "ignore_above": 1024,
+        "type": "keyword"
+      },
       "client": {
         "properties": {
           "address": {
@@ -880,6 +884,14 @@
           }
         }
       },
+        "ecs": {
+          "properties": {
+            "version": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            }
+          }
+        },
       "error": {
         "properties": {
           "code": {

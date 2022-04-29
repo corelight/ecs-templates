@@ -67,6 +67,10 @@
           "type": "date",
           "format": "date_optional_time||epoch_millis"
         },
+        "@version": {
+          "ignore_above": 1024,
+          "type": "keyword"
+        },
         "client": {
           "properties": {
             "address": {
@@ -873,6 +877,14 @@
             },
             "type": {
               "ignore_above": 4096,
+              "type": "keyword"
+            }
+          }
+        },
+        "ecs": {
+          "properties": {
+            "version": {
+              "ignore_above": 1024,
               "type": "keyword"
             }
           }

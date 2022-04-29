@@ -61,6 +61,10 @@
       "@timestamp": {
         "type": "date"
       },
+      "@version": {
+        "ignore_above": 1024,
+        "type": "keyword"
+      },
       "message": {
         "norms": false,
         "type": "text"
@@ -88,6 +92,21 @@
           "etl": {
             "type": "object",
             "properties": {
+                "elasticsearch_index_strategy": {
+                  "doc_values": false,
+                  "norms": false,
+                  "type": "keyword"
+                },
+                "elasticsearch_index_name_prefix": {
+                  "doc_values": false,
+                  "norms": false,
+                  "type": "keyword"
+                },
+                "elasticsearch_index_name_suffix": {
+                  "doc_values": false,
+                  "norms": false,
+                  "type": "keyword"
+                },
               "format_applied": {
                 "doc_values": false,
                 "norms": false,
@@ -128,6 +147,14 @@
       "tags": {
         "type": "keyword"
       },
+        "ecs": {
+          "properties": {
+            "version": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            }
+          }
+        },
       "event": {
         "properties": {
           "category": {

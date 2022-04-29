@@ -21,9 +21,21 @@
         "@timestamp": {
           "type": "date"
         },
+        "@version": {
+          "ignore_above": 1024,
+          "type": "keyword"
+        },
         "message": {
           "norms": false,
           "type": "text"
+        },
+        "ecs": {
+          "properties": {
+            "version": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            }
+          }
         },
         "labels": {
           "type": "object",
