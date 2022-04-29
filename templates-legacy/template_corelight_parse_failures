@@ -25,7 +25,6 @@
           "match_mapping_type": "string",
           "mapping": {
             "index": true,
-            "analyzer": "keyword",
             "norms": false,
             "ignore_above": 2048,
             "type": "keyword"
