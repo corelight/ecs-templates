@@ -1670,6 +1670,61 @@
             }
           }
         },
+        "log4j" : {
+          "properties" : {
+            "is_orig" : {
+              "type" : "boolean"
+            },
+            "matched_name" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "matched_value" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "name" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "stem" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "target_port" : {
+              "type" : "long"
+            },
+            "value" : {
+              "type" : "keyword",
+              "ignore_above" : 32000,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            }
+          }
+        },
         "kerberos" : {
           "properties" : {
             "error_message" : {
