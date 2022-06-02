@@ -71,6 +71,49 @@
           "ignore_above": 1024,
           "type": "keyword"
         },
+        "bacnet": {
+          "properties": {
+            "apdu_type": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "bvlc_function": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "bvlc_len": {
+              "type": "long"
+            },
+            "data": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "service_choice": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            }
+          }
+        },
         "client": {
           "properties": {
             "address": {
