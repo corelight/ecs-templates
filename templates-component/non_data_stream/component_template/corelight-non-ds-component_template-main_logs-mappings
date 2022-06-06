@@ -3854,7 +3854,7 @@
                   "type": "text"
                 }
               },
-              "ignore_above": 4096,
+              "ignore_above": 32000,
               "type": "keyword"
             },
             "paths": {
