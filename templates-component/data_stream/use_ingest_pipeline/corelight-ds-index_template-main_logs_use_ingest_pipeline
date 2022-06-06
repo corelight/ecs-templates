@@ -1,7 +1,8 @@
 //PUT /_index_template/corelight-ds-index_template-main_logs_use_ingest_pipeline
 {
   "index_patterns": [
-    "corelight-ds*"
+    "corelight-ds*",
+    "logs-corelight-*"
   ]
   ,
   "data_stream": { },
