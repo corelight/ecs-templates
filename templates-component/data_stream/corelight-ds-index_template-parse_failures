@@ -1,9 +1,8 @@
 //PUT /_index_template/corelight-ds-index_template-parse_failures
 {
   "index_patterns": [
-    "parse-failures-corelight-ds*"
-  ]
-  ,
+    "parse-failures-corelight-ds-*"
+  ],
   "data_stream": { },
   "composed_of": [
     "corelight-ds-component_template-parse_failures-base-settings",

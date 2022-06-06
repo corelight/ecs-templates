@@ -1,9 +1,11 @@
 //PUT /_index_template/corelight-ds-index_template-metrics_and_stats
 {
   "index_patterns": [
-    "zeek-corelight-ds*"
-  ]
-  ,
+    "zeek-corelight-metrics-ds-*",
+    "zeek-corelight-netcontrol-ds-*",
+    "zeek-corelight-stats-ds-*",
+    "zeek-corelight-system-ds-*"
+  ],
   "data_stream": { },
   "composed_of": [
     "corelight-ds-component_template-metrics_and_stats-create_zeek_corelight-aliases",

@@ -1,9 +1,8 @@
 //PUT /_index_template/corelight-ds-index_template-main_logs
 {
   "index_patterns": [
-    "corelight-ds*"
-  ]
-  ,
+    "corelight-ds-*"
+  ],
   "data_stream": { },
   "composed_of": [
     "corelight-ds-component_template-main_logs-create_ecs_corelight-aliases",
