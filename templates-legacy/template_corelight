@@ -5,6 +5,13 @@
     "ecs-corelight-*"
   ],
   "version": 11221,
+  "settings": {
+    "index": {
+      "mapping": {
+        "total_fields.limit": 10000
+      }
+    }
+  },
   "mappings": {
     "date_detection": true,
     "dynamic_templates": [

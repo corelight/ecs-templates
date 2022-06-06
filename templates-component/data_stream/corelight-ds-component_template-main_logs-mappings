@@ -2,6 +2,13 @@
 {
   "version": 11221,
   "template": {
+    "settings": {
+      "index": {
+        "mapping": {
+          "total_fields.limit": 10000
+        }
+      }
+    },
     "mappings": {
       "date_detection": true,
       "dynamic_templates": [
