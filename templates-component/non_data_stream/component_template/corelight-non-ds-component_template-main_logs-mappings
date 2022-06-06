@@ -3864,9 +3864,6 @@
               "ignore_above": 32000,
               "type": "keyword"
             },
-            "paths": {
-              "type": "long"
-            },
             "port": {
               "type": "long"
             },
