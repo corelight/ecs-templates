@@ -1,7 +1,7 @@
 //PUT /_template/template_corelight_parse_failures
 {
   "order": 99,
-  "version": 11202,
+  "version": 11221,
   "index_patterns": [
     "parse-failures-corelight-*"
   ],
@@ -25,7 +25,6 @@
           "match_mapping_type": "string",
           "mapping": {
             "index": true,
-            "analyzer": "keyword",
             "norms": false,
             "ignore_above": 2048,
             "type": "keyword"
@@ -37,10 +36,22 @@
       "@timestamp": {
         "type": "date"
       },
+      "@version": {
+        "ignore_above": 1024,
+        "type": "keyword"
+      },
       "message": {
         "norms": false,
         "type": "text"
       },
+        "ecs": {
+          "properties": {
+            "version": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            }
+          }
+        },
       "labels": {
         "type": "object",
         "properties": {
@@ -64,6 +75,21 @@
           "etl": {
             "type": "object",
             "properties": {
+                "elasticsearch_index_strategy": {
+                  "doc_values": false,
+                  "norms": false,
+                  "type": "keyword"
+                },
+                "elasticsearch_index_name_prefix": {
+                  "doc_values": false,
+                  "norms": false,
+                  "type": "keyword"
+                },
+                "elasticsearch_index_name_suffix": {
+                  "doc_values": false,
+                  "norms": false,
+                  "type": "keyword"
+                },
               "format_applied": {
                 "doc_values": false,
                 "norms": false,

@@ -1,0 +1,17 @@
+//PUT /_index_template/corelight-ds-index_template-metrics_and_stats_use_ingest_pipeline
+{
+  "index_patterns": [
+    "metrics-zeek-corelight-*",
+    "zeek-corelight-ds*"
+  ]
+  ,
+  "data_stream": { },
+  "composed_of": [
+    "corelight-ds-component_template-use_ingest_pipeline-settings"
+  ],
+  "priority": 900,
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+    "version": 11221
+  }
+}

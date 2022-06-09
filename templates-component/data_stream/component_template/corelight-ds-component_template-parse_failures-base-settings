@@ -1,0 +1,21 @@
+//PUT /_component_template/corelight-ds-component_template-parse_failures-base-settings
+{
+  "version": 11221,
+  "template": {
+    "settings": {
+      "index": {
+        "mapping": {
+          "coerce": "false",
+          "total_fields": {
+            "limit": "7500"
+          }
+        },
+        "refresh_interval": "30s"
+      }
+    }
+  },
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+    "version": 11221
+  }
+}

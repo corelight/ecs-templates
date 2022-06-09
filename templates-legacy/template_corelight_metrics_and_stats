@@ -2,13 +2,12 @@
 {
   "order" : 99,
   "index_patterns": [
-    "*zeek-corelight-audit*",
-    "*zeek-corelight-metrics*",
-    "*zeek-corelight-netcontrol*",
-    "*zeek-corelight-stats*",
-    "*zeek-corelight-system*"
+    "zeek-corelight-metrics-*",
+    "zeek-corelight-netcontrol-*",
+    "zeek-corelight-stats-*",
+    "zeek-corelight-system-*"
   ],
-  "version": 11202,
+  "version": 11221,
   "settings": {
     "index": {
       "mapping": {
@@ -22,6 +21,8 @@
     "number_of_replicas": "0"
   },
   "mappings": {
+    "date_detection": true,
+    "dynamic": "true",
     "dynamic_templates": [
       {
         "strings_as_keyword": {
@@ -33,7 +34,7 @@
         }
       },
       {
-        "numeric_long_fields": {
+        "numeric_long_fields_as_long": {
           "match_mapping_type": "long",
           "mapping": {
             "type": "long"
@@ -41,18 +42,18 @@
         }
       },
       {
-        "numeric_double_fields_as_string": {
+        "numeric_double_fields_as_float": {
           "match_mapping_type": "double",
           "mapping": {
-            "type": "double"
+            "type": "float"
           }
         }
       },
       {
-        "boolean_fields_as_string": {
+        "boolean_fields_as_boolean": {
           "match_mapping_type": "boolean",
           "mapping": {
-            "type": "keyword"
+            "type": "boolean"
           }
         }
       }
@@ -60,6 +61,10 @@
     "properties": {
       "@timestamp": {
         "type": "date"
+      },
+      "@version": {
+        "ignore_above": 1024,
+        "type": "keyword"
       },
       "message": {
         "norms": false,
@@ -88,6 +93,21 @@
           "etl": {
             "type": "object",
             "properties": {
+                "elasticsearch_index_strategy": {
+                  "doc_values": false,
+                  "norms": false,
+                  "type": "keyword"
+                },
+                "elasticsearch_index_name_prefix": {
+                  "doc_values": false,
+                  "norms": false,
+                  "type": "keyword"
+                },
+                "elasticsearch_index_name_suffix": {
+                  "doc_values": false,
+                  "norms": false,
+                  "type": "keyword"
+                },
               "format_applied": {
                 "doc_values": false,
                 "norms": false,
@@ -128,6 +148,14 @@
       "tags": {
         "type": "keyword"
       },
+        "ecs": {
+          "properties": {
+            "version": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            }
+          }
+        },
       "event": {
         "properties": {
           "category": {
@@ -195,25 +223,6 @@
           "timezone": {
             "ignore_above": 1024,
             "type": "keyword"
-          }
-        }
-      },
-      "utilization.": {
-        "type": "object",
-        "properties": {
-          "corelight": {
-            "type": "object",
-            "properties": {
-              "smartpcap": {
-                "type": "float"
-              },
-              "suricata": {
-                "type": "float"
-              },
-              "sensor": {
-                "type": "float"
-              }
-            }
           }
         }
       }

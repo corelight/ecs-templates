@@ -1,0 +1,19 @@
+//PUT /_index_template/corelight-ds-index_template-main_logs
+{
+  "index_patterns": [
+    "corelight-ds-*",
+    "logs-corelight-*"
+  ],
+  "data_stream": { },
+  "composed_of": [
+    "corelight-ds-component_template-main_logs-create_ecs_corelight-aliases",
+    "corelight-ds-component_template-main_logs-base-settings",
+    "corelight-ds-component_template-main_logs-ilm-settings",
+    "corelight-ds-component_template-main_logs-mappings"
+  ],
+  "priority": 900,
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+    "version": 11221
+  }
+}
