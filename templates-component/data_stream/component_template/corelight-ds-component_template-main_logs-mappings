@@ -3815,6 +3815,9 @@
               "ignore_above": 32000,
               "type": "keyword"
             },
+            "extension_length": {
+              "type": "long"
+            },
             "fragment": {
               "fields": {
                 "text": {
@@ -3864,6 +3867,9 @@
               "ignore_above": 32000,
               "type": "keyword"
             },
+            "path_length": {
+              "type": "long"
+            },
             "port": {
               "type": "long"
             },
@@ -3876,12 +3882,18 @@
               "ignore_above": 4096,
               "type": "keyword"
             },
+            "query_length": {
+              "type": "long"
+            },
             "rfc_compliant": {
               "type": "boolean"
             },
             "scheme": {
               "ignore_above": 4096,
               "type": "keyword"
+            },
+            "total_paths": {
+              "type": "long"
             },
             "username": {
               "copy_to": "related.user",

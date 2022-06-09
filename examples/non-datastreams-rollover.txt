@@ -1,0 +1,19 @@
+POST /corelight-non-ds-conn/_rollover
+POST /corelight-non-ds-dns/_rollover
+POST /corelight-non-ds-files/_rollover
+POST /corelight-non-ds-http/_rollover
+POST /corelight-non-ds-smb/_rollover
+POST /corelight-non-ds-ssl/_rollover
+POST /corelight-non-ds-suricata/_rollover
+POST /corelight-non-ds-syslog/_rollover
+POST /corelight-non-ds-temporary-non_normalized-event_dataset/_rollover
+POST /corelight-non-ds-various/_rollover
+POST /corelight-non-ds-x509/_rollover
+
+
+POST /zeek-corelight-metrics/_rollover
+POST /zeek-corelight-netcontrol/_rollover
+POST /zeek-corelight-stats/_rollover
+POST /zeek-corelight-system/_rollover
+
+POST /parse-failures-corelight/_rollover
