@@ -9,8 +9,6 @@
           "string_fields": {
             "match_mapping_type": "string",
             "mapping": {
-              "index": true,
-              "norms": false,
               "ignore_above": 2048,
               "type": "keyword"
             }
