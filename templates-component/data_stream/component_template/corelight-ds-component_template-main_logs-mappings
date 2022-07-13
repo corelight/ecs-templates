@@ -368,24 +368,11 @@
         },
         "conn": {
           "properties": {
-            "duration": {
-              "type": "float"
-            },
-            "ip_bytes": {
-              "type": "long"
-            },
             "local_orig": {
               "type": "boolean"
             },
             "local_resp": {
               "type": "boolean"
-            },
-            "missed_bytes": {
-              "type": "long"
-            },
-            "state": {
-              "ignore_above": 4096,
-              "type": "keyword"
             }
           }
         },
