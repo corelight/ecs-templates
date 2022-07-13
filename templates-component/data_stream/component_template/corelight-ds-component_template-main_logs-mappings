@@ -329,6 +329,43 @@
             }
           }
         },
+        "corelight": {
+          "properties": {
+            "known": {
+              "properties": {
+                "conns_closed": {
+                  "type": "long"
+                },
+                "conns_opened": {
+                  "type": "long"
+                },
+                "conns_pending": {
+                  "type": "long"
+                },
+                "host_type": {
+                  "fields": {
+                    "text": {
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "last_active_interval": {
+                  "type": "float"
+                },
+                "long_conns": {
+                  "type": "long"
+                },
+                "num_conns": {
+                  "type": "long"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
         "conn": {
           "properties": {
             "duration": {
@@ -1977,6 +2014,16 @@
                   "type": "keyword"
                 },
                 "id": {
+                  "copy_to": "related.id",
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "kuid": {
+                  "copy_to": "related.id",
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "last_active_session": {
                   "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
