@@ -329,26 +329,50 @@
             }
           }
         },
+        "corelight": {
+          "properties": {
+            "known": {
+              "properties": {
+                "conns_closed": {
+                  "type": "long"
+                },
+                "conns_opened": {
+                  "type": "long"
+                },
+                "conns_pending": {
+                  "type": "long"
+                },
+                "host_type": {
+                  "fields": {
+                    "text": {
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "last_active_interval": {
+                  "type": "float"
+                },
+                "long_conns": {
+                  "type": "long"
+                },
+                "num_conns": {
+                  "type": "long"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
         "conn": {
           "properties": {
-            "duration": {
-              "type": "float"
-            },
-            "ip_bytes": {
-              "type": "long"
-            },
             "local_orig": {
               "type": "boolean"
             },
             "local_resp": {
               "type": "boolean"
-            },
-            "missed_bytes": {
-              "type": "long"
-            },
-            "state": {
-              "ignore_above": 4096,
-              "type": "keyword"
             }
           }
         },
@@ -422,6 +446,9 @@
               "type": "boolean"
             },
             "domain_has_whitespace": {
+              "type": "boolean"
+            },
+            "domain_is_all_upper": {
               "type": "boolean"
             },
             "domain_is_idn": {
@@ -1227,6 +1254,12 @@
                     }
                   }
                 },
+                "client_cert": {
+                  "type": "boolean"
+                },
+                "host_cert": {
+                  "type": "boolean"
+                },
                 "issuer": {
                   "properties": {
                     "common_name": {
@@ -1968,6 +2001,16 @@
                   "type": "keyword"
                 },
                 "id": {
+                  "copy_to": "related.id",
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "kuid": {
+                  "copy_to": "related.id",
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "last_active_session": {
                   "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
