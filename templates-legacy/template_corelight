@@ -426,6 +426,9 @@
           "domain_has_whitespace": {
             "type": "boolean"
           },
+          "domain_is_all_upper": {
+            "type": "boolean"
+          },
           "domain_is_idn": {
             "type": "boolean"
           },
