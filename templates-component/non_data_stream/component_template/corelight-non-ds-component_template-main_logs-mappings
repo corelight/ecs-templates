@@ -4064,11 +4064,17 @@
         },
         "vpn": {
           "properties": {
+            "established": {
+              "type": "boolean"
+            },
             "inferences": {
               "type": "keyword"
             },
             "inferences_detailed": {
               "type": "keyword"
+            },
+            "initiations": {
+              "type": "integer"
             },
             "name": {
               "type": "keyword"
@@ -4080,6 +4086,9 @@
                 }
               },
               "type": "keyword"
+            },
+            "responses": {
+              "type": "integer"
             }
           }
         }
