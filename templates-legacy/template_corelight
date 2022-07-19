@@ -2193,6 +2193,12 @@
             "ignore_above": 4096,
             "type": "keyword"
           },
+          "icmp_code": {
+            "type": "integer"
+          },
+          "icmp_type": {
+            "type": "integer"
+          },
           "inner": {
             "properties": {
               "vlan": {
