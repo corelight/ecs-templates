@@ -4070,6 +4070,15 @@
         },
         "vpn": {
           "properties": {
+            "client_info": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
             "established": {
               "type": "boolean"
             },
