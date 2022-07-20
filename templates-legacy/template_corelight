@@ -2193,6 +2193,12 @@
             "ignore_above": 4096,
             "type": "keyword"
           },
+          "icmp_code": {
+            "type": "integer"
+          },
+          "icmp_type": {
+            "type": "integer"
+          },
           "inner": {
             "properties": {
               "vlan": {
@@ -4066,11 +4072,26 @@
       },
       "vpn": {
         "properties": {
+          "client_info": {
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            },
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "established": {
+            "type": "boolean"
+          },
           "inferences": {
             "type": "keyword"
           },
           "inferences_detailed": {
             "type": "keyword"
+          },
+          "initiations": {
+            "type": "integer"
           },
           "name": {
             "type": "keyword"
@@ -4082,6 +4103,9 @@
               }
             },
             "type": "keyword"
+          },
+          "responses": {
+            "type": "integer"
           }
         }
       }
