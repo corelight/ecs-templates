@@ -1534,6 +1534,20 @@
             "copy_to": "related.domain",
             "type": "keyword"
           },
+          "mac": {
+            "copy_to": "related.mac",
+            "ignore_above": 4096,
+            "type": "keyword"
+          },
+          "mac_oui_vendor_name": {
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            },
+            "ignore_above": 9192,
+            "type": "keyword"
+          },
           "ip": {
             "copy_to": "related.ip",
             "type": "ip"
