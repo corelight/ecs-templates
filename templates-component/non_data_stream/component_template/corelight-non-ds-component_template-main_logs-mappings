@@ -2567,8 +2567,27 @@
             "ip": {
               "type": "ip"
             },
+            "ip_dst_to_src": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "ip_src_to_dst": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "ip_pair_any_dst_and_src": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
             "mac": {
               "type": "keyword"
+            },
+            "network_4tuple_hash": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "network_dst_src_ip_unique": {
+              "type": "boolean"
             },
             "user": {
               "type": "keyword"
