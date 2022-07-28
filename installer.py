@@ -1,3 +1,5 @@
+Do not use yet
+
 #!/usr/bin/env python3
 
 from asyncore import file_wrapper
@@ -95,7 +97,7 @@ def unzipGit(file):
         zip_ref.extractall()
 
 def installLogstash(directory):
-    source = "./ecs-logstash-mappings-dev/pipeline/"
+    source = "./ecs-logstash-mappings-Dev/pipeline/"
     
     path = directory + "/pipelines"
     if os.path.exists(directory):
@@ -117,8 +119,8 @@ def updateLogstash(directory):
         for file in fileList:
             shutil.copy2(os.path.join(source,file), path)
 
-def enableIngest(type,raw):
-    dir = "./ecs-logstash-mappings-dev/pipeline/"
+def enableIngest(type,raw, logstashLocation):
+    dir = logstashLocation + "/pipelines/"
     tcp = "0002-corelight-ecs-tcp-input.conf"
     ssl = "0002-corelight-ecs-tcp-ssl_tls-input.conf"
     hec = "0002-corelight-ecs-http-for_splunk_hec.conf"
@@ -156,10 +158,11 @@ def enableIngest(type,raw):
             dest = dir + kafka 
     shutil.copy(source, dest)
 
-def exportToElastic(session, baseURI, pipeline, retry=4):
+def exportToElastic(session, baseURI, pipeline, path, type, retry=4):
     print("Trying to upload pipeline: %s" % pipeline)
+    file = path + pipeline
     if pipeline != "zeek-enrichment-conn-policy/_execute":
-        with open(pipeline) as f:
+        with open(file) as f:
             postData = f.read()
     else:
         postData = ""
@@ -226,7 +229,7 @@ def get_config():
     baseURI = proto + "://" + ipHost + ":" + str(port)
     return baseURI, s
 
-def datastreams(baseUri, session, logstash):
+def datastreams(baseURI, session, logstash):
     source = "./templates-component/data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
@@ -248,7 +251,7 @@ def datastreams(baseUri, session, logstash):
     for file in fileList:
         exportToElastic(session, baseURI, file, retry=4)
 
-def componet(baseUri, session, logstash):
+def componet(baseURI, session, logstash):
     source = "./templates-component/non_data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
@@ -261,7 +264,6 @@ def componet(baseUri, session, logstash):
     fileList=os.listdir(ilm)
     for file in fileList:
         exportToElastic(session, baseURI, file, retry=4)
-    
     fileList=os.listdir(index)
     for file in fileList:
         exportToElastic(session, baseURI, file, retry=4)
@@ -270,7 +272,7 @@ def componet(baseUri, session, logstash):
     for file in fileList:
         exportToElastic(session, baseURI, file, retry=4)
 
-def index(baseUri, sessio, logstash):
+def index(baseURI, sessio, logstash):
     source = "./templates-component/templates-legcay/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(source)
@@ -302,7 +304,7 @@ def main():
             fileName=download_repostory(logstashRepo)
             unzipGit(fileName)
             
-            logstashLocation = input("Enter the logstash location to put the file pieplines in: ")
+            logstashLocation = input("Enter the logstash location to put the file pieplines in do not include training slash: ")
             update=input_bool("Are you upgrading existing Corelight Logstsh Pipeline?", default=False)
             if not update:
                 installLogstash(logstashLocation)
@@ -311,17 +313,17 @@ def main():
                 if tcp:
                     ssl = input_bool("Will you be enableing SSL?", default=False)
                     if ssl:
-                        enableIngest("ssl", raw)
+                        enableIngest("ssl", raw, logstashLocation)
                     else:
-                        enableIngest("tcp", raw)
+                        enableIngest("tcp", raw, logstashLocation)
                 else:
                     kafka = input_bool("Are sending doat to logstsh over Kafka?:", default=False)
                     if kafka:
-                        enableIngest("kafka", raw)
+                        enableIngest("kafka", raw, logstashLocation)
                     else:
                         hec = input_bool("Are sending doat to logstsh over HTTP Event Collector?:", default=False)
                         if hec:
-                            enableIngest("hec", raw)
+                            enableIngest("hec", raw, logstashLocation)
             else:
                 updateLogstash(logstashLocation)
         else:
