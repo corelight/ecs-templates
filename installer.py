@@ -13,6 +13,17 @@ import zipfile
 import os
 import random
 
+def checkRequest(responseObj):
+    code = responseObj.status_code
+    if code == 200:
+        return 200
+
+    if 400 <= code <= 500:
+        print(responseObj.json())
+        time.sleep(5)
+        return code
+    return code
+
 def input_bool(question, default=None):
 
     prompt = " [yn]"
