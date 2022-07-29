@@ -1,5 +1,3 @@
-Do not use yet
-
 #!/usr/bin/env python3
 
 from asyncore import file_wrapper
@@ -98,8 +96,10 @@ def unzipGit(file):
 
 def installLogstash(directory):
     source = "./ecs-logstash-mappings-Dev/pipeline/"
-    
-    path = directory + "/pipelines"
+    if directory.endswith('/'):
+        path = directory + "pipelines"
+    else:
+        path = directory + "/pipelines"
     if os.path.exists(directory):
         if not os.path.exists(path):
             shutil.copytree(source, path)
@@ -158,7 +158,7 @@ def enableIngest(type,raw, logstashLocation):
             dest = dir + kafka 
     shutil.copy(source, dest)
 
-def exportToElastic(session, baseURI, pipeline, path, type, retry=4):
+def exportToElastic(session, baseURI, pipeline, path,  retry=4):
     print("Trying to upload pipeline: %s" % pipeline)
     file = path + pipeline
     if pipeline != "zeek-enrichment-conn-policy/_execute":
@@ -229,7 +229,7 @@ def get_config():
     baseURI = proto + "://" + ipHost + ":" + str(port)
     return baseURI, s
 
-def datastreams(baseURI, session, logstash):
+def datastreams(session, baseURI, logstash):
     source = "./templates-component/data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
@@ -237,21 +237,21 @@ def datastreams(baseURI, session, logstash):
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(component)
     for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
+        exportToElastic(session, baseURI, file, component, "/_component_template/")
 
     fileList=os.listdir(ilm)
     for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
+        exportToElastic(session, baseURI, file, ilm, "/_ilm/policy/")
     
     fileList=os.listdir(index)
     for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
+        exportToElastic(session, baseURI, file, index, "/_index_template/")
+    if not logstash:
+        fileList=os.listdir(ingest)
+        for file in fileList:
+            exportToElastic(session, baseURI, file, "/_index_template/")
 
-    fileList=os.listdir(ingest)
-    for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
-
-def componet(baseURI, session, logstash):
+def componet(session, baseURI, logstash):
     source = "./templates-component/non_data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
@@ -259,35 +259,36 @@ def componet(baseURI, session, logstash):
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(component)
     for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
+         exportToElastic(session, baseURI, file, "/_component_template/", retry=4)
 
     fileList=os.listdir(ilm)
     for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
+        exportToElastic(session, baseURI, file, "/_ilm/policy/", retry=4)
     fileList=os.listdir(index)
     for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
+        exportToElastic(session, baseURI, file, "/_index_template/", retry=4)
+    if not logstash:
+        fileList=os.listdir(ingest)
+        for file in fileList:
+            exportToElastic(session, baseURI, file, "/_component_template/", retry=4)
 
-    fileList=os.listdir(ingest)
-    for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
-
-def index(baseURI, sessio, logstash):
+def index(session, baseURI, logstash):
     source = "./templates-component/templates-legcay/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(source)
     for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
+        exportToElastic(session, baseURI, file, "/_template/", retry=4)
     
-    fileList=os.listdir(ingest)
-    for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
+    if not logstash:
+        fileList=os.listdir(ingest)
+        for file in fileList:
+                exportToElastic(session, baseURI, file, "/_template/", retry=4)
 
 def uploadIngestPipelines(session,baseURI):
     source = "./ecs-mappings-master/automatic_install/"
     fileList=os.listdir(source)
     for file in fileList:
-        exportToElastic(session, baseURI, file, retry=4)
+        exportToElastic(session, baseURI, file, "/_ingest/" retry=4)
 
 
 def main():
@@ -339,12 +340,12 @@ def main():
         datastreams(session,baseURI,logstash)
     else:
         templateComponent = input_bool("Will you be useing Component Templates?", default=True)
-    if templateComponent:
-        componet(session,baseURI,logstash)
-    else:
-        templateLegcy = input_bool("Will you be useing Legcy Templates? This is not supported on version 8.x and above?", default=False)
-    if templateLegcy:
-        index(session,baseURI,logstash)
+        if templateComponent:
+            componet(session,baseURI,logstash)
+        else:
+            templateLegcy = input_bool("Will you be useing Legcy Templates? This is not supported on version 8.x and above?", default=False)
+            if templateLegcy:
+                index(session,baseURI,logstash)
 
 main()
 
