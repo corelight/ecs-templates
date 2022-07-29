@@ -158,18 +158,16 @@ def enableIngest(type,raw, logstashLocation):
             dest = dir + kafka 
     shutil.copy(source, dest)
 
-def exportToElastic(session, baseURI, pipeline, path,  retry=4):
+def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
     print("Trying to upload pipeline: %s" % pipeline)
-    file = path + pipeline
+    file = filePath + pipeline
     if pipeline != "zeek-enrichment-conn-policy/_execute":
         with open(file) as f:
             postData = f.read()
     else:
         postData = ""
     run = 1
-    uri = baseURI + "/_ingest/pipeline/"  + pipeline
-    if "template" in pipeline:
-        uri = baseURI + "/_template/" + pipeline
+    uri = baseURI + path + pipeline
     
     print("URI = %s" % uri)   
     response = 0
@@ -237,19 +235,19 @@ def datastreams(session, baseURI, logstash):
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(component)
     for file in fileList:
-        exportToElastic(session, baseURI, file, component, "/_component_template/")
+        exportToElastic(session, baseURI, component, file, "/_component_template/", retry=4)
 
     fileList=os.listdir(ilm)
     for file in fileList:
-        exportToElastic(session, baseURI, file, ilm, "/_ilm/policy/")
+        exportToElastic(session, baseURI, ilm,file, "/_ilm/policy/", retry=4)
     
     fileList=os.listdir(index)
     for file in fileList:
-        exportToElastic(session, baseURI, file, index, "/_index_template/")
+        exportToElastic(session, baseURI, index,file, "/_index_template/", retry=4)
     if not logstash:
         fileList=os.listdir(ingest)
         for file in fileList:
-            exportToElastic(session, baseURI, file, "/_index_template/")
+            exportToElastic(session, baseURI, ingest,file, "/_index_template/", retry=4)
 
 def componet(session, baseURI, logstash):
     source = "./templates-component/non_data_stream/"
@@ -259,36 +257,36 @@ def componet(session, baseURI, logstash):
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(component)
     for file in fileList:
-         exportToElastic(session, baseURI, file, "/_component_template/", retry=4)
+         exportToElastic(session, baseURI, component,file, "/_component_template/", retry=4)
 
     fileList=os.listdir(ilm)
     for file in fileList:
-        exportToElastic(session, baseURI, file, "/_ilm/policy/", retry=4)
+        exportToElastic(session, baseURI, ilm, file, "/_ilm/policy/", retry=4)
     fileList=os.listdir(index)
     for file in fileList:
-        exportToElastic(session, baseURI, file, "/_index_template/", retry=4)
+        exportToElastic(session, baseURI, index, file, "/_index_template/", retry=4)
     if not logstash:
         fileList=os.listdir(ingest)
         for file in fileList:
-            exportToElastic(session, baseURI, file, "/_component_template/", retry=4)
+            exportToElastic(session, baseURI, ingest, file, "/_component_template/", retry=4)
 
 def index(session, baseURI, logstash):
     source = "./templates-component/templates-legcay/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(source)
     for file in fileList:
-        exportToElastic(session, baseURI, file, "/_template/", retry=4)
+        exportToElastic(session, baseURI, source, file, "/_template/", retry=4)
     
     if not logstash:
         fileList=os.listdir(ingest)
         for file in fileList:
-                exportToElastic(session, baseURI, file, "/_template/", retry=4)
+                exportToElastic(session, baseURI, ingest, file, "/_template/", retry=4)
 
 def uploadIngestPipelines(session,baseURI):
     source = "./ecs-mappings-master/automatic_install/"
     fileList=os.listdir(source)
     for file in fileList:
-        exportToElastic(session, baseURI, file, "/_ingest/" retry=4)
+        exportToElastic(session, baseURI, source, file, "/_ingest/", retry=4)
 
 
 def main():
@@ -305,7 +303,7 @@ def main():
             fileName=download_repostory(logstashRepo)
             unzipGit(fileName)
             
-            logstashLocation = input("Enter the logstash location to put the file pieplines in do not include training slash: ")
+            logstashLocation = input("Enter the logstash location to put the file pieplines in: ")
             update=input_bool("Are you upgrading existing Corelight Logstsh Pipeline?", default=False)
             if not update:
                 installLogstash(logstashLocation)
