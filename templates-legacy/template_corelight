@@ -1107,6 +1107,9 @@
             "ignore_above": 4096,
             "type": "keyword"
           },
+            "extension_length": {
+              "type": "integer"
+            },
           "gid": {
             "ignore_above": 4096,
             "type": "keyword"
@@ -1187,6 +1190,15 @@
             "ignore_above": 32000,
             "type": "keyword"
           },
+            "name_has_multi_underscores": {
+              "type": "boolean"
+            },
+            "name_has_non_ascii": {
+              "type": "boolean"
+            },
+            "name_length": {
+              "type": "integer"
+            },
           "owner": {
             "ignore_above": 4096,
             "type": "keyword"
@@ -1200,6 +1212,48 @@
             "ignore_above": 32000,
             "type": "keyword"
           },
+            "path_ends_with_dollar_sign": {
+              "type": "boolean"
+            },
+            "path_has_multi_underscores": {
+              "type": "boolean"
+            },
+            "path_has_non_ascii": {
+              "type": "boolean"
+            },
+            "path_is_full_path": {
+              "type": "boolean"
+            },
+            "path_is_unc_share": {
+              "type": "boolean"
+            },
+            "path_length": {
+              "type": "integer"
+            },
+            "path_system_type": {
+              "type": "keyword"
+            },
+            "path_total_paths": {
+              "type": "integer"
+            },
+            "unc_share_first_path": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "unc_share_last_path": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
           "size": {
             "type": "long"
           },
