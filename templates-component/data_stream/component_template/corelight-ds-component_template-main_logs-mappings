@@ -359,6 +359,24 @@
                 },
                 "num_conns": {
                   "type": "long"
+                },
+                "remote_ip": {
+                  "type": "ip",
+                  "copy_to": "related.ip"
+                }                
+              },
+              "type": "object"
+            },
+            "unknown_mime_type_discovery": {
+              "properties": {
+                "bof": {
+                  "fields": {
+                    "text": {
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
                 }
               },
               "type": "object"
@@ -1105,6 +1123,9 @@
               "ignore_above": 4096,
               "type": "keyword"
             },
+            "extension_length": {
+              "type": "integer"
+            },
             "gid": {
               "ignore_above": 4096,
               "type": "keyword"
@@ -1185,11 +1206,62 @@
               "ignore_above": 32000,
               "type": "keyword"
             },
+            "name_has_multi_underscores": {
+              "type": "boolean"
+            },
+            "name_has_non_ascii": {
+              "type": "boolean"
+            },
+            "name_length": {
+              "type": "integer"
+            },
             "owner": {
               "ignore_above": 4096,
               "type": "keyword"
             },
             "path": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "path_ends_with_dollar_sign": {
+              "type": "boolean"
+            },
+            "path_has_multi_underscores": {
+              "type": "boolean"
+            },
+            "path_has_non_ascii": {
+              "type": "boolean"
+            },
+            "path_is_full_path": {
+              "type": "boolean"
+            },
+            "path_is_unc_share": {
+              "type": "boolean"
+            },
+            "path_length": {
+              "type": "integer"
+            },
+            "path_system_type": {
+              "type": "keyword"
+            },
+            "path_total_paths": {
+              "type": "integer"
+            },
+            "unc_share_first_path": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "unc_share_last_path": {
               "fields": {
                 "text": {
                   "type": "text"
@@ -1530,6 +1602,20 @@
             },
             "hostname": {
               "copy_to": "related.domain",
+              "type": "keyword"
+            },
+            "mac": {
+              "copy_to": "related.mac",
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "mac_oui_vendor_name": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 9192,
               "type": "keyword"
             },
             "ip": {
@@ -2553,8 +2639,27 @@
             "ip": {
               "type": "ip"
             },
+            "ip_dst_to_src": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "ip_src_to_dst": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "ip_pair_any_dst_and_src": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
             "mac": {
               "type": "keyword"
+            },
+            "network_4tuple_hash": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "network_dst_src_ip_unique": {
+              "type": "boolean"
             },
             "user": {
               "type": "keyword"
