@@ -361,6 +361,24 @@
               },
               "num_conns": {
                 "type": "long"
+              },
+              "remote_ip": {
+                "type": "ip",
+                "copy_to": "related.ip"
+              }
+            },
+            "type": "object"
+          },
+          "unknown_mime_type_discovery": {
+            "properties": {
+              "bof": {
+                "fields": {
+                  "text": {
+                    "type": "text"
+                  }
+                },
+                "ignore_above": 32000,
+                "type": "keyword"
               }
             },
             "type": "object"
