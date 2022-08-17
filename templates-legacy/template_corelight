@@ -2635,6 +2635,14 @@
           "hash": {
             "type": "keyword"
           },
+          "hosts": {
+            "fields": {
+              "text": {
+                "type": "text"
+              }
+            },
+            "type": "keyword"
+          },
           "id": {
             "type": "keyword"
           },

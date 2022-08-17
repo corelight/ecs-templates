@@ -2636,6 +2636,14 @@
             "id": {
               "type": "keyword"
             },
+            "hosts": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "type": "keyword"
+            },
             "ip": {
               "type": "ip"
             },
