@@ -97,9 +97,9 @@ def unzipGit(file):
 def installLogstash(directory):
     source = "./ecs-logstash-mappings-Dev/pipeline/"
     if directory.endswith('/'):
-        path = directory + "pipelines"
+        path = directory + "CorelightPipelines"
     else:
-        path = directory + "/pipelines"
+        path = directory + "/CorelightPipelines"
     if os.path.exists(directory):
         if not os.path.exists(path):
             shutil.copytree(source, path)
@@ -120,7 +120,7 @@ def updateLogstash(directory):
             shutil.copy2(os.path.join(source,file), path)
 
 def enableIngest(type,raw, logstashLocation):
-    dir = logstashLocation + "/pipelines/"
+    dir = logstashLocation + "/CorelightPipelines/"
     tcp = "0002-corelight-ecs-tcp-input.conf"
     ssl = "0002-corelight-ecs-tcp-ssl_tls-input.conf"
     hec = "0002-corelight-ecs-http-for_splunk_hec.conf"
@@ -297,42 +297,44 @@ def main():
     baseURI, session = get_config()
     testConnection(session, baseURI)
     logstash = input_bool("Will you be useing Logstash pipelines?", default=True)
-    if logstash:
-        cont = input_bool("This script need to be run on the logstash box. Does this box have logstash running and is the Logstash ingest?", default=True)
-        if cont:
-            fileName=download_repostory(logstashRepo)
-            unzipGit(fileName)
+    templatesOnly = input_bool("Will you only be install Templates?", default=False)
+    if not templatesOnly:
+        if logstash:
+            cont = input_bool("This script need to be run on the logstash box. Does this box have logstash running and is the Logstash ingest?", default=True)
+            if cont:
+                fileName=download_repostory(logstashRepo)
+                unzipGit(fileName)
             
-            logstashLocation = input("Enter the logstash location to put the file pieplines in: ")
-            update=input_bool("Are you upgrading existing Corelight Logstsh Pipeline?", default=False)
-            if not update:
-                installLogstash(logstashLocation)
-                raw = input_bool("Do you want to keep the raw message will incerease storage space?", default=False)
-                tcp = input_bool("Are sending doat to logstsh over JSON over TCP?:", default=False)
-                if tcp:
-                    ssl = input_bool("Will you be enableing SSL?", default=False)
-                    if ssl:
-                        enableIngest("ssl", raw, logstashLocation)
+                logstashLocation = input("Enter the logstash location to put the file pieplines in: ")
+                update=input_bool("Are you upgrading existing Corelight Logstsh Pipeline?", default=False)
+                if not update:
+                    installLogstash(logstashLocation)
+                    raw = input_bool("Do you want to keep the raw message will incerease storage space?", default=False)
+                    tcp = input_bool("Are sending doat to logstsh over JSON over TCP?:", default=False)
+                    if tcp:
+                        ssl = input_bool("Will you be enableing SSL?", default=False)
+                        if ssl:
+                            enableIngest("ssl", raw, logstashLocation)
+                        else:
+                            enableIngest("tcp", raw, logstashLocation)
                     else:
-                        enableIngest("tcp", raw, logstashLocation)
+                        kafka = input_bool("Are sending doat to logstsh over Kafka?:", default=False)
+                        if kafka:
+                            enableIngest("kafka", raw, logstashLocation)
+                        else:
+                            hec = input_bool("Are sending doat to logstsh over HTTP Event Collector?:", default=False)
+                            if hec:
+                                enableIngest("hec", raw, logstashLocation)
                 else:
-                    kafka = input_bool("Are sending doat to logstsh over Kafka?:", default=False)
-                    if kafka:
-                        enableIngest("kafka", raw, logstashLocation)
-                    else:
-                        hec = input_bool("Are sending doat to logstsh over HTTP Event Collector?:", default=False)
-                        if hec:
-                            enableIngest("hec", raw, logstashLocation)
+                    updateLogstash(logstashLocation)
             else:
-                updateLogstash(logstashLocation)
+                print("Please run script again on Logstash server")
+                print("Strange things are afoot at the Circle-K.")
+                sys.exit(1)
         else:
-            print("Please run script again on Logstash server")
-            print("Strange things are afoot at the Circle-K.")
-            sys.exit(1)
-    else:
-        fileName=download_repostory(ingestRepo)
-        unzipGit(fileName)
-        uploadIngestPipelines(session,baseURI)
+            fileName=download_repostory(ingestRepo)
+            unzipGit(fileName)
+            uploadIngestPipelines(session,baseURI)
     templateDS = input_bool("Will you be useing Datastreams?", default=True)
     if templateDS:
         datastreams(session,baseURI,logstash)
