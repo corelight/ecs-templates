@@ -227,7 +227,7 @@ def get_config():
     baseURI = proto + "://" + ipHost + ":" + str(port)
     return baseURI, s
 
-def datastreams(session, baseURI, logstash):
+def datastreams(session, baseURI, logstash,templatesOnly):
     source = "./templates-component/data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
@@ -236,10 +236,10 @@ def datastreams(session, baseURI, logstash):
     fileList=os.listdir(component)
     for file in fileList:
         exportToElastic(session, baseURI, component, file, "/_component_template/", retry=4)
-
-    fileList=os.listdir(ilm)
-    for file in fileList:
-        exportToElastic(session, baseURI, ilm,file, "/_ilm/policy/", retry=4)
+    if not templatesOnly:
+        fileList=os.listdir(ilm)
+        for file in fileList:
+            exportToElastic(session, baseURI, ilm,file, "/_ilm/policy/", retry=4)
     
     fileList=os.listdir(index)
     for file in fileList:
@@ -249,7 +249,7 @@ def datastreams(session, baseURI, logstash):
         for file in fileList:
             exportToElastic(session, baseURI, ingest,file, "/_index_template/", retry=4)
 
-def componet(session, baseURI, logstash):
+def componet(session, baseURI, logstash,templatesOnly):
     source = "./templates-component/non_data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
@@ -258,10 +258,10 @@ def componet(session, baseURI, logstash):
     fileList=os.listdir(component)
     for file in fileList:
          exportToElastic(session, baseURI, component,file, "/_component_template/", retry=4)
-
-    fileList=os.listdir(ilm)
-    for file in fileList:
-        exportToElastic(session, baseURI, ilm, file, "/_ilm/policy/", retry=4)
+    if not templatesOnly:
+        fileList=os.listdir(ilm)
+        for file in fileList:
+            exportToElastic(session, baseURI, ilm, file, "/_ilm/policy/", retry=4)
     fileList=os.listdir(index)
     for file in fileList:
         exportToElastic(session, baseURI, index, file, "/_index_template/", retry=4)
@@ -270,7 +270,7 @@ def componet(session, baseURI, logstash):
         for file in fileList:
             exportToElastic(session, baseURI, ingest, file, "/_component_template/", retry=4)
 
-def index(session, baseURI, logstash):
+def index(session, baseURI, logstash,templatesOnly):
     source = "./templates-component/templates-legcay/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(source)
@@ -337,15 +337,15 @@ def main():
             uploadIngestPipelines(session,baseURI)
     templateDS = input_bool("Will you be useing Datastreams?", default=True)
     if templateDS:
-        datastreams(session,baseURI,logstash)
+        datastreams(session,baseURI,logstash,templatesOnly)
     else:
         templateComponent = input_bool("Will you be useing Component Templates?", default=True)
         if templateComponent:
-            componet(session,baseURI,logstash)
+            componet(session,baseURI,logstash,templatesOnly)
         else:
             templateLegcy = input_bool("Will you be useing Legcy Templates? This is not supported on version 8.x and above?", default=False)
             if templateLegcy:
-                index(session,baseURI,logstash)
+                index(session,baseURI,logstash,templatesOnly)
 
 main()
 
