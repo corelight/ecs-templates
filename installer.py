@@ -227,7 +227,7 @@ def get_config():
     baseURI = proto + "://" + ipHost + ":" + str(port)
     return baseURI, s
 
-def datastreams(session, baseURI, logstash,templatesOnly):
+def datastreams(session, baseURI, logstash,updateTemplates):
     source = "./templates-component/data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
@@ -236,7 +236,7 @@ def datastreams(session, baseURI, logstash,templatesOnly):
     fileList=os.listdir(component)
     for file in fileList:
         exportToElastic(session, baseURI, component, file, "/_component_template/", retry=4)
-    if not templatesOnly:
+    if not updateTemplates:
         fileList=os.listdir(ilm)
         for file in fileList:
             exportToElastic(session, baseURI, ilm,file, "/_ilm/policy/", retry=4)
@@ -249,7 +249,7 @@ def datastreams(session, baseURI, logstash,templatesOnly):
         for file in fileList:
             exportToElastic(session, baseURI, ingest,file, "/_index_template/", retry=4)
 
-def componet(session, baseURI, logstash,templatesOnly):
+def componet(session, baseURI, logstash,updateTemplates):
     source = "./templates-component/non_data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
@@ -258,7 +258,7 @@ def componet(session, baseURI, logstash,templatesOnly):
     fileList=os.listdir(component)
     for file in fileList:
          exportToElastic(session, baseURI, component,file, "/_component_template/", retry=4)
-    if not templatesOnly:
+    if not updateTemplates:
         fileList=os.listdir(ilm)
         for file in fileList:
             exportToElastic(session, baseURI, ilm, file, "/_ilm/policy/", retry=4)
@@ -270,7 +270,7 @@ def componet(session, baseURI, logstash,templatesOnly):
         for file in fileList:
             exportToElastic(session, baseURI, ingest, file, "/_component_template/", retry=4)
 
-def index(session, baseURI, logstash,templatesOnly):
+def index(session, baseURI, logstash,updateTemplates):
     source = "./templates-component/templates-legcay/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(source)
@@ -291,14 +291,17 @@ def uploadIngestPipelines(session,baseURI):
 
 def main():
 
+    updateTemplates = False
     logstashRepo="ecs-logstash-mappings/archive/refs/heads/Dev.zip"
     ingestRepo="ecs-mapping/archive/refs/heads/master.zip"
     requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     baseURI, session = get_config()
     testConnection(session, baseURI)
     logstash = input_bool("Will you be useing Logstash pipelines?", default=True)
-    templatesOnly = input_bool("Will you only be install Templates?", default=False)
-    if not templatesOnly:
+    templatesOnly = input_bool("Will you only be install Templates, if useing ingest Pipeline enter No?", default=False)
+    if templatesOnly:
+        updateTemplates = input_bool("Is this a update to existing template? If so ILM will not be installed", default=False)
+    if not updateTemplates:
         if logstash:
             cont = input_bool("This script need to be run on the logstash box. Does this box have logstash running and is the Logstash ingest?", default=True)
             if cont:
@@ -337,15 +340,15 @@ def main():
             uploadIngestPipelines(session,baseURI)
     templateDS = input_bool("Will you be useing Datastreams?", default=True)
     if templateDS:
-        datastreams(session,baseURI,logstash,templatesOnly)
+        datastreams(session,baseURI,logstash,updateTemplates)
     else:
         templateComponent = input_bool("Will you be useing Component Templates?", default=True)
         if templateComponent:
-            componet(session,baseURI,logstash,templatesOnly)
+            componet(session,baseURI,logstash,updateTemplates)
         else:
             templateLegcy = input_bool("Will you be useing Legcy Templates? This is not supported on version 8.x and above?", default=False)
             if templateLegcy:
-                index(session,baseURI,logstash,templatesOnly)
+                index(session,baseURI,logstash,updateTemplates)
 
 main()
 
