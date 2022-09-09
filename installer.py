@@ -283,7 +283,7 @@ def index(session, baseURI, logstash,updateTemplates):
                 exportToElastic(session, baseURI, ingest, file, "/_template/", retry=4)
 
 def uploadIngestPipelines(session,baseURI):
-    source = "./ecs-mappings-master/automatic_install/"
+    source = "./ecs-mapping-master/automatic_install/"
     fileList=os.listdir(source)
     for file in fileList:
         exportToElastic(session, baseURI, source, file, "/_ingest/pipeline/", retry=4)
