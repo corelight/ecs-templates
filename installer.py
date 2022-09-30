@@ -286,7 +286,8 @@ def uploadIngestPipelines(session,baseURI):
     source = "./ecs-mapping-master/automatic_install/"
     fileList=os.listdir(source)
     for file in fileList:
-        exportToElastic(session, baseURI, source, file, "/_ingest/pipeline/", retry=4)
+        if "decprated" not in file:
+            exportToElastic(session, baseURI, source, file, "/_ingest/pipeline/", retry=4)
 
 
 def main():
