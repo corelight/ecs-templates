@@ -298,35 +298,35 @@ def main():
     requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     baseURI, session = get_config()
     testConnection(session, baseURI)
-    logstash = input_bool("Will you be useing Logstash pipelines?", default=True)
-    templatesOnly = input_bool("Will you only be install Templates, if useing ingest Pipeline enter No?", default=False)
+    logstash = input_bool("Will you be using a Logstash pipeline?", default=True)
+    templatesOnly = input_bool("Will you only be installing Templates, if using ingest Pipeline enter No?", default=False)
     if templatesOnly:
         updateTemplates = input_bool("Is this a update to existing template? If so ILM will not be installed", default=False)
     if not updateTemplates:
         if logstash:
-            cont = input_bool("This script need to be run on the logstash box. Does this box have logstash running and is the Logstash ingest?", default=True)
+            cont = input_bool("This script needs to be run on the Logstash box. Does this box have Logstash running and is the Logstash ingesting?", default=True)
             if cont:
                 fileName=download_repostory(logstashRepo)
                 unzipGit(fileName)
             
-                logstashLocation = input("Enter the logstash location to put the file pieplines in: ")
-                update=input_bool("Are you upgrading existing Corelight Logstsh Pipeline?", default=False)
+                logstashLocation = input("Enter the Logstash location to store the piepline files in: ")
+                update=input_bool("Are you upgrading an existing Corelight Logstsh Pipeline?", default=False)
                 if not update:
                     installLogstash(logstashLocation)
-                    raw = input_bool("Do you want to keep the raw message will incerease storage space?", default=False)
-                    tcp = input_bool("Are sending doat to logstsh over JSON over TCP?:", default=False)
+                    raw = input_bool("Do you want to keep the raw message, this will incerease storage space?", default=False)
+                    tcp = input_bool("Are you sending data to logstsh over JSON over TCP?:", default=False)
                     if tcp:
-                        ssl = input_bool("Will you be enableing SSL?", default=False)
+                        ssl = input_bool("Will you be enabling SSL?", default=False)
                         if ssl:
                             enableIngest("ssl", raw, logstashLocation)
                         else:
                             enableIngest("tcp", raw, logstashLocation)
                     else:
-                        kafka = input_bool("Are sending doat to logstsh over Kafka?:", default=False)
+                        kafka = input_bool("Are sending data to Logstsh via Kafka?:", default=False)
                         if kafka:
                             enableIngest("kafka", raw, logstashLocation)
                         else:
-                            hec = input_bool("Are sending doat to logstsh over HTTP Event Collector?:", default=False)
+                            hec = input_bool("Are sending data to logstsh over HTTP Event Collector?:", default=False)
                             if hec:
                                 enableIngest("hec", raw, logstashLocation)
                 else:
@@ -339,15 +339,15 @@ def main():
             fileName=download_repostory(ingestRepo)
             unzipGit(fileName)
             uploadIngestPipelines(session,baseURI)
-    templateDS = input_bool("Will you be useing Datastreams?", default=True)
+    templateDS = input_bool("Will you be using Datastreams?", default=True)
     if templateDS:
         datastreams(session,baseURI,logstash,updateTemplates)
     else:
-        templateComponent = input_bool("Will you be useing Component Templates?", default=True)
+        templateComponent = input_bool("Will you be using Component Templates?", default=True)
         if templateComponent:
             componet(session,baseURI,logstash,updateTemplates)
         else:
-            templateLegcy = input_bool("Will you be useing Legcy Templates? This is not supported on version 8.x and above?", default=False)
+            templateLegcy = input_bool("Will you be using Legcy Templates? This is not supported on version 8.x and above?", default=False)
             if templateLegcy:
                 index(session,baseURI,logstash,updateTemplates)
 
