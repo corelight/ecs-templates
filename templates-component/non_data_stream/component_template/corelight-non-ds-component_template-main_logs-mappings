@@ -442,7 +442,7 @@
               "type": "keyword"
             },
             "domain": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "fields": {
                 "text": {
                   "type": "text"
@@ -529,7 +529,7 @@
               }
             },
             "fqdn": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "fields": {
                 "text": {
                   "type": "text"
@@ -599,7 +599,7 @@
               }
             },
             "hostname": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "fields": {
                 "text": {
                   "type": "text"
@@ -1243,7 +1243,7 @@
               "type": "date"
             },
             "device": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "fields": {
                 "text": {
                   "type": "text"
@@ -1739,11 +1739,11 @@
               "type": "keyword"
             },
             "host": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "type": "keyword"
             },
             "hostname": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "type": "keyword"
             },
             "mac": {
@@ -2583,7 +2583,7 @@
         "observer": {
           "properties": {
             "hostname": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "ignore_above": 4096,
               "type": "keyword"
             },
@@ -2766,9 +2766,6 @@
         },
         "related": {
           "properties": {
-            "domain": {
-              "type": "keyword"
-            },
             "geo": {
               "type": "geo_point"
             },
@@ -3380,7 +3377,7 @@
               "type": "keyword"
             },
             "domain": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "fields": {
                 "text": {
                   "type": "text"
@@ -3416,7 +3413,7 @@
               }
             },
             "fqdn": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "fields": {
                 "text": {
                   "type": "text"
@@ -3486,7 +3483,7 @@
               }
             },
             "hostname": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "fields": {
                 "text": {
                   "type": "text"
@@ -4103,7 +4100,7 @@
         "url": {
           "properties": {
             "domain": {
-              "copy_to": "related.domain",
+              "copy_to": "related.hosts",
               "fields": {
                 "text": {
                   "type": "text"
