@@ -111,9 +111,9 @@ def installLogstash(directory):
         sys.exit(1)    
     
 def updateLogstash(directory):
-    source = "./ecs-logstash-mappings-dev/pipeline/"
+    source = "./ecs-logstash-mappings-Dev/pipeline/"
     tcp = ""
-    path = directory + "/pipelines"
+    path = directory + "/CorelightPipelines"
     if os.path.exists(directory):
         fileList=os.listdir(source)
         for file in fileList:
