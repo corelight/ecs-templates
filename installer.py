@@ -158,7 +158,7 @@ def enableIngest(type,raw, logstashLocation):
             dest = dir + kafka 
     shutil.copy(source, dest)
 
-def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
+def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4,use_post=False):
     print("Trying to upload pipeline: %s" % pipeline)
     file = filePath + pipeline
     if pipeline != "zeek-enrichment-conn-policy/_execute":
@@ -283,16 +283,17 @@ def index(session, baseURI, logstash):
                 exportToElastic(session, baseURI, ingest, file, "/_template/", retry=4)
 
 def uploadIngestPipelines(session,baseURI):
-    source = "./ecs-mappings-master/automatic_install/"
+    source = "./ecs-mapping-dev/automatic_install/"
     fileList=os.listdir(source)
     for file in fileList:
-        exportToElastic(session, baseURI, source, file, "/_ingest/", retry=4)
+        if file != "deprecated":
+            exportToElastic(session, baseURI, source, file, "/_ingest/pipeline/", retry=4, use_post=True)
 
 
 def main():
 
     logstashRepo="ecs-logstash-mappings/archive/refs/heads/Dev.zip"
-    ingestRepo="ecs-mapping/archive/refs/heads/master.zip"
+    ingestRepo="ecs-mapping/archive/refs/heads/dev.zip"
     requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     baseURI, session = get_config()
     testConnection(session, baseURI)
