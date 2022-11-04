@@ -6,8 +6,7 @@
   "composed_of": [
     "corelight-non-ds-component_template-parse_failures-base-settings",
     "corelight-non-ds-component_template-parse_failures-ilm-settings",
-    "corelight-non-ds-component_template-parse_failures-mappings",
-    "corelight-non-ds-component_template-main_logs-create_ecs_corelight-aliases"
+    "corelight-non-ds-component_template-parse_failures-mappings"
   ],
   "priority": 900,
   "_meta": {

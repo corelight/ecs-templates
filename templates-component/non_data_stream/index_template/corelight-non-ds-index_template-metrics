@@ -7,8 +7,7 @@
     "corelight-non-ds-component_template-metrics-ilm-settings",
     "corelight-non-ds-component_template-metrics_and_stats-create_zeek_corelight-aliases",
     "corelight-non-ds-component_template-metrics_and_stats-base-settings",
-    "corelight-non-ds-component_template-metrics_and_stats-mappings",
-    "corelight-non-ds-component_template-main_logs-create_ecs_corelight-aliases"
+    "corelight-non-ds-component_template-metrics_and_stats-mappings"
   ],
   "priority": 920,
   "_meta": {
