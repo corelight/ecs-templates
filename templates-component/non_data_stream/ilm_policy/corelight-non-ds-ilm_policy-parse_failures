@@ -1,4 +1,4 @@
-//PUT /_ilm/policy/corelight-non-ds-ilm_policy-parse_failures
+//PUT /_ilm/policy/corelight-non-ds-ilm_policy-parse-failures
 {
   "policy": {
     "phases": {
