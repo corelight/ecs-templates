@@ -101,10 +101,10 @@ def enableIngest(type,raw, logstashLocation):
     ssl = "0002-corelight-ecs-tcp-ssl_tls-input.conf"
     hec = "0002-corelight-ecs-http-for_splunk_hec.conf"
     kafka = "0002-corelight-ecs-kafka-input.config"
-    tcpRaw = "0002-corelight-ecs-tcp-input-codec_disable_to_keep_raw_message.conf"
-    sslRaw = "0002-corelight-ecs-tcp-ssl_tls-input-codec_disable_to_keep_raw_message.conf"
-    hecRaw = "0002-corelight-ecs-http-for_splunk_hec-codec_disable_to_keep_raw_message.conf"
-    kafkaRaw = "0002-corelight-ecs-kafka-input-codec_disable_to_keep_raw_message.config"
+    tcpRaw = "0002-corelight-ecs-tcp-input-codec_disabeld_to_keep_raw_message.conf"
+    sslRaw = "0002-corelight-ecs-tcp-ssl_tls-input-codec_disabeld_to_keep_raw_message.conf"
+    hecRaw = "0002-corelight-ecs-http-for_splunk_hec-codec_disabeld_to_keep_raw_message.conf"
+    kafkaRaw = "0002-corelight-ecs-kafka-input-codec_disabeld_to_keep_raw_message.config"
 
     if raw:
         if type == "tcp":
@@ -275,7 +275,7 @@ def main():
     baseURI, session = get_config()
     testConnection(session, baseURI)
     logstash = input_bool("Will you be using Logstash pipelines?", default=True)
-    templatesOnly = input_bool("Will you only be install Templates, if using ingest Pipeline enter No?", default=False)
+    templatesOnly = input_bool("Will you only be install Templates, if using ingest Pipeline enter No?", default=False)#TODO:figure out how to better word this
     if templatesOnly:
         updateTemplates = input_bool("Is this a update to existing template? If so ILM will not be installed", default=False)
     if not updateTemplates:
@@ -327,7 +327,10 @@ def main():
             if templateLegacy:
                 index(session,baseURI,logstash,updateTemplates)
 
-main()
+if __name__ == "__main__":
+    main()
+else:
+    main()
 
 
 
