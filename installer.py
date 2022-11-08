@@ -97,9 +97,9 @@ def unzipGit(file):
 def installLogstash(directory):
     source = "./ecs-logstash-mappings-Dev/pipeline/"
     if directory.endswith('/'):
-        path = directory + "pipelines"
+        path = directory + "CorelightPipelines"
     else:
-        path = directory + "/pipelines"
+        path = directory + "/CorelightPipelines"
     if os.path.exists(directory):
         if not os.path.exists(path):
             shutil.copytree(source, path)
@@ -111,16 +111,16 @@ def installLogstash(directory):
         sys.exit(1)    
     
 def updateLogstash(directory):
-    source = "./ecs-logstash-mappings-dev/pipeline/"
+    source = "./ecs-logstash-mappings-Dev/pipeline/"
     tcp = ""
-    path = directory + "/pipelines"
+    path = directory + "/CorelightPipelines"
     if os.path.exists(directory):
         fileList=os.listdir(source)
         for file in fileList:
             shutil.copy2(os.path.join(source,file), path)
 
 def enableIngest(type,raw, logstashLocation):
-    dir = logstashLocation + "/pipelines/"
+    dir = logstashLocation + "/CorelightPipelines/"
     tcp = "0002-corelight-ecs-tcp-input.conf"
     ssl = "0002-corelight-ecs-tcp-ssl_tls-input.conf"
     hec = "0002-corelight-ecs-http-for_splunk_hec.conf"
@@ -158,7 +158,7 @@ def enableIngest(type,raw, logstashLocation):
             dest = dir + kafka 
     shutil.copy(source, dest)
 
-def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4,use_post=False):
+def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
     print("Trying to upload pipeline: %s" % pipeline)
     file = filePath + pipeline
     if pipeline != "zeek-enrichment-conn-policy/_execute":
@@ -227,7 +227,7 @@ def get_config():
     baseURI = proto + "://" + ipHost + ":" + str(port)
     return baseURI, s
 
-def datastreams(session, baseURI, logstash):
+def datastreams(session, baseURI, logstash,updateTemplates):
     source = "./templates-component/data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
@@ -236,10 +236,10 @@ def datastreams(session, baseURI, logstash):
     fileList=os.listdir(component)
     for file in fileList:
         exportToElastic(session, baseURI, component, file, "/_component_template/", retry=4)
-
-    fileList=os.listdir(ilm)
-    for file in fileList:
-        exportToElastic(session, baseURI, ilm,file, "/_ilm/policy/", retry=4)
+    if not updateTemplates:
+        fileList=os.listdir(ilm)
+        for file in fileList:
+            exportToElastic(session, baseURI, ilm,file, "/_ilm/policy/", retry=4)
     
     fileList=os.listdir(index)
     for file in fileList:
@@ -249,7 +249,7 @@ def datastreams(session, baseURI, logstash):
         for file in fileList:
             exportToElastic(session, baseURI, ingest,file, "/_index_template/", retry=4)
 
-def componet(session, baseURI, logstash):
+def componet(session, baseURI, logstash,updateTemplates):
     source = "./templates-component/non_data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
@@ -258,10 +258,10 @@ def componet(session, baseURI, logstash):
     fileList=os.listdir(component)
     for file in fileList:
          exportToElastic(session, baseURI, component,file, "/_component_template/", retry=4)
-
-    fileList=os.listdir(ilm)
-    for file in fileList:
-        exportToElastic(session, baseURI, ilm, file, "/_ilm/policy/", retry=4)
+    if not updateTemplates:
+        fileList=os.listdir(ilm)
+        for file in fileList:
+            exportToElastic(session, baseURI, ilm, file, "/_ilm/policy/", retry=4)
     fileList=os.listdir(index)
     for file in fileList:
         exportToElastic(session, baseURI, index, file, "/_index_template/", retry=4)
@@ -270,7 +270,7 @@ def componet(session, baseURI, logstash):
         for file in fileList:
             exportToElastic(session, baseURI, ingest, file, "/_component_template/", retry=4)
 
-def index(session, baseURI, logstash):
+def index(session, baseURI, logstash,updateTemplates):
     source = "./templates-component/templates-legcay/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(source)
@@ -283,68 +283,73 @@ def index(session, baseURI, logstash):
                 exportToElastic(session, baseURI, ingest, file, "/_template/", retry=4)
 
 def uploadIngestPipelines(session,baseURI):
-    source = "./ecs-mapping-dev/automatic_install/"
+    source = "./ecs-mapping-master/automatic_install/"
     fileList=os.listdir(source)
     for file in fileList:
-        if file != "deprecated":
-            exportToElastic(session, baseURI, source, file, "/_ingest/pipeline/", retry=4, use_post=True)
+        if "deprecated" not in file:
+            exportToElastic(session, baseURI, source, file, "/_ingest/pipeline/", retry=4)
 
 
 def main():
 
+    updateTemplates = False
     logstashRepo="ecs-logstash-mappings/archive/refs/heads/Dev.zip"
-    ingestRepo="ecs-mapping/archive/refs/heads/dev.zip"
+    ingestRepo="ecs-mapping/archive/refs/heads/master.zip"
     requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     baseURI, session = get_config()
     testConnection(session, baseURI)
     logstash = input_bool("Will you be useing Logstash pipelines?", default=True)
-    if logstash:
-        cont = input_bool("This script need to be run on the logstash box. Does this box have logstash running and is the Logstash ingest?", default=True)
-        if cont:
-            fileName=download_repostory(logstashRepo)
-            unzipGit(fileName)
+    templatesOnly = input_bool("Will you only be install Templates, if useing ingest Pipeline enter No?", default=False)
+    if templatesOnly:
+        updateTemplates = input_bool("Is this a update to existing template? If so ILM will not be installed", default=False)
+    if not updateTemplates:
+        if logstash:
+            cont = input_bool("This script need to be run on the logstash box. Does this box have logstash running and is the Logstash ingest?", default=True)
+            if cont:
+                fileName=download_repostory(logstashRepo)
+                unzipGit(fileName)
             
-            logstashLocation = input("Enter the logstash location to put the file pieplines in: ")
-            update=input_bool("Are you upgrading existing Corelight Logstsh Pipeline?", default=False)
-            if not update:
-                installLogstash(logstashLocation)
-                raw = input_bool("Do you want to keep the raw message will incerease storage space?", default=False)
-                tcp = input_bool("Are sending doat to logstsh over JSON over TCP?:", default=False)
-                if tcp:
-                    ssl = input_bool("Will you be enableing SSL?", default=False)
-                    if ssl:
-                        enableIngest("ssl", raw, logstashLocation)
+                logstashLocation = input("Enter the logstash location to put the file pieplines in: ")
+                update=input_bool("Are you upgrading existing Corelight Logstsh Pipeline?", default=False)
+                if not update:
+                    installLogstash(logstashLocation)
+                    raw = input_bool("Do you want to keep the raw message will incerease storage space?", default=False)
+                    tcp = input_bool("Are sending doat to logstsh over JSON over TCP?:", default=False)
+                    if tcp:
+                        ssl = input_bool("Will you be enableing SSL?", default=False)
+                        if ssl:
+                            enableIngest("ssl", raw, logstashLocation)
+                        else:
+                            enableIngest("tcp", raw, logstashLocation)
                     else:
-                        enableIngest("tcp", raw, logstashLocation)
+                        kafka = input_bool("Are sending doat to logstsh over Kafka?:", default=False)
+                        if kafka:
+                            enableIngest("kafka", raw, logstashLocation)
+                        else:
+                            hec = input_bool("Are sending doat to logstsh over HTTP Event Collector?:", default=False)
+                            if hec:
+                                enableIngest("hec", raw, logstashLocation)
                 else:
-                    kafka = input_bool("Are sending doat to logstsh over Kafka?:", default=False)
-                    if kafka:
-                        enableIngest("kafka", raw, logstashLocation)
-                    else:
-                        hec = input_bool("Are sending doat to logstsh over HTTP Event Collector?:", default=False)
-                        if hec:
-                            enableIngest("hec", raw, logstashLocation)
+                    updateLogstash(logstashLocation)
             else:
-                updateLogstash(logstashLocation)
+                print("Please run script again on Logstash server")
+                print("Strange things are afoot at the Circle-K.")
+                sys.exit(1)
         else:
-            print("Please run script again on Logstash server")
-            print("Strange things are afoot at the Circle-K.")
-            sys.exit(1)
-    else:
-        fileName=download_repostory(ingestRepo)
-        unzipGit(fileName)
-        uploadIngestPipelines(session,baseURI)
+            fileName=download_repostory(ingestRepo)
+            unzipGit(fileName)
+            uploadIngestPipelines(session,baseURI)
     templateDS = input_bool("Will you be useing Datastreams?", default=True)
     if templateDS:
-        datastreams(session,baseURI,logstash)
+        datastreams(session,baseURI,logstash,updateTemplates)
     else:
         templateComponent = input_bool("Will you be useing Component Templates?", default=True)
         if templateComponent:
-            componet(session,baseURI,logstash)
+            componet(session,baseURI,logstash,updateTemplates)
         else:
             templateLegcy = input_bool("Will you be useing Legcy Templates? This is not supported on version 8.x and above?", default=False)
             if templateLegcy:
-                index(session,baseURI,logstash)
+                index(session,baseURI,logstash,updateTemplates)
 
 main()
 
