@@ -55,22 +55,6 @@ def testConnection(session, baseURI):
     checkRequest(response)
     response.raise_for_status()
 
-def input_bool(question, default=None):
-
-    prompt = " [yn]"
-
-    if default is not None:
-        prompt = " [Yn]:" if default else " [yN]:"
-
-    while True:
-        val = input(question + prompt)
-        val = val.lower()
-        if val  == '' and default is not None:
-            return default
-        if val in ('y', 'n'):
-            return val == 'y'
-        print("Invalid response")
-
 def input_int(question):
     while True:
         val = input(question + ": ")
