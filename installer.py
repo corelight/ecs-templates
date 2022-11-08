@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-from asyncore import file_wrapper
-from distutils import filelist
+#from asyncore import file_wrapper
+#from distutils import filelist
+#from this import d, s
+#import glob
 import shutil
-from this import d, s
 import requests
 from urllib3.exceptions import InsecureRequestWarning
-import glob
 import time
 import sys
 import zipfile
