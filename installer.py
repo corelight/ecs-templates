@@ -55,14 +55,6 @@ def testConnection(session, baseURI):
     checkRequest(response)
     response.raise_for_status()
 
-def input_int(question):
-    while True:
-        val = input(question + ": ")
-        try:
-            return int(val)
-        except ValueError as e:
-            print("Invalid response", e)
-
 def download_repository( name ):
     randomNum = random.randint(0,100)
     filename = "output" + str(randomNum) + ".zip"
