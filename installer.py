@@ -66,8 +66,8 @@ def download_repository( name ):
             shutil.copyfileobj(r.raw, f)
     return filename
 
-def unzipGit(file):
-    with zipfile.ZipFile(file, 'r') as zip_ref:
+def unzipGit(filename):
+    with zipfile.ZipFile(filename, 'r') as zip_ref:
         zip_ref.extractall()
 
 def installLogstash(directory):
@@ -92,52 +92,52 @@ def updateLogstash(directory):
     path = directory + "/CorelightPipelines"
     if os.path.exists(directory):
         fileList=os.listdir(source)
-        for file in fileList:
-            shutil.copy2(os.path.join(source,file), path)
+        for filename in fileList:
+            shutil.copy2(os.path.join(source,filename), path)
 
-def enableIngest(type,raw, logstashLocation):
-    dir = logstashLocation + "/CorelightPipelines/"
+def enableIngest(ingest_type, raw, logstashLocation):
+    ls_pipeline_install_dir = logstashLocation + "/CorelightPipelines/"
     tcp = "0002-corelight-ecs-tcp-input.conf"
     ssl = "0002-corelight-ecs-tcp-ssl_tls-input.conf"
     hec = "0002-corelight-ecs-http-for_splunk_hec.conf"
     kafka = "0002-corelight-ecs-kafka-input.config"
-    tcpRaw = "0002-corelight-ecs-tcp-input-codec_disabeld_to_keep_raw_message.conf"
-    sslRaw = "0002-corelight-ecs-tcp-ssl_tls-input-codec_disabeld_to_keep_raw_message.conf"
-    hecRaw = "0002-corelight-ecs-http-for_splunk_hec-codec_disabeld_to_keep_raw_message.conf"
-    kafkaRaw = "0002-corelight-ecs-kafka-input-codec_disabeld_to_keep_raw_message.config"
-
+    tcpRaw = "0002-corelight-ecs-tcp-input-codec_disabled_to_keep_raw_message.conf"
+    sslRaw = "0002-corelight-ecs-tcp-ssl_tls-input-codec_disabled_to_keep_raw_message.conf"
+    hecRaw = "0002-corelight-ecs-http-for_splunk_hec-codec_disabled_to_keep_raw_message.conf"
+    kafkaRaw = "0002-corelight-ecs-kafka-input-codec_disabled_to_keep_raw_message.config"
+    
     if raw:
-        if type == "tcp":
-            source = dir + tcpRaw + ".disabled"
-            dest = dir + tcpRaw 
-        if type == "ssl":
-            source = dir + sslRaw + ".disabled"
-            dest = dir + sslRaw 
-        if type == "hec":
-            source = dir + hecRaw + ".disabled"
-            dest = dir + hecRaw 
-        if type == "kafka":
-            source = dir + kafkaRaw + ".disabled"
-            dest = dir + kafkaRaw 
+        if ingest_type == "tcp":
+            source = ls_pipeline_install_dir + tcpRaw + ".disabled"
+            dest = ls_pipeline_install_dir + tcpRaw 
+        if ingest_type == "ssl":
+            source = ls_pipeline_install_dir + sslRaw + ".disabled"
+            dest = ls_pipeline_install_dir + sslRaw 
+        if ingest_type == "hec":
+            source = ls_pipeline_install_dir + hecRaw + ".disabled"
+            dest = ls_pipeline_install_dir + hecRaw 
+        if ingest_type == "kafka":
+            source = ls_pipeline_install_dir + kafkaRaw + ".disabled"
+            dest = ls_pipeline_install_dir + kafkaRaw 
     else:
-        if type == "tcp":
-            source = dir + tcp + ".disabled"
-            dest = dir + tcp
-        if type == "ssl":
-            source = dir + ssl + ".disabled"
-            dest = dir + ssl
-        if type == "hec":
-            source = dir + hec + ".disabled"
-            dest = dir + hec
-        if type == "kafka":
-            source = dir + kafka + ".disabled"
-            dest = dir + kafka 
+        if ingest_type == "tcp":
+            source = ls_pipeline_install_dir + tcp + ".disabled"
+            dest = ls_pipeline_install_dir + tcp
+        if ingest_type == "ssl":
+            source = ls_pipeline_install_dir + ssl + ".disabled"
+            dest = ls_pipeline_install_dir + ssl
+        if ingest_type == "hec":
+            source = ls_pipeline_install_dir + hec + ".disabled"
+            dest = ls_pipeline_install_dir + hec
+        if ingest_type == "kafka":
+            source = ls_pipeline_install_dir + kafka + ".disabled"
+            dest = ls_pipeline_install_dir + kafka 
     shutil.copy(source, dest)
 
 def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
-    file = filePath + pipeline
+    filename = filePath + pipeline
     if pipeline != "zeek-enrichment-conn-policy/_execute":
-        with open(file) as f:
+        with open(filename) as f:
             postData = f.read()
     else:
         postData = ""
@@ -209,20 +209,20 @@ def datastreams(session, baseURI, logstash,updateTemplates):
     index = source + "index_template/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(component)
-    for file in fileList:
-        exportToElastic(session, baseURI, component, file, "/_component_template/", retry=4)
+    for filename in fileList:
+        exportToElastic(session, baseURI, component, filename, "/_component_template/", retry=4)
     if not updateTemplates:
         fileList=os.listdir(ilm)
-        for file in fileList:
-            exportToElastic(session, baseURI, ilm,file, "/_ilm/policy/", retry=4)
+        for filename in fileList:
+            exportToElastic(session, baseURI, ilm, filename, "/_ilm/policy/", retry=4)
     
     fileList=os.listdir(index)
-    for file in fileList:
-        exportToElastic(session, baseURI, index,file, "/_index_template/", retry=4)
+    for filename in fileList:
+        exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=4)
     if not logstash:
         fileList=os.listdir(ingest)
-        for file in fileList:
-            exportToElastic(session, baseURI, ingest,file, "/_index_template/", retry=4)
+        for filename in fileList:
+            exportToElastic(session, baseURI, ingest, filename, "/_index_template/", retry=4)
 
 def component( session, baseURI, logstash, updateTemplates ):
     source = "./templates-component/non_data_stream/"
@@ -231,38 +231,38 @@ def component( session, baseURI, logstash, updateTemplates ):
     index = source + "index_template/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(component)
-    for file in fileList:
-         exportToElastic(session, baseURI, component,file, "/_component_template/", retry=4)
+    for filename in fileList:
+         exportToElastic(session, baseURI, component,filename, "/_component_template/", retry=4)
     if not updateTemplates:
         fileList=os.listdir(ilm)
-        for file in fileList:
-            exportToElastic(session, baseURI, ilm, file, "/_ilm/policy/", retry=4)
+        for filename in fileList:
+            exportToElastic(session, baseURI, ilm, filename, "/_ilm/policy/", retry=4)
     fileList=os.listdir(index)
-    for file in fileList:
-        exportToElastic(session, baseURI, index, file, "/_index_template/", retry=4)
+    for filename in fileList:
+        exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=4)
     if not logstash:
         fileList=os.listdir(ingest)
-        for file in fileList:
-            exportToElastic(session, baseURI, ingest, file, "/_component_template/", retry=4)
+        for filename in fileList:
+            exportToElastic(session, baseURI, ingest, filename, "/_component_template/", retry=4)
 
 def index(session, baseURI, logstash,updateTemplates):
     source = "./templates-component/templates-legacy/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(source)
-    for file in fileList:
-        exportToElastic(session, baseURI, source, file, "/_template/", retry=4)
+    for filename in fileList:
+        exportToElastic(session, baseURI, source, filename, "/_template/", retry=4)
     
     if not logstash:
         fileList=os.listdir(ingest)
-        for file in fileList:
-                exportToElastic(session, baseURI, ingest, file, "/_template/", retry=4)
+        for filename in fileList:
+                exportToElastic(session, baseURI, ingest, filename, "/_template/", retry=4)
 
 def uploadIngestPipelines(session,baseURI):
     source = "./ecs-mapping-master/automatic_install/"
     fileList=os.listdir(source)
-    for file in fileList:
+    for filename in fileList:
         if "deprecated" not in file:
-            exportToElastic(session, baseURI, source, file, "/_ingest/pipeline/", retry=4)
+            exportToElastic(session, baseURI, source, filename, "/_ingest/pipeline/", retry=4)
 
 
 def main():
