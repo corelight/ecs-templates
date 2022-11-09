@@ -135,7 +135,6 @@ def enableIngest(type,raw, logstashLocation):
     shutil.copy(source, dest)
 
 def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
-    print("Trying to upload pipeline: %s" % pipeline)
     file = filePath + pipeline
     if pipeline != "zeek-enrichment-conn-policy/_execute":
         with open(file) as f:
@@ -145,7 +144,6 @@ def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
     run = 1
     uri = baseURI + path + pipeline
     
-    print("URI = %s" % uri)   
     response = 0
     while run <= retry and response != 200:
         run = run + 1
@@ -158,6 +156,7 @@ def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
         return 
     else:
         print("Error uploading %s status code %s" %(pipeline, response),file=sys.stderr)
+        print("URI = %s" % uri)
         sys.exit(1)
 
 
@@ -286,10 +285,10 @@ def main():
                 unzipGit(fileName)
             
                 logstashLocation = input("Enter the logstash location to put the file pipelines in: ")
-                update=input_bool("Are you upgrading existing Corelight Logstash Pipeline?", default=False)
+                update=input_bool("Are you upgrading am existing Corelight Logstash Pipeline?", default=False)
                 if not update:
                     installLogstash(logstashLocation)
-                    raw = input_bool("Do you want to keep the raw message will increase storage space?", default=False)
+                    raw = input_bool("Do you want to keep the raw message (ie: the event in original format unaltered)? This will increase storage", default=False)
                     tcp = input_bool("Are sending data to Logstash over JSON over TCP?:", default=False)
                     if tcp:
                         ssl = input_bool("Will you be enabling SSL?", default=False)
