@@ -1,4 +1,4 @@
-//PUT /_index_template/corelight-non-ds-index_template-netcontrol
+PUT /_index_template/corelight-non-ds-index_template-netcontrol
 {
   "index_patterns": [
     "zeek-corelight-netcontrol-*"
