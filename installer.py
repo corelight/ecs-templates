@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-from asyncore import file_wrapper
-from distutils import filelist
+#from asyncore import file_wrapper
+#from distutils import filelist
+#from this import d, s
+#import glob
 import shutil
-from this import d, s
 import requests
 from urllib3.exceptions import InsecureRequestWarning
-import glob
 import time
 import sys
 import zipfile
@@ -55,31 +55,7 @@ def testConnection(session, baseURI):
     checkRequest(response)
     response.raise_for_status()
 
-def input_bool(question, default=None):
-
-    prompt = " [yn]"
-
-    if default is not None:
-        prompt = " [Yn]:" if default else " [yN]:"
-
-    while True:
-        val = input(question + prompt)
-        val = val.lower()
-        if val  == '' and default is not None:
-            return default
-        if val in ('y', 'n'):
-            return val == 'y'
-        print("Invalid response")
-
-def input_int(question):
-    while True:
-        val = input(question + ": ")
-        try:
-            return int(val)
-        except ValueError as e:
-            print("Invalid response", e)
-
-def download_repostory(name):
+def download_repository( name ):
     randomNum = random.randint(0,100)
     filename = "output" + str(randomNum) + ".zip"
     host = "https://github.com/"
@@ -90,8 +66,8 @@ def download_repostory(name):
             shutil.copyfileobj(r.raw, f)
     return filename
 
-def unzipGit(file):
-    with zipfile.ZipFile(file, 'r') as zip_ref:
+def unzipGit(filename):
+    with zipfile.ZipFile(filename, 'r') as zip_ref:
         zip_ref.extractall()
 
 def installLogstash(directory):
@@ -104,7 +80,7 @@ def installLogstash(directory):
         if not os.path.exists(path):
             shutil.copytree(source, path)
         else:
-            print("the path %s exists have if you are updateing the please select the update operation" % path)
+            print("the path %s exists have if you are updating the please select the update operation" % path)
             sys.exit(1)
     else:
         print("The path you entered does not exist")
@@ -116,60 +92,58 @@ def updateLogstash(directory):
     path = directory + "/CorelightPipelines"
     if os.path.exists(directory):
         fileList=os.listdir(source)
-        for file in fileList:
-            shutil.copy2(os.path.join(source,file), path)
+        for filename in fileList:
+            shutil.copy2(os.path.join(source,filename), path)
 
-def enableIngest(type,raw, logstashLocation):
-    dir = logstashLocation + "/CorelightPipelines/"
+def enableIngest(ingest_type, raw, logstashLocation):
+    ls_pipeline_install_dir = logstashLocation + "/CorelightPipelines/"
     tcp = "0002-corelight-ecs-tcp-input.conf"
     ssl = "0002-corelight-ecs-tcp-ssl_tls-input.conf"
     hec = "0002-corelight-ecs-http-for_splunk_hec.conf"
     kafka = "0002-corelight-ecs-kafka-input.config"
-    tcpRaw = "0002-corelight-ecs-tcp-input-codec_disable_to_keep_raw_message.conf"
-    sslRaw = "0002-corelight-ecs-tcp-ssl_tls-input-codec_disable_to_keep_raw_message.conf"
-    hecRaw = "0002-corelight-ecs-http-for_splunk_hec-codec_disable_to_keep_raw_message.conf"
-    kafkaRaw = "0002-corelight-ecs-kafka-input-codec_disable_to_keep_raw_message.config"
-
+    tcpRaw = "0002-corelight-ecs-tcp-input-codec_disabled_to_keep_raw_message.conf"
+    sslRaw = "0002-corelight-ecs-tcp-ssl_tls-input-codec_disabled_to_keep_raw_message.conf"
+    hecRaw = "0002-corelight-ecs-http-for_splunk_hec-codec_disabled_to_keep_raw_message.conf"
+    kafkaRaw = "0002-corelight-ecs-kafka-input-codec_disabled_to_keep_raw_message.config"
+    
     if raw:
-        if type == "tcp":
-            source = dir + tcpRaw + ".disabled"
-            dest = dir + tcpRaw 
-        if type == "ssl":
-            source = dir + sslRaw + ".disabled"
-            dest = dir + sslRaw 
-        if type == "hec":
-            source = dir + hecRaw + ".disabled"
-            dest = dir + hecRaw 
-        if type == "kafka":
-            source = dir + kafkaRaw + ".disabled"
-            dest = dir + kafkaRaw 
+        if ingest_type == "tcp":
+            source = ls_pipeline_install_dir + tcpRaw + ".disabled"
+            dest = ls_pipeline_install_dir + tcpRaw 
+        if ingest_type == "ssl":
+            source = ls_pipeline_install_dir + sslRaw + ".disabled"
+            dest = ls_pipeline_install_dir + sslRaw 
+        if ingest_type == "hec":
+            source = ls_pipeline_install_dir + hecRaw + ".disabled"
+            dest = ls_pipeline_install_dir + hecRaw 
+        if ingest_type == "kafka":
+            source = ls_pipeline_install_dir + kafkaRaw + ".disabled"
+            dest = ls_pipeline_install_dir + kafkaRaw 
     else:
-        if type == "tcp":
-            source = dir + tcp + ".disabled"
-            dest = dir + tcp
-        if type == "ssl":
-            source = dir + ssl + ".disabled"
-            dest = dir + ssl
-        if type == "hec":
-            source = dir + hec + ".disabled"
-            dest = dir + hec
-        if type == "kafka":
-            source = dir + kafka + ".disabled"
-            dest = dir + kafka 
+        if ingest_type == "tcp":
+            source = ls_pipeline_install_dir + tcp + ".disabled"
+            dest = ls_pipeline_install_dir + tcp
+        if ingest_type == "ssl":
+            source = ls_pipeline_install_dir + ssl + ".disabled"
+            dest = ls_pipeline_install_dir + ssl
+        if ingest_type == "hec":
+            source = ls_pipeline_install_dir + hec + ".disabled"
+            dest = ls_pipeline_install_dir + hec
+        if ingest_type == "kafka":
+            source = ls_pipeline_install_dir + kafka + ".disabled"
+            dest = ls_pipeline_install_dir + kafka 
     shutil.copy(source, dest)
 
 def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
-    print("Trying to upload pipeline: %s" % pipeline)
-    file = filePath + pipeline
+    filename = filePath + pipeline
     if pipeline != "zeek-enrichment-conn-policy/_execute":
-        with open(file) as f:
+        with open(filename) as f:
             postData = f.read()
     else:
         postData = ""
     run = 1
     uri = baseURI + path + pipeline
     
-    print("URI = %s" % uri)   
     response = 0
     while run <= retry and response != 200:
         run = run + 1
@@ -182,6 +156,7 @@ def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
         return 
     else:
         print("Error uploading %s status code %s" %(pipeline, response),file=sys.stderr)
+        print("URI = %s" % uri)
         sys.exit(1)
 
 
@@ -234,60 +209,60 @@ def datastreams(session, baseURI, logstash,updateTemplates):
     index = source + "index_template/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(component)
-    for file in fileList:
-        exportToElastic(session, baseURI, component, file, "/_component_template/", retry=4)
+    for filename in fileList:
+        exportToElastic(session, baseURI, component, filename, "/_component_template/", retry=4)
     if not updateTemplates:
         fileList=os.listdir(ilm)
-        for file in fileList:
-            exportToElastic(session, baseURI, ilm,file, "/_ilm/policy/", retry=4)
+        for filename in fileList:
+            exportToElastic(session, baseURI, ilm, filename, "/_ilm/policy/", retry=4)
     
     fileList=os.listdir(index)
-    for file in fileList:
-        exportToElastic(session, baseURI, index,file, "/_index_template/", retry=4)
+    for filename in fileList:
+        exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=4)
     if not logstash:
         fileList=os.listdir(ingest)
-        for file in fileList:
-            exportToElastic(session, baseURI, ingest,file, "/_index_template/", retry=4)
+        for filename in fileList:
+            exportToElastic(session, baseURI, ingest, filename, "/_index_template/", retry=4)
 
-def componet(session, baseURI, logstash,updateTemplates):
+def component( session, baseURI, logstash, updateTemplates ):
     source = "./templates-component/non_data_stream/"
     component = source + "component_template/"
     ilm = source + "ilm_policy/"
     index = source + "index_template/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(component)
-    for file in fileList:
-         exportToElastic(session, baseURI, component,file, "/_component_template/", retry=4)
+    for filename in fileList:
+         exportToElastic(session, baseURI, component,filename, "/_component_template/", retry=4)
     if not updateTemplates:
         fileList=os.listdir(ilm)
-        for file in fileList:
-            exportToElastic(session, baseURI, ilm, file, "/_ilm/policy/", retry=4)
+        for filename in fileList:
+            exportToElastic(session, baseURI, ilm, filename, "/_ilm/policy/", retry=4)
     fileList=os.listdir(index)
-    for file in fileList:
-        exportToElastic(session, baseURI, index, file, "/_index_template/", retry=4)
+    for filename in fileList:
+        exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=4)
     if not logstash:
         fileList=os.listdir(ingest)
-        for file in fileList:
-            exportToElastic(session, baseURI, ingest, file, "/_component_template/", retry=4)
+        for filename in fileList:
+            exportToElastic(session, baseURI, ingest, filename, "/_component_template/", retry=4)
 
 def index(session, baseURI, logstash,updateTemplates):
-    source = "./templates-component/templates-legcay/"
+    source = "./templates-component/templates-legacy/"
     ingest = source + "use_ingest_pipeline/"
     fileList=os.listdir(source)
-    for file in fileList:
-        exportToElastic(session, baseURI, source, file, "/_template/", retry=4)
+    for filename in fileList:
+        exportToElastic(session, baseURI, source, filename, "/_template/", retry=4)
     
     if not logstash:
         fileList=os.listdir(ingest)
-        for file in fileList:
-                exportToElastic(session, baseURI, ingest, file, "/_template/", retry=4)
+        for filename in fileList:
+                exportToElastic(session, baseURI, ingest, filename, "/_template/", retry=4)
 
 def uploadIngestPipelines(session,baseURI):
     source = "./ecs-mapping-master/automatic_install/"
     fileList=os.listdir(source)
-    for file in fileList:
+    for filename in fileList:
         if "deprecated" not in file:
-            exportToElastic(session, baseURI, source, file, "/_ingest/pipeline/", retry=4)
+            exportToElastic(session, baseURI, source, filename, "/_ingest/pipeline/", retry=4)
 
 
 def main():
@@ -298,23 +273,23 @@ def main():
     requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     baseURI, session = get_config()
     testConnection(session, baseURI)
-    logstash = input_bool("Will you be using a Logstash pipeline?", default=True)
-    templatesOnly = input_bool("Will you only be installing Templates, if using ingest Pipeline enter No?", default=False)
+    logstash = input_bool("Will you be using Logstash pipelines?", default=True)
+    templatesOnly = input_bool("Will you only be install Templates, if using ingest Pipeline enter No?", default=False)#TODO:figure out how to better word this
     if templatesOnly:
         updateTemplates = input_bool("Is this a update to existing template? If so ILM will not be installed", default=False)
     if not updateTemplates:
         if logstash:
-            cont = input_bool("This script needs to be run on the Logstash box. Does this box have Logstash running and is the Logstash ingesting?", default=True)
+            cont = input_bool("This script need to be run on the logstash box. Does this box have logstash running and is the Logstash ingest?", default=True)
             if cont:
-                fileName=download_repostory(logstashRepo)
+                fileName=download_repository( logstashRepo )
                 unzipGit(fileName)
             
-                logstashLocation = input("Enter the Logstash location to store the piepline files in: ")
-                update=input_bool("Are you upgrading an existing Corelight Logstsh Pipeline?", default=False)
+                logstashLocation = input("Enter the logstash location to put the file pipelines in: ")
+                update=input_bool("Are you upgrading am existing Corelight Logstash Pipeline?", default=False)
                 if not update:
                     installLogstash(logstashLocation)
-                    raw = input_bool("Do you want to keep the raw message, this will incerease storage space?", default=False)
-                    tcp = input_bool("Are you sending data to logstsh over JSON over TCP?:", default=False)
+                    raw = input_bool("Do you want to keep the raw message (ie: the event in original format unaltered)? This will increase storage", default=False)
+                    tcp = input_bool("Are sending data to Logstash over JSON over TCP?:", default=False)
                     if tcp:
                         ssl = input_bool("Will you be enabling SSL?", default=False)
                         if ssl:
@@ -322,11 +297,11 @@ def main():
                         else:
                             enableIngest("tcp", raw, logstashLocation)
                     else:
-                        kafka = input_bool("Are sending data to Logstsh via Kafka?:", default=False)
+                        kafka = input_bool("Are sending data to Logstash over Kafka?:", default=False)
                         if kafka:
                             enableIngest("kafka", raw, logstashLocation)
                         else:
-                            hec = input_bool("Are sending data to logstsh over HTTP Event Collector?:", default=False)
+                            hec = input_bool("Are sending data to Logstash over HTTP Event Collector?:", default=False)
                             if hec:
                                 enableIngest("hec", raw, logstashLocation)
                 else:
@@ -336,7 +311,7 @@ def main():
                 print("Strange things are afoot at the Circle-K.")
                 sys.exit(1)
         else:
-            fileName=download_repostory(ingestRepo)
+            fileName=download_repository( ingestRepo )
             unzipGit(fileName)
             uploadIngestPipelines(session,baseURI)
     templateDS = input_bool("Will you be using Datastreams?", default=True)
@@ -345,14 +320,13 @@ def main():
     else:
         templateComponent = input_bool("Will you be using Component Templates?", default=True)
         if templateComponent:
-            componet(session,baseURI,logstash,updateTemplates)
+            component( session, baseURI, logstash, updateTemplates )
         else:
-            templateLegcy = input_bool("Will you be using Legcy Templates? This is not supported on version 8.x and above?", default=False)
-            if templateLegcy:
+            templateLegacy = input_bool("Will you be using Legacy Templates? This is not supported on version 8.x and above?", default=False)
+            if templateLegacy:
                 index(session,baseURI,logstash,updateTemplates)
 
-main()
-
-
-
-
+if __name__ == "__main__":
+    main()
+else:
+    main()
