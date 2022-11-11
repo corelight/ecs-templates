@@ -261,7 +261,7 @@ def uploadIngestPipelines(session,baseURI):
     source = "./ecs-mapping-master/automatic_install/"
     fileList=os.listdir(source)
     for filename in fileList:
-        if "deprecated" not in file:
+        if "deprecated" not in filename:
             exportToElastic(session, baseURI, source, filename, "/_ingest/pipeline/", retry=4)
 
 
