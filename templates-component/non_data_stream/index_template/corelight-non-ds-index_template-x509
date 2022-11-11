@@ -8,7 +8,8 @@
     "corelight-non-ds-component_template-x509-ilm-settings",
     "corelight-non-ds-component_template-main_logs-create_ecs_corelight-aliases",
     "corelight-non-ds-component_template-main_logs-base-settings",
-    "corelight-non-ds-component_template-main_logs-mappings"
+    "corelight-non-ds-component_template-main_logs-mappings",
+    "corelight-non-ds-component_template-main_logs-create_ecs_corelight-aliases"
   ],
   "priority": 920,
   "_meta": {

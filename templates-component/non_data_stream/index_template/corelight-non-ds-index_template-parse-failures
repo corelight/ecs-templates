@@ -5,8 +5,8 @@
   ],
   "composed_of": [
     "corelight-non-ds-component_template-parse-failures-ilm-settings",
-    "corelight-non-ds-component_template-parse_failures-base-settings",
-    "corelight-non-ds-component_template-parse_failures-mappings"
+    "corelight-non-ds-component_template-parse-failures-base-settings",
+    "corelight-non-ds-component_template-parse-failures-mappings"
   ],
   "priority": 920,
   "_meta": {

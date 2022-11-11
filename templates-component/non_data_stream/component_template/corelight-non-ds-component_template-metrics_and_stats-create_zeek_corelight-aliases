@@ -2,7 +2,7 @@
 {
   "template": {
     "aliases": {
-      "zeek-corelight-ds": {}
+      "zeek-corelight-non-ds": {}
     }
   },
   "_meta": {
