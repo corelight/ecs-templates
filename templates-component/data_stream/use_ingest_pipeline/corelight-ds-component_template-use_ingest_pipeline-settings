@@ -3,7 +3,7 @@
   "version": 11221,
   "template": {
     "settings": {
-      "index.default_pipeline": "corelight_main_pipeline",
+      "index.default_pipeline": "corelight_main_pipeline"
     }
   },
   "_meta": {

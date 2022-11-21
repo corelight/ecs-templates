@@ -243,7 +243,10 @@ def component( session, baseURI, logstash, updateTemplates ):
     if not logstash:
         fileList=os.listdir(ingest)
         for filename in fileList:
-            exportToElastic(session, baseURI, ingest, filename, "/_component_template/", retry=4)
+            if filename == "corelight-non-ds-component_template-use_ingest_pipeline-settings":
+                exportToElastic(session, baseURI, ingest, filename, "/_component_template/", retry=4)
+            else:
+                exportToElastic(session, baseURI, ingest, filename, "/_index_template/", retry=4)
 
 def index(session, baseURI, logstash,updateTemplates):
     source = "./templates-component/templates-legacy/"
@@ -261,7 +264,7 @@ def uploadIngestPipelines(session,baseURI):
     source = "./ecs-mapping-master/automatic_install/"
     fileList=os.listdir(source)
     for filename in fileList:
-        if "deprecated" not in file:
+        if "deprecated" not in filename:
             exportToElastic(session, baseURI, source, filename, "/_ingest/pipeline/", retry=4)
 
 
