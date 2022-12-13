@@ -1,3 +1,6 @@
+# Script specific to ignore
+.z_corelight_ecs_installer
+# General to Ignore
 .DS_Store
 .git
 .vscode/

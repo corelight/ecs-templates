@@ -4322,6 +4322,22 @@
         },
         "vpn": {
           "properties": {
+            "attr_types": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "attr_vals": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "certificates": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "class": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
             "client_info": {
               "fields": {
                 "text": {
@@ -4334,7 +4350,38 @@
             "established": {
               "type": "boolean"
             },
+            "exchange_type": {
+              "type": "integer"
+            },
+            "flag_a": {
+              "type": "boolean"
+            },
+            "flag_c": {
+              "type": "boolean"
+            },
+            "flag_e": {
+              "type": "boolean"
+            },
+            "flag_i": {
+              "type": "boolean"
+            },
+            "flag_r": {
+              "type": "boolean"
+            },
+            "flag_v": {
+              "type": "boolean"
+            },
+            "hash": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
             "inferences": {
+              "ignore_above": 32000,
               "type": "keyword"
             },
             "inferences_detailed": {
@@ -4343,8 +4390,54 @@
             "initiations": {
               "type": "integer"
             },
-            "name": {
+            "initiator_spi": {
+              "ignore_above": 32000,
               "type": "keyword"
+            },
+            "is_originating": {
+              "type": "boolean"
+            },
+            "ke_dh_groups": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "lan_addrs": {
+              "copy_to": "related.ip",
+              "type": "ip"
+            },
+            "length": {
+              "type": "integer"
+            },
+            "maj_ver": {
+              "type": "integer"
+            },
+            "message_id": {
+              "type": "integer"
+            },
+            "method": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "min_ver": {
+              "type": "integer"
+            },
+            "name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "notify_messages": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "proposals": {
+              "type": "integer"
+            },
+            "responder_spi": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "responses": {
+              "type": "integer"
             },
             "server_name": {
               "fields": {
@@ -4352,9 +4445,26 @@
                   "type": "text"
                 }
               },
+              "ignore_above": 32000,
               "type": "keyword"
             },
-            "responses": {
+            "transform_attributes": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "transforms": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "vendor_ids": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "wan_addrs": {
+              "copy_to": "related.ip",
+              "type": "ip"
+            },
+            "wan_ports": {
               "type": "integer"
             }
           }
