@@ -1,4 +1,4 @@
-//PUT /_component_template/corelight-ds-component_template-parse_failures-base-settings
+//PUT /_component_template/corelight-component_template-parse_failures-base-settings
 {
   "version": 11221,
   "template": {

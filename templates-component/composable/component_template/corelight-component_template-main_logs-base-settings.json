@@ -1,14 +1,14 @@
-//PUT /_component_template/corelight-ds-component_template-metrics_and_stats-base-settings
+//PUT /_component_template/corelight-component_template-main_logs-base-settings
 {
   "version": 11221,
   "template": {
     "settings": {
       "index": {
         "mapping": {
-          "coerce": false,
+          "coerce": true,
           "total_fields.limit": 10000
         },
-        "refresh_interval": "20s"
+        "refresh_interval": "15s"
       },
       "number_of_shards": "1",
       "number_of_replicas": "0"

@@ -1,4 +1,4 @@
-//PUT /_index_template/corelight-ds-index_template-main_logs_use_ingest_pipeline
+//PUT /_index_template/corelight-index_template-main_logs_use_ingest_pipeline
 {
   "index_patterns": [
     "corelight-ds*",
@@ -7,7 +7,7 @@
   ,
   "data_stream": { },
   "composed_of": [
-    "corelight-ds-component_template-use_ingest_pipeline-settings"
+    "corelight-component_template-use_ingest_pipeline-settings"
   ],
   "priority": 900,
   "_meta": {

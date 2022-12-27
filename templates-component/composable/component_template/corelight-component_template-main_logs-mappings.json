@@ -1,4 +1,4 @@
-//PUT /_component_template/corelight-ds-component_template-main_logs-mappings
+//PUT /_component_template/corelight-component_template-main_logs-mappings
 {
   "version": 11221,
   "template": {

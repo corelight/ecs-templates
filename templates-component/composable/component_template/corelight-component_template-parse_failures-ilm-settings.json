@@ -1,9 +1,9 @@
-//PUT /_component_template/corelight-ds-component_template-main_logs-ilm-settings
+//PUT /_component_template/corelight-component_template-parse_failures-ilm-settings
 {
   "version": 11221,
   "template": {
     "settings": {
-      "index.lifecycle.name": "corelight-ds-ilm_policy-main_logs"
+      "index.lifecycle.name": "corelight-ilm_policy-parse_failures"
     }
   },
   "_meta": {

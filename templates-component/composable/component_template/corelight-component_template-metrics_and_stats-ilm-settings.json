@@ -1,8 +1,9 @@
-//PUT /_component_template/corelight-ds-component_template-metrics_and_stats-create_zeek_corelight-aliases
+//PUT /_component_template/corelight-component_template-metrics_and_stats-ilm-settings
 {
+  "version": 11221,
   "template": {
-    "aliases": {
-      "zeek-corelight-ds": {}
+    "settings": {
+      "index.lifecycle.name": "corelight-ilm_policy-metrics_and_stats"
     }
   },
   "_meta": {

@@ -1,8 +1,8 @@
-//PUT /_component_template/corelight-ds-component_template-main_logs-create_ecs_corelight-aliases
+//PUT /_component_template/corelight-component_template-metrics_and_stats-create_zeek_corelight-aliases
 {
   "template": {
     "aliases": {
-      "ecs-corelight-ds": {}
+      "zeek-corelight-ds": {}
     }
   },
   "_meta": {

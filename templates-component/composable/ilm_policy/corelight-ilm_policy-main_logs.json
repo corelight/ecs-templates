@@ -1,4 +1,4 @@
-//PUT /_ilm/policy/corelight-ds-ilm_policy-main_logs
+//PUT /_ilm/policy/corelight-ilm_policy-main_logs
 {
   "policy": {
     "phases": {

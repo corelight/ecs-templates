@@ -1,9 +1,8 @@
-//PUT /_component_template/corelight-ds-component_template-parse_failures-ilm-settings
+//PUT /_component_template/corelight-component_template-main_logs-create_ecs_corelight-aliases
 {
-  "version": 11221,
   "template": {
-    "settings": {
-      "index.lifecycle.name": "corelight-ds-ilm_policy-parse_failures"
+    "aliases": {
+      "ecs-corelight-ds": {}
     }
   },
   "_meta": {
