@@ -1,0 +1,11 @@
+{
+    "template": {
+        "aliases": "${aliases}"
+    },
+    "version": 2022122701,
+    "_meta": {
+        "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+        "ecs_version": "8.5.0",
+        "labels_corelight_ecs_version": "8.5.0.1"
+    }
+}
