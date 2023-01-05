@@ -1,7 +1,6 @@
-//PUT /_component_template/corelight-component_template-metrics_and_stats-mappings
 {
-  "version": 11221,
   "template": {
+    "settings": "${settings}",
     "mappings": {
       "date_detection": true,
       "dynamic": "true",
@@ -211,8 +210,10 @@
       }
     }
   },
+  "version": 2022122701,
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-    "version": 11221
+    "ecs_version": "8.5.0",
+    "labels_corelight_ecs_version": "8.5.0.1"
   }
 }

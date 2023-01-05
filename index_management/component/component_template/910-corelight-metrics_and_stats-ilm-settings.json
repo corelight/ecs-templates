@@ -1,12 +1,11 @@
-//PUT /_component_template/corelight-component_template-metrics_and_stats-create_zeek_corelight-aliases
 {
   "template": {
-    "aliases": {
-      "zeek-corelight-ds": {}
-    }
+    "settings": "${settings}"
   },
+  "version": 2022122701,
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-    "version": 11221
+    "ecs_version": "8.5.0",
+    "labels_corelight_ecs_version": "8.5.0.1"
   }
 }
