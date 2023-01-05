@@ -15,7 +15,7 @@
         }
       },
       "warm": {
-        "min_age": "5d",
+        "min_age": "7d",
         "actions": {
           "forcemerge": {
             "max_num_segments": 5
