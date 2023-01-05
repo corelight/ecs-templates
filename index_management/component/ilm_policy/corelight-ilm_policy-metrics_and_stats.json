@@ -1,0 +1,45 @@
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "min_age": "0ms",
+        "actions": {
+          "rollover": {
+            "max_primary_shard_size": "50gb",
+            "max_age": "5d"
+          },
+          "set_priority": {
+            "priority": 100
+          },
+          "readonly": {}
+        }
+      },
+      "warm": {
+        "min_age": "14d",
+        "actions": {
+          "forcemerge": {
+            "max_num_segments": 5
+          },
+          "set_priority": {
+            "priority": 50
+          },
+          "readonly": {}
+        }
+      },
+      "delete": {
+        "min_age": "30d",
+        "actions": {
+          "delete": {
+            "delete_searchable_snapshot": true
+          }
+        }
+      }
+    },
+    "_meta": {
+      "labels_corelight_ecs_version": "8.5.0.1",
+      "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+      "ecs_version": "8.5.0",
+      "version": 2022122701
+    }
+  }
+}
