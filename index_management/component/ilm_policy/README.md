@@ -1,3 +1,7 @@
+# Important
+any files in the directory that end with '.json' will be uploaded/saved
+
+## Order and Naming
 Component templates can not be given a true priority/order and are solely based on the order of the list when used within the index_template under the setting "copmposed_of".
 
 In order to ensure that the component templates are applied in the correct order, the component templates are listed in the order that they should be applied alphanumerically.
