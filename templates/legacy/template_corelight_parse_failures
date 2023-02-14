@@ -3,7 +3,7 @@
   "order": 99,
   "version": 11221,
   "index_patterns": [
-    "parse-failures-corelight-*"
+    "parse_failures-corelight-*"
   ],
   "settings": {
     "index": {
