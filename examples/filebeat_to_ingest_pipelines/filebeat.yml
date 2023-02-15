@@ -13,8 +13,8 @@
 # ============================== Filebeat inputs ===============================
 
 filebeat.inputs:
-- type: tcp
-  max_message_size: 10MiB
+- type: filestream
+  message_max_bytes: 10MiB
   host: "localhost:8926"
   tags: ["forwarded", "filebeat_corelight"]
   pipeline: "corelight_main_pipeline"
