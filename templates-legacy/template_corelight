@@ -4470,7 +4470,61 @@
             "type": "integer"
           }
         }
+      },
+      "ldap": {
+        "properties": {
+          "message_id": {
+            "type": "integer"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "opcode" : {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "result" : {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "diagnostic_message" : {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "object": {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "argument" : {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "scope": {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "deref" : {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "base_object" : {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "result_count" : {
+            "type" : "integer"
+          },
+          "filter" : {
+            "ignore_above": 32000,
+            "type": "keyword"
+          },
+          "attributes" : {
+            "ignore_above": 32000,
+            "type": "keyword"
+          }
+        }
       }
-    }
   }
 }
+}
+

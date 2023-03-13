@@ -4512,14 +4512,6 @@
             "result_count" : {
               "type" : "integer"
             },
-            "result" : {
-              "ignore_above": 32000,
-              "type": "keyword"
-            },
-            "diagnostic_message": {
-              "ignore_above": 32000,
-              "type": "keyword"
-            },
             "filter" : {
               "ignore_above": 32000,
               "type": "keyword"
