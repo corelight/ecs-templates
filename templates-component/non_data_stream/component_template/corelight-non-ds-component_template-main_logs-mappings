@@ -4469,6 +4469,14 @@
             }
           }
         },
+        "etc_viz": {
+          "properties": {
+            "viz_stat": {
+              "ignore_above" : 32000,
+              "type": "keyword"
+            }
+          }
+        },
         "ldap": {
           "properties": {
             "message_id": {

@@ -2533,6 +2533,30 @@
             },
             "suppress_duration" : {
               "type" : "double"
+            },
+            "ports" : {
+              "type" : "keyword",
+              "ignore_above" : 8192,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "duration" : {
+              "type" : "long"
+            },
+            "protocal" : {
+              "type" : "keyword",
+              "ignore_above" : 8192,
+              "fields" : {
+                "text" : {
+                  "type" : "text"
+                }
+              }
+            },
+            "number_of_hosts" : {
+              "type": "long"
             }
           }
         },
@@ -4466,6 +4490,14 @@
             },
             "wan_ports": {
               "type": "integer"
+            }
+          }
+        },
+        "etc_viz": {
+          "properties": {
+            "viz_stat": {
+              "ignore_above" : 32000,
+              "type": "keyword"
             }
           }
         },
