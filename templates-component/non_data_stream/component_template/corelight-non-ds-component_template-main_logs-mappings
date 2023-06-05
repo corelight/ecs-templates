@@ -4474,6 +4474,10 @@
             "viz_stat": {
               "ignore_above" : 32000,
               "type": "keyword"
+            },
+            "service": {
+              "ignore_above" : 32000,
+              "type": "keyword"
             }
           }
         },
