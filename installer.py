@@ -284,7 +284,13 @@ def main():
         if logstash:
             cont = input_bool("This script needs to be run on the Logstash box. Does this box have Logstash running and is the Logstash ingesting?", default=True)
             if cont:
-                fileName=download_repository( logstashRepo )
+                #Answer Yes if you are in a offline or Airgaped enviorment 
+                # Then give the filename and location and it will run
+                download = input_bool("Have you downloaded logstash repo?", default=False)
+                if download:
+                    filename = input("Please enter the filename for the Zip file of the Logstash Pipeline repo? <note it need to be in the same directorey as installer>: ")
+                else:   
+                    fileName=download_repository( logstashRepo )
                 unzipGit(fileName)
             
                 logstashLocation = input("Enter the Logstash location to store the piepline files in: ")
@@ -314,7 +320,13 @@ def main():
                 print("Strange things are afoot at the Circle-K.")
                 sys.exit(1)
         else:
-            fileName=download_repository( ingestRepo )
+            #Answer Yes if you are in a offline or Airgaped enviorment 
+            # Then give the filename and location and it will run
+            download = input_bool("Have you downloaded Ingest repo?", default=False)
+            if download:
+                filename = input("Please enter the filename for the Zip file of the Logstash Pipeline repo? <note it need to be in the same directorey as installer>: ")
+            else: 
+                fileName=download_repository( ingestRepo )
             unzipGit(fileName)
             uploadIngestPipelines(session,baseURI)
     templateDS = input_bool("Will you be useing Datastreams?", default=True)
