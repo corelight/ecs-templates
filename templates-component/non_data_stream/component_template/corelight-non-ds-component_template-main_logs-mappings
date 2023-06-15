@@ -3102,6 +3102,10 @@
             "date" : {
               "type" : "date"
             },
+            "date_raw": {
+              "type": "keyword",
+              "ignore_above": 8192
+            },
             "date_non_formatted_date" : {
               "type" : "keyword",
               "ignore_above" : 8192
