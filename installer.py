@@ -220,9 +220,9 @@ def datastreams(session, baseURI, logstash,updateTemplates):
     for filename in fileList:
         exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=4)
     if not logstash:
-        fileList=os.listdir(ingest)
-        for filename in fileList:
-            exportToElastic(session, baseURI, ingest, filename, "/_index_template/", retry=4)
+        exportToElastic(session, baseURI, ingest, "corelight-ds-component_template-use_ingest_pipeline-settings", "/_component_template/", retry=4)
+        exportToElastic(session, baseURI, ingest, "corelight-ds-index_template-main_logs_use_ingest_pipeline", "/_index_template/", retry=4)
+        exportToElastic(session, baseURI, ingest, "corelight-ds-index_template-metrics_and_stats_use_ingest_pipeline", "/_index_template/", retry=4)
 
 def component( session, baseURI, logstash, updateTemplates ):
     source = "./templates-component/non_data_stream/"
