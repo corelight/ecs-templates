@@ -1,4 +1,3 @@
-//PUT /_index_template/corelight-non-ds-index_template-files
 {
   "index_patterns": [
     "corelight-non-ds-files-*"

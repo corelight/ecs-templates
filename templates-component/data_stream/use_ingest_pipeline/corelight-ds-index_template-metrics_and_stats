@@ -1,4 +1,3 @@
-//PUT /_index_template/corelight-ds-index_template-metrics_and_stats_use_ingest_pipeline
 {
   "index_patterns": [
     "metrics-zeek-corelight-*",

@@ -1,4 +1,3 @@
-//PUT /_index_template/corelight-non-ds-index_template-temporary-non_normalized-event_dataset
 {
   "index_patterns": [
     "corelight-non-ds-temporary-non_normalized-event_dataset-*"

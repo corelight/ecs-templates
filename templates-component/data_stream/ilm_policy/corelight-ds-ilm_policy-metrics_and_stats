@@ -1,4 +1,3 @@
-//PUT /_ilm/policy/corelight-ds-ilm_policy-metrics_and_stats
 {
   "policy": {
     "phases": {

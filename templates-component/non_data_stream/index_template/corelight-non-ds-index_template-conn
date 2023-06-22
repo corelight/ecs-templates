@@ -1,4 +1,3 @@
-//PUT /_index_template/corelight-non-ds-index_template-conn
 {
   "index_patterns": [
     "corelight-non-ds-conn-*"

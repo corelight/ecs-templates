@@ -1,4 +1,3 @@
-//PUT /_ilm/policy/corelight-non-ds-ilm_policy-main_logs
 {
   "policy": {
     "phases": {
