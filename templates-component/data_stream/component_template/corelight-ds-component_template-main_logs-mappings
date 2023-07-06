@@ -117,6 +117,78 @@
               },
               "ignore_above": 4096,
               "type": "keyword"
+            },
+            "pdu_service": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "object_type": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "instance_number": {
+              "type": "long"
+            },
+            "vender": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "range": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "object_name": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "property": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "array_index": {
+              "type": "long"
+            },
+            "array_value": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "is_orig": {
+              "type": "boolean"
             }
           }
         },
@@ -4508,6 +4580,17 @@
             }
           }
         },
+        "ml_results": {
+          "properties" : {
+            "predicted_tag_name": {
+            "ignore_above": 32000,
+            "type": "keyword"
+            },
+            "predicted_probability" : {
+              "type": "integer"
+            }
+          }
+        },
         "ldap": {
           "properties": {
             "message_id": {
@@ -4560,9 +4643,750 @@
               "type": "keyword"
             }
           }
+        },
+"bsap": {
+          "properties": {
+            "num_msg": {
+              "type": "long"
+            },
+            "type_name" : {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "header_size": {
+              "type": "long"
+            },
+            "mes_seq": {
+              "type": "long"
+            },
+            "res_seq": {
+              "type": "long"
+            },
+            "data_len": {
+              "type": "long"
+            },
+            "sequence": {
+              "type": "long"
+            },
+            "app_func_code" : {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "node_status": {
+              "type": "long"
+            },
+            "func_code" : {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "variable_count": {
+              "type": "long"
+            },
+            "variables": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "variable_value": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "data": {
+              "fields": {
+                "text": {
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "ser": {
+              "type": "long"
+            },
+            "dadd": {
+              "type": "long"
+            },
+            "sadd": {
+              "type": "long"
+            },
+            "ctl": {
+              "type": "long"
+            },
+            "dfun" : {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "seq" : {
+              "type": "long"
+            },
+            "sfun" : {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "extfun" : {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+},
+  "genisys": {
+    "properties": {
+      "header" : {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "server" : {
+        "type": "long"
+      },
+      "direction" : {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "crc_transmitted" : {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "crc_calculated" : {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "payload": {
+        "fields": {
+          "text": {
+            "type": "text"
+          }
+        },
+        "ignore_above": 32000,
+        "type": "keyword"
+      }
+  }
+},
+"s7comm": {
+  "properties": {
+    "is_orig": {
+      "type": "boolean"
+    },
+    "rosctr_code": {
+      "type": "long"
+    },
+    "rosctr_name" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "pdu_reference": {
+      "type": "long"
+    },
+    "function_code" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "function_name" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "subfunction_code" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "subfunction_name" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "error_class" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "error_code" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "method" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "szl_id_name" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "szl_id": {
+      "fields": {
+        "text": {
+          "type": "text"
         }
+      },
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "szl_index": {
+      "fields": {
+        "text": {
+          "type": "text"
+        }
+      },
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "return_code": {
+      "fields": {
+        "text": {
+          "type": "text"
+        }
+      },
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "return_code_name" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "function_status" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "session_id": {
+      "type": "long"
+    },
+    "blocklength": {
+      "type": "long"
+    },
+    "filename" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "block_type" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "block_number" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "destination_filesystem" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "version": {
+      "type": "long"
+    },
+    "opcode" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "opcode_name" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    }
+  }
+},
+"modbus" : {
+  "properties" : {
+    "unit_id": {
+      "type": "long"
+    },
+    "fuction": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "network_direction" : {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "address": {
+      "type": "long"
+    },
+    "quantity": {
+      "type": "long"
+    },
+    "values": {
+      "fields": {
+        "text": {
+          "type": "text"
+        }
+      },
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "and_mask": {
+      "type": "long"
+    },
+    "or_mask": {
+      "type": "long"
+    },
+    "write_start_address": {
+      "type": "long"
+    },
+    "write_registers": {
+      "fields": {
+        "text": {
+          "type": "text"
+        }
+      },
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "read_start_address": {
+      "type": "long"
+    },
+    "read_quantity": {
+      "type": "long"
+    },
+    "read_registers": {
+      "fields": {
+        "text": {
+          "type": "text"
+        }
+      },
+      "ignore_above": 32000,
+      "type": "keyword"
+    }
+  }
+},
+"enip": {
+  "properties": {
+    "command": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "length": {
+      "type": "long"
+    },
+    "options": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "sender_context": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "sender_handle": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "status": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "is_orig" :{
+      "type": "boolean"
+    },
+    "enip_command_code": {
+      "fields": {
+        "text": {
+          "type": "text"
+        }
+      },
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "enip_command": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "enip_status": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    }
+  }
+},
+"ecat": {
+  "properties": {
+    "srcmac": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "dstmac": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "command": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "slave_addr": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "register_addr": {
+      "ignore_above" : 32000,
+      "type": "keyword"
+    },
+    "data": {
+      "fields": {
+        "text": {
+          "type": "text"
+        }
+      },
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+  "log_addr": {
+    "ignore_above" : 32000,
+    "type": "keyword"
+  },
+  "length": {
+    "type": "long"
+  },
+  "slave_id": {
+    "ignore_above" : 32000,
+    "type": "keyword"
+  },
+  "revision": {
+    "ignore_above" : 32000,
+    "type": "keyword"
+  },
+  "dev_type": {
+    "ignore_above" : 32000,
+    "type": "keyword"
+  },
+  "build": {
+    "ignore_above" : 32000,
+    "type": "keyword"
+  },
+  "fmmucnt": {
+    "ignore_above" : 32000,
+    "type": "keyword"
+  },
+  "smcount": {
+    "ignore_above" : 32000,
+    "type": "keyword"
+  },
+  "ports": {
+    "ignore_above" : 32000,
+    "type": "keyword"
+  },
+  "dpram": {
+    "ignore_above" : 32000,
+    "type": "keyword"
+  },
+  "features": {
+    "fields": {
+      "text": {
+        "type": "text"
+      }
+    },
+    "ignore_above": 32000,
+    "type": "keyword"
+  },
+"targetid": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"targetport": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"senderid": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"senderport": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"cmd": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"stateflag": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"number": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"type": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"req_resp": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"index": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"subindex": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"dataoffset": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"opcode": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"reserved": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"packet_num": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"error_code": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"filename": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"incomplete": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"error": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"drive_num": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"element_flags": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"arp_type": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"spa": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"sha": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"tpa": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+},
+"tha": {
+  "ignore_above" : 32000,
+  "type": "keyword"
+}
+  }
+},
+"cip": {
+  "properties": {
+    "is_orig": {
+      "type": "boolean"
+    },
+    "cip_sequence_count": {
+      "type": "long"
+    },
+    "cip_service_code": {
+      "fields": {
+        "text": {
+          "type": "text"
+        }
+      },
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "cip_service": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "cip_status_code": {
+      "fields": {
+        "text": {
+          "type": "text"
+        }
+      },
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "cip_status": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "cip_extended_status_code": {
+       "fields": {
+         "text": {
+           "type": "text"
+         }
+       },
+       "ignore_above": 32000,
+       "type": "keyword"
+     },
+     "cip_extended_status": {
+       "ignore_above": 32000,
+       "type": "keyword"
+     },
+     "class_id": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "class_name": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "instance_id": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "attribute_id": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "connection_id": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "sequence_number": {
+      "type": "long"
+    },
+    "data_length": {
+      "type": "long"
+    },
+    "io_data": {
+        "fields": {
+          "text": {
+            "type": "text"
+          }
+        },
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "encapsulation_version": {
+        "type": "long"
+      },
+      "socket_address": {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "socket_port": {
+        "type": "integer"
+      },
+      "vendor_id": {
+        "type": "long"
+      },
+      "vendor_name": {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "device_type_id": {
+        "type": "long"
+      },
+      "device_type_name": {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "product_code": {
+        "type": "long"
+      },
+      "revision": {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "device_status": {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "serial_number": {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "product_name": {
+        "ignore_above": 32000,
+        "type": "keyword"
+      },
+      "device_state": {
+        "ignore_above": 32000,
+        "type": "keyword"
       }
     }
+  },
+"dnp3": {
+  "properties": {
+    "fc_reply": {
+      "ignore_above": 32000,
+       "type": "keyword"
+    },
+    "fc_request": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "iin": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "block_type": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "function_code": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "index_number": {
+      "type": "long"
+    },
+    "trip_control_code": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "operation_type": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "execute_count": {
+      "type": "long"
+    },
+    "on_time": {
+      "type": "long"
+    },
+    "off_time": {
+      "type": "long"
+    },
+    "status_code": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "object_count": {
+      "type": "long"
+    },
+    "range_low": {
+      "type": "long"
+    },
+    "range_high": {
+      "type": "long"
+    }
+  }
+},
+"cotp": {
+  "properties": {
+    "is_orig": {
+      "type": "boolean"
+    },
+    "pdu_code" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "pdu_name" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    }
+  }
+}
+  }
+}
   },
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",

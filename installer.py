@@ -241,6 +241,7 @@ def component( session, baseURI, logstash, updateTemplates ):
     for filename in fileList:
         exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=4)
     if not logstash:
+        exportToElastic(session, baseURI, ingest, "corelight-non-ds-component_template-use_ingest_pipeline-settings", "/_component_template/", retry=4)
         fileList=os.listdir(ingest)
         for filename in fileList:
             if filename == "corelight-non-ds-component_template-use_ingest_pipeline-settings":
