@@ -3176,10 +3176,6 @@
           "date" : {
             "type" : "date"
           },
-          "date_raw": {
-            "type": "keyword",
-            "ignore_above": 8192
-          },
           "date_non_formatted_date" : {
             "type" : "keyword",
             "ignore_above" : 8192
@@ -5347,6 +5343,30 @@
       "type": "keyword"
     },
     "pdu_name" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    }
+  }
+},
+"tds": {
+  "properties": {
+    "command": {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "procedure_name" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "header_type" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "query" : {
+      "ignore_above": 32000,
+      "type": "keyword"
+    },
+    "parameters" : {
       "ignore_above": 32000,
       "type": "keyword"
     }
