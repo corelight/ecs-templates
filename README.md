@@ -54,6 +54,10 @@ Example as follows
  pipeline.id: main
   path.config: "/etc/logstash/CorelightPipelines/*.conf"
 
+  If running logstash 8.x or higher run the following sed command to disable ecs compatibility check
+  sed -i "s/#ecs_compatiblsility =>/ecs_compatibility =>/" /etc/logstash/corelightpipelines/*.conf
+
+
 
 
 ## Github Repository Definitions
