@@ -43,8 +43,6 @@ First, clone or download the Corelight ECS-templates repository and run the pyth
 Post-install steps for logstash 
 
 * If you are using Datastreams you need to do the following
-  * Edit the file 0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf.disable - on line 14 set$corelight_LS_Index_stratery to datastream “[@metadata][te,porary_metadata_index_strategy]” => “datastream”
-  * Rename file 0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf.disable to 0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf
   * Edit the file 9939-elasticsearch-corelight_zeek-output.conf.disable and add how to connect to the elastic server and then rename the file to 9939-elasticsearch-corelight_zeek-output.conf
 
 Last step would be to edit you pipeline.yaml file to load the pipeline in the CorelightPipelines directory 
@@ -53,9 +51,6 @@ Example as follows
 
  pipeline.id: main
   path.config: "/etc/logstash/CorelightPipelines/*.conf"
-
-  If running logstash 8.x or higher run the following sed command to disable ecs compatibility check
-  sed -i "s/#ecs_compatiblsility =>/ecs_compatibility =>/" /etc/logstash/corelightpipelines/*.conf
 
 
 
