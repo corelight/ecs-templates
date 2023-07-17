@@ -12,6 +12,7 @@ import sys
 import zipfile
 import os
 import random
+import subprocess
 
 def checkRequest(responseObj):
     code = responseObj.status_code
@@ -133,6 +134,23 @@ def enableIngest(ingest_type, raw, logstashLocation):
             source = ls_pipeline_install_dir + kafka + ".disabled"
             dest = ls_pipeline_install_dir + kafka 
     shutil.copy(source, dest)
+
+def postPorcessing(logstashLocation, datastream, logstashVersion):
+    ls_pipeline_install_dir = logstashLocation + "/CorelightPipelines/"
+    if logstashVersion:
+        sedCommand = 'sed -i "s/#ecs_compatibility =>/ecs_compatibility =>/" ' + ls_pipeline_install_dir + '/*.conf'
+        subprocess.call([sedCommand],shell=True)
+    if datastream:
+        filename = ls_pipeline_install_dir + "0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf.disabled"
+        f = open(filename)
+        ds = f.read()
+        if '=> "$Corelight_LS_Index_Strategy"' in ds:
+            dsEnabled = ds.replace('=> "$Corelight_LS_Index_Strategy"', '=> "datastream"')
+            f.close()
+            dsOut = ls_pipeline_install_dir + "0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf"
+            f = open(dsOut, "wt")
+            f.write(dsEnabled)
+            f.close()
 
 def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
     filename = filePath + pipeline
@@ -294,6 +312,7 @@ def main():
                 update=input_bool("Are you upgrading an existing Corelight Logstsh Pipeline?", default=False)
                 if not update:
                     installLogstash(logstashLocation)
+                    logstashVersion = input_bool("Are you running Logstash version 8.x or higher?", default=True)
                     raw = input_bool("Do you want to keep the raw message, this will incerease storage space?", default=False)
                     tcp = input_bool("Are you sending data to logstsh over JSON over TCP?:", default=False)
                     if tcp:
@@ -329,14 +348,20 @@ def main():
     templateDS = input_bool("Will you be useing Datastreams?", default=True)
     if templateDS:
         datastreams(session,baseURI,logstash,updateTemplates)
+        if logstash:
+            postPorcessing(logstashLocation, templateDS, logstashVersion)
     else:
         templateComponent = input_bool("Will you be useing Component Templates?", default=True)
         if templateComponent:
             component( session, baseURI, logstash, updateTemplates )
+            if logstash:
+                postPorcessing(logstashLocation, templateDS, logstashVersion)
         else:
             templateLegcy = input_bool("Will you be using Legcy Templates? This is not supported on version 8.x and above?", default=False)
             if templateLegcy:
                 index(session,baseURI,logstash,updateTemplates)
+                if logstash:
+                    postPorcessing(logstashLocation, templateDS, logstashVersion)
 
 if __name__ == "__main__":
     main()
