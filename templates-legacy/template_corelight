@@ -1686,17 +1686,13 @@
                 },
                 "type": "keyword"
               },
-              "non_formated": {
-                "properties": {
-                  "not_after": {
+              "nonformatted_not_after": {
                     "fields": {
                       "text": {
                         "type": "text"
                       }
                     },
                     "type": "keyword"
-                  }
-                  }
                 },
               "subject": {
                 "properties": {
