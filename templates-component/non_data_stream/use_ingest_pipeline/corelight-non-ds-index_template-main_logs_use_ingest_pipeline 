@@ -9,7 +9,7 @@
     "corelight-non-ds-component_template-main_logs-create_ecs_corelight-aliases",
     "corelight-non-ds-component_template-use_ingest_pipeline-settings"
   ],
-  "priority": 900,
+  "priority": 901,
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
     "version": 11221
