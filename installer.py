@@ -348,19 +348,19 @@ def main():
     templateDS = input_bool("Will you be useing Datastreams?", default=True)
     if templateDS:
         datastreams(session,baseURI,logstash,updateTemplates)
-        if logstash:
+        if logstash and not updateLogstash:
             postPorcessing(logstashLocation, templateDS, logstashVersion)
     else:
         templateComponent = input_bool("Will you be useing Component Templates?", default=True)
         if templateComponent:
             component( session, baseURI, logstash, updateTemplates )
-            if logstash:
+            if logstash and not updateLogstash:
                 postPorcessing(logstashLocation, templateDS, logstashVersion)
         else:
             templateLegcy = input_bool("Will you be using Legcy Templates? This is not supported on version 8.x and above?", default=False)
             if templateLegcy:
                 index(session,baseURI,logstash,updateTemplates)
-                if logstash:
+                if logstash and not updateLogstash:
                     postPorcessing(logstashLocation, templateDS, logstashVersion)
 
 if __name__ == "__main__":
