@@ -4515,7 +4515,7 @@
               "type": "integer"
             },
             "message_id": {
-              "type": "integer"
+              "type": "long"
             },
             "method": {
               "ignore_above": 32000,
