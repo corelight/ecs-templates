@@ -1224,15 +1224,31 @@
               "accessed": {
                 "type": "date"
               },
+              "accessed_non_formatted_date": {
+                "type": "keyword",
+                "ignore_above": 8192
+              },
               "changed": {
                 "path": "file.ctime",
                 "type": "alias"
               },
+              "changed_non_formatted_date": {
+                "type": "keyword",
+                "ignore_above": 8192
+              },
               "created": {
                 "type": "date"
               },
+              "created_non_formatted_date": {
+                "type": "keyword",
+                "ignore_above": 8192
+              },
               "ctime": {
                 "type": "date"
+              },
+              "ctime_non_formatted_date": {
+                "type": "keyword",
+                "ignore_above": 8192
               },
               "device": {
                 "copy_to": "related.hosts",
