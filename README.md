@@ -44,6 +44,8 @@ Post-install steps for logstash
 
 * If you are using Datastreams you need to do the following
   * Edit the file 9939-elasticsearch-corelight_zeek-output.conf.disable and add how to connect to the elastic server and then rename the file to 9939-elasticsearch-corelight_zeek-output.conf
+ 
+*  There is a new output file 9939-elasticsearch-corelight_zeek-output_with_metrics_cluster.conf.disabled this will let you send Corelight metrics to another cluster. You configure it like the other 9939 just add the config to connect to the Security cluster and the metrics cluster and change the name from .disable to .conf
 
 Last step would be to edit you pipeline.yaml file to load the pipeline in the CorelightPipelines directory 
 
