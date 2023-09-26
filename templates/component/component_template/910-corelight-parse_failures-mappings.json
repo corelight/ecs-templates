@@ -16,6 +16,7 @@
       ],
       "properties": {
         "@timestamp": {
+          "ignore_malformed": false,
           "type": "date"
         },
         "@version": {

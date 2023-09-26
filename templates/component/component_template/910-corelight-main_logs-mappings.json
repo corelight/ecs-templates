@@ -63,6 +63,7 @@
       ],
       "properties": {
         "@timestamp": {
+          "ignore_malformed": false,
           "type": "date",
           "format": "strict_date_optional_time||epoch_millis"
         },
