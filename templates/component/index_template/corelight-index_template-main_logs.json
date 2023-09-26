@@ -1,5 +1,6 @@
 {
   "composed_of": "${composed_of}",
+  "ignore_missing_component_templates": [ "corelight-index_template-main_logs@custom" ],
   "index_patterns": "${index_patterns}",
   "priority": "${priority}",
   "version": 2022122701,
