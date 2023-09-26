@@ -64,7 +64,7 @@
       "properties": {
         "@timestamp": {
           "type": "date",
-          "format": "date_optional_time||epoch_millis"
+          "format": "strict_date_optional_time||epoch_millis"
         },
         "@version": {
           "ignore_above": 1024,
