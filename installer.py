@@ -12,6 +12,7 @@ import sys
 import zipfile
 import os
 import random
+import subprocess
 
 def checkRequest(responseObj):
     code = responseObj.status_code
@@ -134,6 +135,23 @@ def enableIngest(ingest_type, raw, logstashLocation):
             dest = ls_pipeline_install_dir + kafka 
     shutil.copy(source, dest)
 
+def postPorcessing(logstashLocation, datastream, logstashVersion):
+    ls_pipeline_install_dir = logstashLocation + "/CorelightPipelines/"
+    if logstashVersion:
+        sedCommand = 'sed -i "s/#ecs_compatibility =>/ecs_compatibility =>/" ' + ls_pipeline_install_dir + '/*.conf'
+        subprocess.call([sedCommand],shell=True)
+    if datastream:
+        filename = ls_pipeline_install_dir + "0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf.disabled"
+        f = open(filename)
+        ds = f.read()
+        if '=> "$Corelight_LS_Index_Strategy"' in ds:
+            dsEnabled = ds.replace('=> "$Corelight_LS_Index_Strategy"', '=> "datastream"')
+            f.close()
+            dsOut = ls_pipeline_install_dir + "0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf"
+            f = open(dsOut, "wt")
+            f.write(dsEnabled)
+            f.close()
+
 def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
     filename = filePath + pipeline
     if pipeline != "zeek-enrichment-conn-policy/_execute":
@@ -220,9 +238,10 @@ def datastreams(session, baseURI, logstash,updateTemplates):
     for filename in fileList:
         exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=4)
     if not logstash:
-        fileList=os.listdir(ingest)
-        for filename in fileList:
-            exportToElastic(session, baseURI, ingest, filename, "/_index_template/", retry=4)
+        exportToElastic(session, baseURI, ingest, "corelight-ds-component_template-use_ingest_pipeline-settings", "/_component_template/", retry=4)
+        # exportToElastic(session, baseURI, ingest, "corelight-ds-index_template-main_logs_use_ingest_pipeline", "/_index_template/", retry=4)
+        exportToElastic(session, baseURI, ingest, "corelight-ds-index_template-metrics_and_stats", "/_index_template/", retry=4)
+        exportToElastic(session, baseURI, ingest, "corelight_postprocess_index_naming_pipeline", "/_ingest/pipeline/", retry=4)
 
 def component( session, baseURI, logstash, updateTemplates ):
     source = "./templates-component/non_data_stream/"
@@ -241,12 +260,9 @@ def component( session, baseURI, logstash, updateTemplates ):
     for filename in fileList:
         exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=4)
     if not logstash:
-        fileList=os.listdir(ingest)
-        for filename in fileList:
-            if filename == "corelight-non-ds-component_template-use_ingest_pipeline-settings":
-                exportToElastic(session, baseURI, ingest, filename, "/_component_template/", retry=4)
-            else:
-                exportToElastic(session, baseURI, ingest, filename, "/_index_template/", retry=4)
+        exportToElastic(session, baseURI, ingest, "corelight-non-ds-component_template-use_ingest_pipeline-settings", "/_component_template/", retry=4)
+        exportToElastic(session, baseURI, ingest, "corelight-non-ds-index_template-main_logs_use_ingest_pipeline", "/_index_template/", retry=4)
+        exportToElastic(session, baseURI, ingest, "corelight-non-ds-index_template-metrics_and_stats", "/_index_template/", retry=4)
 
 def index(session, baseURI, logstash,updateTemplates):
     source = "./templates-component/templates-legacy/"
@@ -284,13 +300,20 @@ def main():
         if logstash:
             cont = input_bool("This script needs to be run on the Logstash box. Does this box have Logstash running and is the Logstash ingesting?", default=True)
             if cont:
-                fileName=download_repository( logstashRepo )
+                #Answer Yes if you are in a offline or Airgaped enviorment 
+                # Then give the filename and location and it will run
+                download = input_bool("Have you downloaded logstash repo?", default=False)
+                if download:
+                    filename = input("Please enter the filename for the Zip file of the Logstash Pipeline repo? <note it need to be in the same directorey as installer>: ")
+                else:   
+                    fileName=download_repository( logstashRepo )
                 unzipGit(fileName)
             
                 logstashLocation = input("Enter the Logstash location to store the piepline files in: ")
                 update=input_bool("Are you upgrading an existing Corelight Logstsh Pipeline?", default=False)
                 if not update:
                     installLogstash(logstashLocation)
+                    logstashVersion = input_bool("Are you running Logstash version 8.x or higher?", default=True)
                     raw = input_bool("Do you want to keep the raw message, this will incerease storage space?", default=False)
                     tcp = input_bool("Are you sending data to logstsh over JSON over TCP?:", default=False)
                     if tcp:
@@ -314,20 +337,32 @@ def main():
                 print("Strange things are afoot at the Circle-K.")
                 sys.exit(1)
         else:
-            fileName=download_repository( ingestRepo )
+            #Answer Yes if you are in a offline or Airgaped enviorment 
+            # Then give the filename and location and it will run
+            download = input_bool("Have you downloaded Ingest repo?", default=False)
+            if download:
+                fileName = input("Please enter the filename for the Zip file of the Logstash Pipeline repo? <note it need to be in the same directorey as installer>: ")
+            else: 
+                fileName=download_repository( ingestRepo )
             unzipGit(fileName)
             uploadIngestPipelines(session,baseURI)
     templateDS = input_bool("Will you be useing Datastreams?", default=True)
     if templateDS:
         datastreams(session,baseURI,logstash,updateTemplates)
+        if logstash and not updateLogstash:
+            postPorcessing(logstashLocation, templateDS, logstashVersion)
     else:
         templateComponent = input_bool("Will you be useing Component Templates?", default=True)
         if templateComponent:
             component( session, baseURI, logstash, updateTemplates )
+            if logstash and not updateLogstash:
+                postPorcessing(logstashLocation, templateDS, logstashVersion)
         else:
             templateLegcy = input_bool("Will you be using Legcy Templates? This is not supported on version 8.x and above?", default=False)
             if templateLegcy:
                 index(session,baseURI,logstash,updateTemplates)
+                if logstash and not updateLogstash:
+                    postPorcessing(logstashLocation, templateDS, logstashVersion)
 
 if __name__ == "__main__":
     main()
