@@ -144,8 +144,8 @@ def postPorcessing(logstashLocation, datastream, logstashVersion):
         filename = ls_pipeline_install_dir + "0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf.disabled"
         f = open(filename)
         ds = f.read()
-        if '=> "$Corelight_LS_Index_Strategy"' in ds:
-            dsEnabled = ds.replace('=> "$Corelight_LS_Index_Strategy"', '=> "datastream"')
+        if '=> "VAR_CORELIGHT_INDEX_STRATEGY"' in ds:
+            dsEnabled = ds.replace('=> "VAR_CORELIGHT_INDEX_STRATEGY"', '=> "datastream"')
             f.close()
             dsOut = ls_pipeline_install_dir + "0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf"
             f = open(dsOut, "wt")
