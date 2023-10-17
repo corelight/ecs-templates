@@ -304,7 +304,7 @@ def main():
                 # Then give the filename and location and it will run
                 download = input_bool("Have you downloaded logstash repo?", default=False)
                 if download:
-                    filename = input("Please enter the filename for the Zip file of the Logstash Pipeline repo? <note it need to be in the same directorey as installer>: ")
+                    filename = input("Please enter the filename for the Zip file of the Logstash Pipeline repo? <note it needs to be in the same directorey as installer>: ")
                 else:   
                     fileName=download_repository( logstashRepo )
                 unzipGit(fileName)
