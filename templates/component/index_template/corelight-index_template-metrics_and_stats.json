@@ -1,12 +1,24 @@
 {
-  "composed_of": "${composed_of}",
+  "composed_of": [
+    "corelight-ds-component_template-metrics_and_stats-create_zeek_corelight-aliases",
+    "corelight-ds-component_template-metrics_and_stats-base-settings",
+    "corelight-ds-component_template-metrics_and_stats-ilm-settings",
+    "corelight-ds-component_template-metrics_and_stats-mappings"
+  ],
+  "data_stream": { },
   "ignore_missing_component_templates": [ "corelight-index_template-metrics_and_stats@custom" ],
-  "index_patterns": "${index_patterns}",
-  "priority": "${priority}",
-  "version": 2022122701,
+  "index_patterns": [
+    "metrics-zeek-corelight-*",
+    "zeek-corelight-metrics-ds-*",
+    "zeek-corelight-netcontrol-ds-*",
+    "zeek-corelight-stats-ds-*",
+    "zeek-corelight-system-ds-*"
+  ],
+  "priority": 901,
+  "version": 2023101701,
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-    "ecs_version": "8.5.0",
-    "labels_corelight_ecs_version": "8.5.0.1"
+    "ecs_version": "8.10.0",
+    "labels_corelight_ecs_version": "8.10.0.1"
   }
 }

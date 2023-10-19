@@ -36,10 +36,10 @@
       }
     },
     "_meta": {
-      "labels_corelight_ecs_version": "8.5.0.1",
+      "labels_corelight_ecs_version": "8.10.0.1",
       "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-      "ecs_version": "8.5.0",
-      "version": 2022122701
+      "ecs_version": "8.10.0",
+      "version": 2023101701
     }
   }
 }

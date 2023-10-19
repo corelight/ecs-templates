@@ -1,12 +1,23 @@
 {
-  "composed_of": "${composed_of}",
-  "ignore_missing_component_templates": [ "corelight-index_template-parse_failures@custom" ],
-  "index_patterns": "${index_patterns}",
-  "priority": "${priority}",
-  "version": 2022122701,
+  "composed_of": [
+    "corelight-ds-component_template-parse_failures-base-settings",
+    "corelight-ds-component_template-parse_failures-ilm-settings",
+    "corelight-ds-component_template-parse_failures-mappings"
+  ],
+  "data_stream": { },
+  "ignore_missing_component_templates": [
+    "corelight-ds-component_template-parse_failures-base-settings@custom",
+    "corelight-ds-component_template-parse_failures-ilm-settings@custom",
+    "corelight-ds-component_template-parse_failures-mappings@custom"
+  ],
+  "index_patterns": [
+    "parse_failures-corelight.*"
+  ],
+  "priority": 901,
+  "version": 2023101701,
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-    "ecs_version": "8.5.0",
-    "labels_corelight_ecs_version": "8.5.0.1"
+    "ecs_version": "8.10.0",
+    "labels_corelight_ecs_version": "8.10.0.1"
   }
 }

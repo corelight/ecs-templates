@@ -1,6 +1,56 @@
 {
   "template": {
-    "settings": "${settings}",
+    "settings": {
+      "index": {
+        "mapping": {
+          "total_fields.limit": 10000,
+          "ignore_malformed": true
+        },
+        "analysis": {
+          "filter": {
+            "max_token_truncate": {
+              "length": "32766",
+              "type": "truncate"
+            },
+            "path_hierarchy_pattern_filter": {
+              "type": "pattern_capture",
+              "preserve_original": "true",
+              "patterns": [
+                "((?:[^\\\\]*\\\\)*)(.*)",
+                "((?:[^/]*/)*)(.*)"
+              ]
+            }
+          },
+          "char_filter": {
+            "whitespace_no_way": {
+              "pattern": "(\\s)+",
+              "type": "pattern_replace",
+              "replacement": "$1"
+            }
+          },
+          "analyzer": {
+            "es_stk_analyzer": {
+              "filter": [
+                "trim",
+                "lowercase",
+                "max_token_truncate"
+              ],
+              "char_filter": [
+                "whitespace_no_way"
+              ],
+              "type": "custom",
+              "tokenizer": "keyword"
+            }
+          },
+          "tokenizer": {
+            "path_tokenizer": {
+              "type": "path_hierarchy",
+              "delimiter": "\\"
+            }
+          }
+        }
+      }
+    },
     "mappings": {
       "date_detection": true,
       "dynamic_templates": [
@@ -11,8 +61,9 @@
               "ignore_above": 4096,
               "type": "keyword",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             }
@@ -75,8 +126,9 @@
           "properties": {
             "apdu_type": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -84,8 +136,9 @@
             },
             "bvlc_function": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -96,8 +149,9 @@
             },
             "data": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -105,8 +159,9 @@
             },
             "service_choice": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -114,8 +169,9 @@
             },
             "pdu_service": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -123,8 +179,9 @@
             },
             "object_type": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -135,8 +192,9 @@
             },
             "vender": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -144,8 +202,9 @@
             },
             "range": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -153,8 +212,9 @@
             },
             "object_name": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -162,8 +222,9 @@
             },
             "property": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -174,8 +235,9 @@
             },
             "array_value": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -409,8 +471,9 @@
                 },
                 "host_type": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 10000,
@@ -436,8 +499,9 @@
               "properties": {
                 "bof": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -463,8 +527,9 @@
           "properties": {
             "address": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 2048,
@@ -479,8 +544,9 @@
                   "properties": {
                     "name": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "ignore_above": 10000,
@@ -499,8 +565,9 @@
             },
             "connection_history_detailed": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -509,8 +576,9 @@
             "domain": {
               "copy_to": "related.hosts",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -575,8 +643,9 @@
                 },
                 "mime_type": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -584,8 +653,9 @@
                 },
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -596,8 +666,9 @@
             "fqdn": {
               "copy_to": "related.hosts",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 2048,
@@ -607,8 +678,9 @@
               "properties": {
                 "city_name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 4096,
@@ -666,8 +738,9 @@
             "hostname": {
               "copy_to": "related.hosts",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -713,8 +786,9 @@
             },
             "level_1n2n3_domain": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -788,8 +862,9 @@
                 },
                 "original": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32766,
@@ -818,8 +893,9 @@
               "properties": {
                 "full_name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -833,8 +909,9 @@
                 },
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -863,8 +940,9 @@
             },
             "client_fqdn": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -876,8 +954,9 @@
             },
             "client_software": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -904,8 +983,9 @@
             },
             "server_software": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -931,8 +1011,9 @@
                 },
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -1004,8 +1085,9 @@
                 },
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -1201,8 +1283,9 @@
             },
             "message": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -1210,8 +1293,9 @@
             },
             "stack_trace": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -1326,8 +1410,9 @@
             "device": {
               "copy_to": "related.hosts",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 2048,
@@ -1335,8 +1420,9 @@
             },
             "directory": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -1402,8 +1488,9 @@
             },
             "mime_type": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -1422,8 +1509,9 @@
             },
             "name": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -1444,8 +1532,9 @@
             },
             "path": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -1477,8 +1566,9 @@
             },
             "unc_share_first_path": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -1486,8 +1576,9 @@
             },
             "unc_share_last_path": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -1502,8 +1593,9 @@
             },
             "target_path": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -1533,16 +1625,18 @@
                     },
                     "common_name": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "exponent": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
@@ -1559,56 +1653,63 @@
                   "properties": {
                     "common_name": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "country": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "distinguished_name": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "locality": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "organization": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "organizational_unit": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "state_or_province": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
@@ -1626,16 +1727,18 @@
                 },
                 "public_key_algorithm": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "type": "keyword"
                 },
                 "public_key_curve": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "type": "keyword"
@@ -1648,24 +1751,27 @@
                 },
                 "public_key_type": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "type": "keyword"
                 },
                 "san_dns": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "type": "keyword"
                 },
                 "san_email": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "type": "keyword"
@@ -1676,8 +1782,9 @@
                 },
                 "san_uri": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "type": "keyword"
@@ -1687,16 +1794,18 @@
                 },
                 "signature_algorithm": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "type": "keyword"
                 },
                 "nonformatted_not_after": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "type": "keyword"
@@ -1705,56 +1814,63 @@
                   "properties": {
                     "common_name": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "country": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "distinguished_name": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "locality": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "organization": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "organizational_unit": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
                     },
                     "state_or_province": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
@@ -1842,8 +1958,9 @@
             },
             "mac_oui_vendor_name": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 9192,
@@ -1884,8 +2001,9 @@
           "properties": {
             "cookie_variables": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -1900,8 +2018,9 @@
                     },
                     "content": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "ignore_above": 32000,
@@ -1914,8 +2033,9 @@
                 },
                 "header_names": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 10000,
@@ -1923,8 +2043,9 @@
                 },
                 "method": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 10000,
@@ -1932,8 +2053,9 @@
                 },
                 "mime_type": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 10000,
@@ -1945,8 +2067,9 @@
                 },
                 "proxied": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 10000,
@@ -1954,8 +2077,9 @@
                 },
                 "referrer": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -1972,8 +2096,9 @@
                     },
                     "content": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "ignore_above": 32000,
@@ -1986,8 +2111,9 @@
                 },
                 "header_names": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 10000,
@@ -2002,8 +2128,9 @@
                 },
                 "mime_type": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 10000,
@@ -2036,8 +2163,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2045,8 +2173,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2054,8 +2183,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2063,8 +2193,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2075,8 +2206,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             }
@@ -2088,8 +2220,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2099,8 +2232,9 @@
                   "type": "keyword",
                   "ignore_above": 32000,
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   }
                 },
@@ -2121,8 +2255,9 @@
                   "type": "keyword",
                   "ignore_above": 8192,
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   }
                 }
@@ -2134,8 +2269,9 @@
                   "type": "keyword",
                   "ignore_above": 32000,
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   }
                 },
@@ -2454,8 +2590,9 @@
               "ignore_above": 8192,
               "type": "keyword",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2474,8 +2611,9 @@
                 },
                 "history_detailed": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 4096,
@@ -2487,8 +2625,9 @@
                 },
                 "state_description": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 4096,
@@ -2570,8 +2709,9 @@
               "type": "keyword",
               "ignore_above": 8192,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2582,8 +2722,9 @@
               "type": "keyword",
               "ignore_above": 8192,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2591,8 +2732,9 @@
               "type": "keyword",
               "ignore_above": 8192,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2603,8 +2745,9 @@
               "type": "keyword",
               "ignore_above": 8192,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2615,8 +2758,9 @@
               "type": "keyword",
               "ignore_above": 8192,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2627,8 +2771,9 @@
               "type": "keyword",
               "ignore_above": 8192,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2639,8 +2784,9 @@
               "type": "keyword",
               "ignore_above": 8192,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -2777,8 +2923,9 @@
             },
             "channels_joined": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -2786,8 +2933,9 @@
             },
             "client_build": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -2799,8 +2947,9 @@
             },
             "client_name": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -2808,8 +2957,9 @@
             },
             "cookie": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -2831,8 +2981,9 @@
             },
             "inferences": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -2840,8 +2991,9 @@
             },
             "keyboard_layout": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -2853,8 +3005,9 @@
             },
             "rdfp_string": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -2890,8 +3043,9 @@
             },
             "hosts": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "type": "keyword"
@@ -2933,24 +3087,27 @@
           "properties": {
             "author": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "type": "keyword"
             },
             "category": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "type": "keyword"
             },
             "description": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "type": "keyword"
@@ -2960,16 +3117,18 @@
             },
             "license": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "type": "keyword"
             },
             "name": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "type": "keyword"
@@ -2979,8 +3138,9 @@
             },
             "ruleset": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "type": "keyword"
@@ -3207,8 +3367,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3223,8 +3384,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3232,8 +3394,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3241,8 +3404,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3250,8 +3414,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3262,8 +3427,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3271,8 +3437,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3288,8 +3455,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3297,8 +3465,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3306,8 +3475,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3324,8 +3494,9 @@
               "type": "keyword",
               "ignore_above": 32000,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3348,8 +3519,9 @@
                 },
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "type": "keyword"
@@ -3367,8 +3539,9 @@
                 },
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "type": "keyword"
@@ -3384,8 +3557,9 @@
           "properties": {
             "additional_info": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32766,
@@ -3396,8 +3570,9 @@
             },
             "name": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32766,
@@ -3405,8 +3580,9 @@
             },
             "original": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32766,
@@ -3417,8 +3593,9 @@
             },
             "type": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32766,
@@ -3446,8 +3623,9 @@
           "properties": {
             "address": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 2048,
@@ -3462,8 +3640,9 @@
                   "properties": {
                     "name": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "ignore_above": 10000,
@@ -3482,8 +3661,9 @@
             },
             "connection_history_detailed": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -3492,8 +3672,9 @@
             "domain": {
               "copy_to": "related.hosts",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -3507,8 +3688,9 @@
                 },
                 "mime_type": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -3516,8 +3698,9 @@
                 },
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -3528,8 +3711,9 @@
             "fqdn": {
               "copy_to": "related.hosts",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 2048,
@@ -3539,8 +3723,9 @@
               "properties": {
                 "city_name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 4096,
@@ -3598,8 +3783,9 @@
             "hostname": {
               "copy_to": "related.hosts",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -3648,8 +3834,9 @@
                 },
                 "original": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32766,
@@ -3661,8 +3848,9 @@
               "properties": {
                 "full_name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -3676,8 +3864,9 @@
                 },
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -3700,8 +3889,9 @@
             },
             "cipher": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -3709,8 +3899,9 @@
             },
             "client": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -3718,8 +3909,9 @@
             },
             "compression_algorithm": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -3733,8 +3925,9 @@
             },
             "hasshAlgorithms": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -3746,8 +3939,9 @@
             },
             "hasshServerAlgorithms": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -3773,8 +3967,9 @@
             },
             "key_exchange_algorithm": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -3782,8 +3977,9 @@
             },
             "mac_algorithm": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -3794,8 +3990,9 @@
             },
             "server": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -3827,8 +4024,9 @@
               "type": "keyword",
               "ignore_above": 4096,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             },
@@ -3840,8 +4038,9 @@
               "type": "keyword",
               "ignore_above": 4096,
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               }
             }
@@ -3863,8 +4062,9 @@
                   "properties": {
                     "affected_product": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "ignore_above": 8192,
@@ -3880,8 +4080,9 @@
                     },
                     "classtype": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "ignore_above": 8192,
@@ -3928,8 +4129,9 @@
                     },
                     "malware_family": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "type": "keyword"
@@ -3975,8 +4177,9 @@
             },
             "metadata": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "type": "keyword"
@@ -4003,8 +4206,9 @@
                 },
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 8192,
@@ -4024,8 +4228,9 @@
                 },
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 8192,
@@ -4043,8 +4248,9 @@
                     },
                     "name": {
                       "fields": {
-                        "text": {
-                          "type": "text"
+                        "security": {
+                          "type": "text",
+                          "analyzer": "es_stk_analyzer"
                         }
                       },
                       "ignore_above": 8192,
@@ -4064,8 +4270,9 @@
           "properties": {
             "cipher": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 2048,
@@ -4085,8 +4292,9 @@
                   "type": "keyword",
                   "ignore_above": 4096,
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   }
                 },
@@ -4100,8 +4308,9 @@
                 },
                 "issuer": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -4113,8 +4322,9 @@
                 },
                 "server_name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -4122,8 +4332,9 @@
                 },
                 "subject": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -4139,8 +4350,9 @@
             },
             "next_protocol": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 2048,
@@ -4163,8 +4375,9 @@
                   "type": "keyword",
                   "ignore_above": 4096,
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   }
                 },
@@ -4178,8 +4391,9 @@
                 },
                 "issuer": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -4191,8 +4405,9 @@
                 },
                 "subject": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 32000,
@@ -4215,8 +4430,9 @@
             "domain": {
               "copy_to": "related.hosts",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -4234,8 +4450,9 @@
             },
             "fragment": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4243,8 +4460,9 @@
             },
             "full": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4258,8 +4476,9 @@
             },
             "original": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4274,8 +4493,9 @@
             },
             "path": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4289,8 +4509,9 @@
             },
             "query": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -4312,8 +4533,9 @@
             "username": {
               "copy_to": "related.user",
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 4096,
@@ -4321,8 +4543,9 @@
             },
             "variables": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 2048,
@@ -4340,8 +4563,9 @@
               "properties": {
                 "name": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 10000,
@@ -4363,8 +4587,9 @@
             },
             "name": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 10000,
@@ -4372,8 +4597,9 @@
             },
             "original": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4390,8 +4616,9 @@
                 },
                 "full": {
                   "fields": {
-                    "text": {
-                      "type": "text"
+                    "security": {
+                      "type": "text",
+                      "analyzer": "es_stk_analyzer"
                     }
                   },
                   "ignore_above": 2048,
@@ -4453,8 +4680,9 @@
             },
             "client_info": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4486,8 +4714,9 @@
             },
             "hash": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4554,8 +4783,9 @@
             },
             "server_name": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4698,8 +4928,9 @@
             },
             "variables": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4707,8 +4938,9 @@
             },
             "variable_value": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4716,8 +4948,9 @@
             },
             "data": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4775,8 +5008,9 @@
             },
             "payload": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4833,8 +5067,9 @@
             },
             "szl_id": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4842,8 +5077,9 @@
             },
             "szl_index": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4851,8 +5087,9 @@
             },
             "return_code": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4922,8 +5159,9 @@
             },
             "values": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4940,8 +5178,9 @@
             },
             "write_registers": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4955,8 +5194,9 @@
             },
             "read_registers": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -4994,8 +5234,9 @@
             },
             "enip_command_code": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -5035,8 +5276,9 @@
             },
             "data": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -5083,8 +5325,9 @@
             },
             "features": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -5206,8 +5449,9 @@
             },
             "cip_service_code": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -5219,8 +5463,9 @@
             },
             "cip_status_code": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -5232,8 +5477,9 @@
             },
             "cip_extended_status_code": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -5271,8 +5517,9 @@
             },
             "io_data": {
               "fields": {
-                "text": {
-                  "type": "text"
+                "security": {
+                  "type": "text",
+                  "analyzer": "es_stk_analyzer"
                 }
               },
               "ignore_above": 32000,
@@ -5424,12 +5671,12 @@
           }
         }
       }
-    },
-    "version": 2022122701,
-    "_meta": {
-      "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-      "ecs_version": "8.5.0",
-      "labels_corelight_ecs_version": "8.5.0.1"
     }
+  },
+  "version": 2023101701,
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+    "ecs_version": "8.10.0",
+    "labels_corelight_ecs_version": "8.10.0.1"
   }
 }
