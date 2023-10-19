@@ -13,6 +13,7 @@ import zipfile
 import os
 import random
 import subprocess
+import getpass
 
 def checkRequest(responseObj):
     code = responseObj.status_code
@@ -25,29 +26,26 @@ def checkRequest(responseObj):
         return code
     return code
 
+
 def input_bool(question, default=None):
-
-    prompt = " [yn]"
-
-    if default is not None:
-        prompt = " [Yn]:" if default else " [yN]:"
-
+    prompt = " [Y/n]:" if default else " [y/N]:"
     while True:
-        val = input(question + prompt)
-        val = val.lower()
-        if val  == '' and default is not None:
+        val = input(question + prompt).strip().lower()
+        if not val:
             return default
-        if val in ('y', 'n'):
-            return val == 'y'
+        if val in ('y', 'yes'):
+            return True
+        if val in ('n', 'no'):
+            return False
         print("Invalid response")
+
 
 def input_int(question):
     while True:
-        val = input(question + ": ")
         try:
-            return int(val)
-        except ValueError as e:
-            print("Invalid response", e)
+            return int(input(question + ": "))
+        except ValueError:
+            print("Invalid response")
 
 def testConnection(session, baseURI):
     testUri = "/_cat/indices?v&pretty"
@@ -96,43 +94,20 @@ def updateLogstash(directory):
         for filename in fileList:
             shutil.copy2(os.path.join(source,filename), path)
 
-def enableIngest(ingest_type, raw, logstashLocation):
+def enable_ingest(ingest_type, raw, logstashLocation):
     ls_pipeline_install_dir = logstashLocation + "/CorelightPipelines/"
-    tcp = "0002-corelight-ecs-tcp-input.conf"
-    ssl = "0002-corelight-ecs-tcp-ssl_tls-input.conf"
-    hec = "0002-corelight-ecs-http-for_splunk_hec.conf"
-    kafka = "0002-corelight-ecs-kafka-input.config"
-    tcpRaw = "0002-corelight-ecs-tcp-input-codec_disabled_to_keep_raw_message.conf"
-    sslRaw = "0002-corelight-ecs-tcp-ssl_tls-input-codec_disabled_to_keep_raw_message.conf"
-    hecRaw = "0002-corelight-ecs-http-for_splunk_hec-codec_disabled_to_keep_raw_message.conf"
-    kafkaRaw = "0002-corelight-ecs-kafka-input-codec_disabled_to_keep_raw_message.config"
-    
-    if raw:
-        if ingest_type == "tcp":
-            source = ls_pipeline_install_dir + tcpRaw + ".disabled"
-            dest = ls_pipeline_install_dir + tcpRaw 
-        if ingest_type == "ssl":
-            source = ls_pipeline_install_dir + sslRaw + ".disabled"
-            dest = ls_pipeline_install_dir + sslRaw 
-        if ingest_type == "hec":
-            source = ls_pipeline_install_dir + hecRaw + ".disabled"
-            dest = ls_pipeline_install_dir + hecRaw 
-        if ingest_type == "kafka":
-            source = ls_pipeline_install_dir + kafkaRaw + ".disabled"
-            dest = ls_pipeline_install_dir + kafkaRaw 
-    else:
-        if ingest_type == "tcp":
-            source = ls_pipeline_install_dir + tcp + ".disabled"
-            dest = ls_pipeline_install_dir + tcp
-        if ingest_type == "ssl":
-            source = ls_pipeline_install_dir + ssl + ".disabled"
-            dest = ls_pipeline_install_dir + ssl
-        if ingest_type == "hec":
-            source = ls_pipeline_install_dir + hec + ".disabled"
-            dest = ls_pipeline_install_dir + hec
-        if ingest_type == "kafka":
-            source = ls_pipeline_install_dir + kafka + ".disabled"
-            dest = ls_pipeline_install_dir + kafka 
+    file_names = {
+        "tcp": "0002-corelight-ecs-tcp-input",
+        "ssl": "0002-corelight-ecs-tcp-ssl_tls-input",
+        "hec": "0002-corelight-ecs-http-for_splunk_hec",
+        "kafka": "0002-corelight-ecs-kafka-input"
+    }
+    codec_disabled_suffix = "-codec_disabled_to_keep_raw_message"
+    file_extension = ".conf.disabled" if raw else ".conf"
+    source_file_name = file_names[ingest_type] + codec_disabled_suffix + file_extension if raw else file_names[ingest_type] + file_extension
+    dest_file_name = file_names[ingest_type] + file_extension
+    source = os.path.join(ls_pipeline_install_dir, source_file_name)
+    dest = os.path.join(ls_pipeline_install_dir, dest_file_name)
     shutil.copy(source, dest)
 
 def postPorcessing(logstashLocation, datastream, logstashVersion):
@@ -179,7 +154,6 @@ def exportToElastic(session, baseURI, filePath, pipeline, path,  retry=4):
 
 
 def elasticDel(session, baseURI, pipeline,  retry):
-
     uri = baseURI + "/_ingest/pipeline/"  + pipeline
     if pipeline.endswith("-policy"):
         uri = baseURI + "/_enrich/policy/" + pipeline
@@ -202,7 +176,7 @@ def get_config():
 
     if auth:
         user = input("User: ")
-        password = input("Password: ")
+        password = getpass.getpass("Password: ")
         s.auth = (user, password)
     secure = input_bool("Use https?")
     ignoreCertErrors = False
@@ -283,7 +257,6 @@ def uploadIngestPipelines(session,baseURI):
         if "deprecated" not in filename:
             exportToElastic(session, baseURI, source, filename, "/_ingest/pipeline/", retry=4)
 
-
 def main():
 
     updateTemplates = False
@@ -298,45 +271,45 @@ def main():
         updateTemplates = input_bool("Is this a update to existing template? If so ILM will not be installed", default=False)
     if not updateTemplates:
         if logstash:
-            cont = input_bool("This script needs to be run on the Logstash box. Does this box have Logstash running and is the Logstash ingesting?", default=True)
+            cont = input_bool("This script needs to be run on the Logstash box. Does this box have Logstash running and is Logstash ingesting?", default=True)
             if cont:
-                #Answer Yes if you are in a offline or Airgaped enviorment 
+                #Answer Yes if you are in a offline or Airgaped enviorment
                 # Then give the filename and location and it will run
-                download = input_bool("Have you downloaded logstash repo?", default=False)
+                download = input_bool("Have you downloaded the logstash repo?", default=False)
                 if download:
                     filename = input("Please enter the filename for the Zip file of the Logstash Pipeline repo? <note it needs to be in the same directorey as installer>: ")
-                else:   
+                else:
                     fileName=download_repository( logstashRepo )
                 unzipGit(fileName)
-            
+
                 logstashLocation = input("Enter the Logstash location to store the piepline files in: ")
-                update=input_bool("Are you upgrading an existing Corelight Logstsh Pipeline?", default=False)
+                update=input_bool("Are you upgrading an existing Corelight Logstash Pipeline?", default=False)
                 if not update:
                     installLogstash(logstashLocation)
                     logstashVersion = input_bool("Are you running Logstash version 8.x or higher?", default=True)
                     raw = input_bool("Do you want to keep the raw message, this will incerease storage space?", default=False)
-                    tcp = input_bool("Are you sending data to logstsh over JSON over TCP?:", default=False)
+                    tcp = input_bool("Are you sending data to logstash over JSON over TCP?:", default=False)
                     if tcp:
-                        ssl = input_bool("Will you be enableing SSL?", default=False)
+                        ssl = input_bool("Will you be enabling SSL?", default=False)
                         if ssl:
-                            enableIngest("ssl", raw, logstashLocation)
+                            enable_ingest("ssl", raw, logstashLocation)
                         else:
-                            enableIngest("tcp", raw, logstashLocation)
+                            enable_ingest("tcp", raw, logstashLocation)
                     else:
-                        kafka = input_bool("Are sending data to Logstsh via Kafka?:", default=False)
+                        kafka = input_bool("Are you sending data to Logstash via Kafka?:", default=False)
                         if kafka:
-                            enableIngest("kafka", raw, logstashLocation)
+                            enable_ingest("kafka", raw, logstashLocation)
                         else:
-                            hec = input_bool("Are sending data to logstsh over HTTP Event Collector?:", default=False)
+                            hec = input_bool("Are you sending data to logstash over HTTP Event Collector?:", default=False)
                             if hec:
-                                enableIngest("hec", raw, logstashLocation)
+                                enable_ingest("hec", raw, logstashLocation)
                 else:
                     updateLogstash(logstashLocation)
             else:
                 print("Please run script again on Logstash server")
                 print("Strange things are afoot at the Circle-K.")
                 sys.exit(1)
-        else:
+    else:
             #Answer Yes if you are in a offline or Airgaped enviorment 
             # Then give the filename and location and it will run
             download = input_bool("Have you downloaded Ingest repo?", default=False)
@@ -346,13 +319,13 @@ def main():
                 fileName=download_repository( ingestRepo )
             unzipGit(fileName)
             uploadIngestPipelines(session,baseURI)
-    templateDS = input_bool("Will you be useing Datastreams?", default=True)
+    templateDS = input_bool("Will you be using Datastreams?", default=True)
     if templateDS:
         datastreams(session,baseURI,logstash,updateTemplates)
         if logstash and not updateLogstash:
             postPorcessing(logstashLocation, templateDS, logstashVersion)
     else:
-        templateComponent = input_bool("Will you be useing Component Templates?", default=True)
+        templateComponent = input_bool("Will you be using Component Templates?", default=True)
         if templateComponent:
             component( session, baseURI, logstash, updateTemplates )
             if logstash and not updateLogstash:
