@@ -1,5 +1,3 @@
-# Script specific to ignore
-.z_corelight_ecs_installer
 # General to Ignore
 .DS_Store
 .git
@@ -18,3 +16,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Repo Specific
+/z_installer/
+/ecs-logstash-mappings-Dev/
+/ecs-mapping-dev/
+/ecs-logstash-mappings-Master/
+/ecs-mapping-master/
+/ecs-logstash-mappings-main/
+/ecs-mapping-main/
