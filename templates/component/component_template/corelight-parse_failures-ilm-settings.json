@@ -1,7 +1,7 @@
 {
   "template": {
     "settings": {
-      "index.lifecycle.name": "corelight-ds-ilm_policy-main_logs"
+      "index.lifecycle.name": "corelight-ilm-parse_failures"
     }
   },
   "version": 2023101701,

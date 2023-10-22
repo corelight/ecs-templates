@@ -1,18 +1,26 @@
 {
   "composed_of": [
-    "corelight-ds-component_template-metrics_and_stats-create_zeek_corelight-aliases",
-    "corelight-ds-component_template-metrics_and_stats-base-settings",
-    "corelight-ds-component_template-metrics_and_stats-ilm-settings",
-    "corelight-ds-component_template-metrics_and_stats-mappings"
+    "corelight-metrics_and_stats-aliases",
+    "corelight-metrics_and_stats-base-settings",
+    "corelight-metrics_and_stats-ilm-settings",
+    "corelight-metrics_and_stats-mappings",
+    "corelight-metrics_and_stats-aliases@custom",
+    "corelight-metrics_and_stats-base-settings@custom",
+    "corelight-metrics_and_stats-ilm-settings@custom",
+    "corelight-metrics_and_stats-mappings@custom"
   ],
   "data_stream": { },
-  "ignore_missing_component_templates": [ "corelight-index_template-metrics_and_stats@custom" ],
+  "ignore_missing_component_templates": [
+    "corelight-metrics_and_stats-aliases@custom",
+    "corelight-metrics_and_stats-base-settings@custom",
+    "corelight-metrics_and_stats-ilm-settings@custom",
+    "corelight-metrics_and_stats-mappings@custom"
+  ],
   "index_patterns": [
-    "metrics-zeek-corelight-*",
-    "zeek-corelight-metrics-ds-*",
-    "zeek-corelight-netcontrol-ds-*",
-    "zeek-corelight-stats-ds-*",
-    "zeek-corelight-system-ds-*"
+    "zeek-corelight.metrics-*",
+    "zeek-corelight.netcontrol-*",
+    "zeek-corelight.stats-*",
+    "zeek-corelight.system-*",
   ],
   "priority": 901,
   "version": 2023101701,

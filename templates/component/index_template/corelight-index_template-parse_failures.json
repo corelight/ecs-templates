@@ -1,14 +1,20 @@
 {
   "composed_of": [
-    "corelight-ds-component_template-parse_failures-base-settings",
-    "corelight-ds-component_template-parse_failures-ilm-settings",
-    "corelight-ds-component_template-parse_failures-mappings"
+    "corelight-parse_failures-aliases",
+    "corelight-parse_failures-base-settings",
+    "corelight-parse_failures-ilm-settings",
+    "corelight-parse_failures-mappings",
+    "corelight-parse_failures-aliases@custom",
+    "corelight-parse_failures-base-settings@custom",
+    "corelight-parse_failures-ilm-settings@custom",
+    "corelight-parse_failures-mappings@custom"
   ],
   "data_stream": { },
   "ignore_missing_component_templates": [
-    "corelight-ds-component_template-parse_failures-base-settings@custom",
-    "corelight-ds-component_template-parse_failures-ilm-settings@custom",
-    "corelight-ds-component_template-parse_failures-mappings@custom"
+    "corelight-parse_failures-aliases@custom",
+    "corelight-parse_failures-base-settings@custom",
+    "corelight-parse_failures-ilm-settings@custom",
+    "corelight-parse_failures-mappings@custom"
   ],
   "index_patterns": [
     "parse_failures-corelight.*"
