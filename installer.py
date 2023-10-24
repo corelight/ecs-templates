@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-#from asyncore import file_wrapper
-#from distutils import filelist
-#from this import d, s
-#import glob
 import logging
 import shutil
 import requests
@@ -16,6 +12,7 @@ import random
 import subprocess
 import getpass
 import errno
+import re
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 # Script Version
@@ -25,8 +22,13 @@ git_logstash_repo = "https://github.com/corelight/ecs-logstash-mappings/archive/
 git_logstash_sub_dir = "pipeline"
 git_ingest_repo = "https://github.com/corelight/ecs-mapping/archive/refs/heads/dev.zip"
 git_ingest_sub_dir = "automatic_install"
-logstash_pipeline_sub_dir = "CorelightPipelines"
+git_templates_repo = "https://github.com/corelight/ecs-templates/archive/refs/heads/dev.zip"
+git_templates_sub_dir = "templates"
+git_example_logstash_pipeline_root_dir = "/etc/logstash/conf.d"
+git_example_logstash_pipeline_sub_dir = "CorelightPipelines"
+git_example_logstsh_pipeline_dir = os.path.join(git_example_logstash_pipeline_root_dir, git_example_logstash_pipeline_sub_dir)
 logstash_input_choices = [ 'tcp', 'tcp_ssl', 'kafka', 'hec', 'udp' ]
+logstash_elasticsearch_output_file = "9940-elasticsearch-corelight_zeek-datastream-output.conf.disabled"
 # General
 #version = script_version
 script_name = os.path.basename( __file__ )
@@ -36,7 +38,10 @@ Script_UID = str( random.randint( 1000000000, 9999999999 ) )  # Random 10 digit 
 Script_Output_Dir = os.path.realpath( os.path.join( script_dir, "z_installer" ) )
 # Temp Output Directory
 Temp_Output_Dir = os.path.realpath( os.path.join( Script_Output_Dir, "temp" ) )
-
+# Final config directory
+Final_Config_Dir = os.path.realpath( os.path.join( Script_Output_Dir, "final_config" ) )
+Final_Pipeline_Dir = os.path.realpath( os.path.join( Final_Config_Dir, "pipelines" ) )
+Final_Templates_Dir = os.path.realpath( os.path.join( Final_Config_Dir, "templates" ) )
 
 # Create the output directories if they don't exist
 try:
@@ -49,6 +54,18 @@ try:
 except OSError as e:
     if e.errno != errno.EEXIST:
         raise
+# Clean final config directory before use
+try:
+    shutil.rmtree(Final_Config_Dir) # Delete the directory
+except FileNotFoundError:
+    pass
+# Recreate the directories
+try:
+    os.makedirs(Final_Config_Dir)
+    os.makedirs(Final_Pipeline_Dir)
+    os.makedirs(Final_Templates_Dir)
+except OSError as e:
+    print(f"Unable to create necessary directories: {e}")
 
 # Set up logging
 COLORS = {
@@ -374,34 +391,47 @@ def source_repository(name, repo_type, proxy=None, verify=None):
         raise ValueError(f"Invalid repository name or path for {name}")
 
 
-def copy_ls_configs(source, root_dir, sub_dir=logstash_pipeline_sub_dir):
-    final_dir = root_dir
-    if not final_dir.endswith(sub_dir):
+def copy_configs(source_dir=None, dest_dir=None, sub_dir=None, error_on_overwrites=False, ignore_file_extensions=None):
+    final_dir = dest_dir
+    if sub_dir and not final_dir.endswith(sub_dir):
         final_dir = os.path.join(final_dir, sub_dir)
     try:
-        if os.path.exists(root_dir):
-            if not os.path.exists(final_dir):
-                shutil.copytree(source, final_dir)
-                logger.info(f"Logstash files sucessfully copied to {final_dir}.")
-            else:
+        if os.path.exists(dest_dir):
+            if os.path.exists(final_dir) and error_on_overwrites:
                 logger.error(f"The path {final_dir} already exists. Please select the update operation.")
                 raise ValueError(f"The path {final_dir} already exists. Please select the update operation.")
-        else:
-            create_dir = input_bool(f"The path {root_dir} does not exist. Would you like to create it?", default=True)
-            if create_dir:
-                os.makedirs(root_dir)
-                shutil.copytree(source, final_dir)
-                logger.info(f"Logstash files sucessfully copied to {final_dir}.")
             else:
-                logger.error(f"Installation aborted. The path {root_dir} does not exist." % root_dir)
-                raise ValueError(f"Installation aborted. The path {root_dir} does not exist." % root_dir)
+                # Check if directory already exists
+                # If it does then copy the contents within the source_dir into final_dir
+                if os.path.exists( final_dir ):
+                    for root, dirs, files in os.walk(source_dir):
+                        for filename in files:
+                            fname = os.path.splitext(filename)[0]
+                            fextension = os.path.splitext(filename)[1]
+                            if not ignore_file_extensions:
+                                file_path = os.path.join(root, filename)
+                                shutil.copy(file_path, final_dir)
+                            if ignore_file_extensions and not fextension in ignore_file_extensions:
+                                file_path = os.path.join(root, filename)
+                                shutil.copy(file_path, final_dir)
+                else:
+                    shutil.copytree(source_dir, final_dir)
+                logger.info(f"Files sucessfully copied to {final_dir}.")
+        else:
+            create_dir = input_bool(f"The path {dest_dir} does not exist. Would you like to create it?", default=True)
+            if create_dir:
+                os.makedirs(dest_dir)
+                copy_configs(source_dir,final_dir)
+            else:
+                logger.error(f"Installation aborted. The path {dest_dir} does not exist." % dest_dir)
+                raise ValueError(f"Installation aborted. The path {dest_dir} does not exist." % dest_dir)
     except Exception as e:
-        logger.error(f"Error occurred while installing Logstash: {e}")
-        raise ValueError(f"Error occurred while installing Logstash: {e}")
+        logger.error(f"Error occurred while copying files: {e}")
+        raise ValueError(f"Error occurred while copying files: {e}")
 
-def enable_ls_input(ingest_type, raw, destination, sub_dir=None):
-    if not destination.endswith(sub_dir):
-        destination = os.path.join(destination, sub_dir)
+def enable_ls_input(source_dir=None, ingest_type=None, raw=None, destination_dir=None, sub_dir=None):
+    if sub_dir and not destination_dir.endswith(sub_dir):
+        destination_dir = os.path.join(destination_dir, sub_dir)
     file_names = {
         "tcp": "0002-corelight-ecs-tcp-input",
         "tcp_ssl": "0002-corelight-ecs-tcp-ssl_tls-input",
@@ -414,17 +444,37 @@ def enable_ls_input(ingest_type, raw, destination, sub_dir=None):
     dest_file_extension = ".conf"
     source_file_name = file_names[ingest_type] + codec_disabled_suffix + source_file_extension if raw else file_names[ingest_type] + source_file_extension
     dest_file_name = file_names[ingest_type] + codec_disabled_suffix + dest_file_extension if raw else file_names[ingest_type] + dest_file_extension
-    source = os.path.join(destination, source_file_name)
-    dest = os.path.join(destination, dest_file_name)
+    source = os.path.join(source_dir, source_file_name)
+    dest = os.path.join(destination_dir, dest_file_name)
     try:
         shutil.copy(source, dest)
-        logger.info(f"Successfully enabled {ingest_type} at {dest}")
+        logger.info(f"Successfully enabled {ingest_type} at {dest}") #TODO: tell user to modify at the end
     except Exception as e:
         logger.error(f"Error occurred while enabling {ingest_type} {e}")
         raise ValueError(f"Error occurred while enabling {ingest_type} {e}")
 
+def replace_var_in_directory(directory, replace_var="VAR_CORELIGHT_INDEX_STRATEGY", replace_var_with=None):
+    replaced_var_count = 0
+    replaced_var_files = []
+    if replace_var_with:
+        for root, dirs, files in os.walk(directory):
+            for filename in files:
+                file_path = os.path.join(root, filename)
+                # Read the file
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    file_contents = file.read()
+                if replace_var in file_contents:
+                    replaced_var_count += 1
+                    replaced_var_files.append(file_path)
+                    # Replace variables in the file
+                    updated_contents = re.sub( r'\b' + re.escape( replace_var ) + r'\b', replace_var_with, file_contents )
+                    # Write the modified content back to the file
+                    with open(file_path, 'w', encoding='utf-8') as file:
+                        file.write(updated_contents)
+
+        logger.info(f"Successfully replaced {replace_var} with {replace_var_with} {replaced_var_count} times in {sorted(set(replaced_var_files))}")
 def main():
-    templatesOnly = input_bool(f"Will you be installing Elasticsearch templates, mappings, and settings? Recommended with any updates.", default=True)
+    install_templates = input_bool(f"Will you be installing Elasticsearch templates, mappings, and settings? Recommended with any updates.", default=True)
     pipeline_type = input(f"\nWill you be using Ingest Pipelines or Logstash Pipelines? (Enter 'ingest'/'i', 'logstash'/'l', or 'no'/'n'): ").strip().lower()
     while pipeline_type.lower() not in ['ingest', 'i', 'logstash', 'l', 'no', 'n']:
         pipeline_type = input(f"Invalid input. Please enter 'ingest'/'i', 'logstash'/'l', or 'no'/'n': ")
@@ -434,23 +484,28 @@ def main():
         pipeline_type = 'logstash'
     elif pipeline_type == 'n':
         pipeline_type = 'no'
+    VAR_CORELIGHT_INDEX_STRATEGY = input(f"\nWhat index strategy will you be using? (Enter 'datastream'/'d', 'legacy'/'l'): ").strip().lower()
+    while VAR_CORELIGHT_INDEX_STRATEGY.lower() not in ['datastream', 'd', 'legacy', 'l']:
+        VAR_CORELIGHT_INDEX_STRATEGY = input(f"Invalid input. Please enter 'datastream'/'d', 'legacacy'/'l': ")
 
     use_pipeline = False if pipeline_type == 'no' else True
-    use_es = templatesOnly
+    use_templates = install_templates
 
     # - [x] Use proxy ?
     # Templates only ?
     # Logstash or Ingest Pipelines ?
+    #
+    #  - [ ] finish index variables for ingest pipelines same as logstash
     # a) logstash pipelines
     #  - [x] download or use local
     #  - [x] input config logstash pipelines
-    #  - [ ] replace variables
-    #    - [ ] input type
-    #    - [ ] datastream
+    #  - [x] replace variables / input
+    #    - [x] input type
+    #    - [x] VAR_CORELIGHT_INDEX_STRATEGY
     #  - [ ] config creator for central pipeline management
     # b) ingest pipelines
     #  - [x] download or use local
-    #  - [ ] replace variables
+    #  - [x] var replacement, done since made function universal
     #  - [ ] upload ingest pipelines
     # Elasticsearch templates, mappings, and settings
     #   - [ ] upload templates
@@ -461,15 +516,54 @@ def main():
     #     - [ ] index_patterns
     #     - [ ] aliases (maybe)
 
+    if use_templates:
+        # Source templates
+        # Get source from user
+        templates_source = input(f"\nHow will you source the templates?"
+                                f"\n  - Download git zip of repository. Requires the full URL. ({git_templates_repo})"
+                                f"\n  - Local zip path of a repistory. Requires the full path ending in .zip"
+                                f"\n  - Local path or git clone. Requires the full path (default {script_dir})"
+                                f"\nEnter the url, path, or press enter for default {script_dir}: ")
+        # Use default if no input
+        if not templates_source:
+            templates_source = script_dir
+        if templates_source.startswith('http'):
+            proxy = input( f"\nEnter proxy URL if desired (leave empty, press enter, if not using a proxy): " )
+            if proxy:
+                ignore_proxy_cert_errors = input_bool( f"Do you want to ignore proxy certificate errors?", default=True )
+            else:
+                ignore_proxy_cert_errors = None
+                proxy = None
+        else:
+            ignore_proxy_cert_errors = None
+            proxy = None
+        # Set source
+        templates_source_directory =  source_repository(templates_source, repo_type="templates", proxy=proxy, verify=not ignore_proxy_cert_errors if ignore_proxy_cert_errors else None)
+        templates_source_directory = os.path.join(templates_source_directory, git_templates_sub_dir)
+        if VAR_CORELIGHT_INDEX_STRATEGY == "datastream" or "d":
+            templates_sub_dir = "component"
+        elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy" or "l":
+            templates_sub_dir = "legacy"
+        else:
+            templates_sub_dir = ""
+        templates_source_directory = os.path.join(templates_source_directory, templates_sub_dir)
+        logger.info(f"Using {templates_source_directory} as the source for the templates.")
+
+        # Copy all sourced files to temporary directory
+        copy_configs( source_dir=templates_source_directory, dest_dir=Final_Templates_Dir )
+        logger.info(f"Using {Final_Templates_Dir} as the temporary directory for the templates.")
+
     if use_pipeline:
 
         # Logstash Pipelines
         if pipeline_type == 'logstash':
-            pipeline_repo = git_logstash_repo
+            git_pipeline_repo = git_logstash_repo
             pipeline_sub_dir = git_logstash_sub_dir
+            pipeline_destination_directory = None
         elif pipeline_type == 'ingest':
-            pipeline_repo = git_ingest_repo
+            git_pipeline_repo = git_ingest_repo
             pipeline_sub_dir = git_ingest_sub_dir
+            pipeline_destination_directory = None
         else:
             logger.error(f"Invalid pipeline type: {pipeline_type}")
             raise ValueError(f"Invalid pipeline type: {pipeline_type}")
@@ -477,13 +571,13 @@ def main():
         # Source Pipeline
         # Get source from user
         pipeline_source = input(f"\nHow will you source the {pipeline_type} pipelines?"
-                                f"\n  - Download git zip of repository. Requires the full URL. (default: {pipeline_repo})"
+                                f"\n  - Download git zip of repository. Requires the full URL. ({git_pipeline_repo})"
                                 f"\n  - Local zip path of a repistory. Requires the full path ending in .zip"
                                 f"\n  - Local path or git clone. Requires the full path"
-                                f"\nEnter the url, path, or press enter for default URL: ")
+                                f"\nEnter the url, path, or press enter for default {git_pipeline_repo}: ")
         # Use default if no input
         if not pipeline_source:
-            pipeline_source = pipeline_repo
+            pipeline_source = git_pipeline_repo
         if pipeline_source.startswith('http'):
             proxy = input( f"\nEnter proxy URL if desired (leave empty, press enter, if not using a proxy): " )
             if proxy:
@@ -495,24 +589,19 @@ def main():
             ignore_proxy_cert_errors = None
             proxy = None
         # Set source
-        pipeline_source_directory =  source_repository(pipeline_source, pipeline_type, proxy=proxy, verify=not ignore_proxy_cert_errors if ignore_proxy_cert_errors else None)
+        pipeline_source_directory =  source_repository(pipeline_source, repo_type=pipeline_type, proxy=proxy, verify=not ignore_proxy_cert_errors if ignore_proxy_cert_errors else None)
         pipeline_source_directory = os.path.join(pipeline_source_directory, pipeline_sub_dir)
-        logger.info(f"Using {pipeline_source_directory} as the final source for the {pipeline_type} pipelines.")
+        logger.info(f"Using {pipeline_source_directory} as the source for the {pipeline_type} pipelines.")
 
-        # Logstash Pipelines
+        # Copy all sourced files to temporary directory
+        copy_configs( source_dir=pipeline_source_directory, dest_dir=Final_Pipeline_Dir, ignore_file_extensions=['.disabled'] )
+        logger.info(f"Using {Final_Pipeline_Dir} as the temporary directory for the {pipeline_type} pipelines.")
+
+        # Logstash Pipelines Specifics
         if pipeline_type == 'logstash':
-
-            # Get destination from user
-            pipeline_destination_directory = input( f"\nEnter the Logstash location to store the pipeline files in: " )
-            if not pipeline_destination_directory:
-                pipeline_destination_directory = "/etc/logstash/conf.d"
-
-            # Copy all files there
-            copy_ls_configs( pipeline_source_directory, pipeline_destination_directory, sub_dir=logstash_pipeline_sub_dir )
 
             # Get specifics and change variables
             #logstashVersion = input_bool( f"\nAre you running Logstash version 8.x or higher?", default=True ) #TODO:keep or not
-            keep_raw = input_bool( "Do you want to keep the raw message? (This will increase storage space but is useful in certain environments for data integrity or troubleshooting)", default=False )
             input_type = input(f"\nHow will send data to Logstash?"
                                f"\n  tcp        - JSON over TCP"
                                f"\n  tcp_ssl    - JSON over TCP with SSL/TLS enabled"
@@ -522,18 +611,101 @@ def main():
                                f"\n Enter one of {logstash_input_choices}: ")
             while input_type.strip().lower() not in logstash_input_choices:
                 input_type = input(f"Invalid input. Please enter one of {logstash_input_choices}: ")
-            enable_ls_input( input_type, keep_raw, pipeline_destination_directory, sub_dir=logstash_pipeline_sub_dir )
+            keep_raw = input_bool( "Do you want to keep the raw message? (This will increase storage space but is useful in certain environments for data integrity or troubleshooting)", default=False )
+            enable_ls_input( source_dir=pipeline_source_directory, ingest_type=input_type, raw=keep_raw, destination_dir=Final_Pipeline_Dir)
 
-            sys.exit(1)
-        # Ingest Pipelines
+        # Ingest Pipelines Specifics
+        elif pipeline_type == 'ingest':
+            pass
+
+        # For everything
+        USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index names?",default=False )
+        if USE_CUSTOM_INDEX_NAMES:
+            VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = input(f'\nIndex Template Pattern for Main Logs. Qoute input, seperate list with comma ("logs-corelight.*"): ')
+            VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = input(f'\nIndex Template Pattern for Metrics and Stats Logs. ("zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"): ')
+            # Protocol Log
+            VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG = input(f"\nIndex Name Type for Protocol Logs. (logs): ")
+            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG = input(f"\nIndex Dataset for Protocol Logs. (corelight): ")
+            VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG = input(f"\nIndex Namespace for Protocol Logs. (default): ")
+            # Unknown Protocol Log
+            VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN = input(f"\nIndex Name Type for Protocol Logs Unknown (logs): ")
+            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN = input(f"\nIndex Dataset for Protocol Logs Unknown (corelight): ")
+            VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN = input(f"\nIndex Dataset suffix for Protocol Logs Unknown (unknown): ")
+            VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN = input(f"\nIndex Namespace for Protocol Logs Unknown (default): ")
+            # Metrics and Stats
+            VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG = input(f"\nIndex Name Type for Metrics and Stats Logs (zeek): ")
+            VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG = input(f"\nIndex Dataset for Metrics and Stats Logs(corelight): ")
+            VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG = input(f"\nIndex Namespace for Metrics and Stats Logs(default): ")
+            # Parse_Failures
+            VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES = input(f"\nIndex Name Type for Parse Failures (parse_failures): ")
+            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES = input(f"\nIndex Dataset for Parse Failures (corelight): ")
+            VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES = input(f"\nIndex Dataset suffix for Parse Failures (failed): ")
+            VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES = input(f"\nIndex Namespace for Parse Failures (default): ")
+        else:
+            VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = '"logs-corelight.*"'
+            VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = '"zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"'
+            # Protocol Log
+            VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG = "logs"
+            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG = "corelight"
+            VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG = "default"
+            # Unknown Protocol Log
+            VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN = "logs"
+            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN = "corelight"
+            VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN = "unknown"
+            VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN = "default"
+            # Metrics and Stats
+            VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG = "zeek"
+            VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG = "corelight"
+            VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG = "default"
+            # Parse_Failures
+            VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES = "parse_failures"
+            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES = "corelight"
+            VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES = "failed"
+            VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES = "default"
+
+        
+        # Replace variables
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS )
+
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_STRATEGY", replace_var_with=VAR_CORELIGHT_INDEX_STRATEGY )
+
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG)
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG)
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG)
+
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN)
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN)
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN)
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN)
+
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG)
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG)
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG)
+
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES)
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES)
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES)
+        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES)
+
+        # Final config placement or upload
+        if pipeline_type == 'logstash':
+            # Get destination from user
+            pipeline_destination_directory = input( f"\nEnter the path to store the Logstash pipeline files in (ie: {git_example_logstsh_pipeline_dir}). Leave blank to skip: " )
+            if not pipeline_destination_directory:
+                pipeline_destination_directory = Final_Pipeline_Dir
+            else:
+                copy_configs(source_dir=Final_Pipeline_Dir, dest_dir=pipeline_destination_directory, error_on_overwrites=True )
+        elif pipeline_type == 'ingest':
+            pass
+            #TODO: upload files use Final_Pipeline_Dir
 
 
     sys.exit(1)
+    #TODO:finish rest of templates and upload
 
     baseURI, session = get_config()
     testConnection(session, baseURI)
-
-
 
     templateDS = input_bool(f"Will you be using Datastreams?", default=True)
     if templateDS:

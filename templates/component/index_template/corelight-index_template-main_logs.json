@@ -16,9 +16,7 @@
     "corelight-main_logs-ilm-settings@custom",
     "corelight-main_logs-mappings@custom"
   ],
-  "index_patterns": [
-    "logs-corelight.*"
-  ],
+  "index_patterns": [ VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS ],
   "priority": 901,
   "version": 2023101701,
   "_meta": {

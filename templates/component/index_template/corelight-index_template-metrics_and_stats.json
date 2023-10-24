@@ -16,12 +16,7 @@
     "corelight-metrics_and_stats-ilm-settings@custom",
     "corelight-metrics_and_stats-mappings@custom"
   ],
-  "index_patterns": [
-    "zeek-corelight.metrics-*",
-    "zeek-corelight.netcontrol-*",
-    "zeek-corelight.stats-*",
-    "zeek-corelight.system-*",
-  ],
+  "index_patterns": [ VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS ],
   "priority": 901,
   "version": 2023101701,
   "_meta": {
