@@ -17,7 +17,7 @@
     "corelight-main_logs-mappings@custom"
   ],
   "index_patterns": [ VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS ],
-  "priority": 901,
+  "priority": VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS,
   "version": 2023101701,
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",

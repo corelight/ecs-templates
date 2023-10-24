@@ -16,10 +16,8 @@
     "corelight-parse_failures-ilm-settings@custom",
     "corelight-parse_failures-mappings@custom"
   ],
-  "index_patterns": [
-    "parse_failures-corelight.*"
-  ],
-  "priority": 901,
+  "index_patterns": [ VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS ],
+  "priority": VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS,
   "version": 2023101701,
   "_meta": {
     "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",

@@ -511,10 +511,9 @@ def main():
     #   - [ ] upload templates
     #   - [ ] upload mappings
     #   - [ ] upload settings
-    #   - [ ] variable replacements
-    #     - [ ] priority
-    #     - [ ] index_patterns
-    #     - [ ] aliases (maybe)
+    #   - [x] variable replacements
+    #     - [x] priority
+    #     - [x] index_patterns
 
     if use_templates:
         # Source templates
@@ -621,8 +620,6 @@ def main():
         # For everything
         USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index names?",default=False )
         if USE_CUSTOM_INDEX_NAMES:
-            VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = input(f'\nIndex Template Pattern for Main Logs. Qoute input, seperate list with comma ("logs-corelight.*"): ')
-            VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = input(f'\nIndex Template Pattern for Metrics and Stats Logs. ("zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"): ')
             # Protocol Log
             VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG = input(f"\nIndex Name Type for Protocol Logs. (logs): ")
             VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG = input(f"\nIndex Dataset for Protocol Logs. (corelight): ")
@@ -642,8 +639,6 @@ def main():
             VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES = input(f"\nIndex Dataset suffix for Parse Failures (failed): ")
             VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES = input(f"\nIndex Namespace for Parse Failures (default): ")
         else:
-            VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = '"logs-corelight.*"'
-            VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = '"zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"'
             # Protocol Log
             VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG = "logs"
             VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG = "corelight"
@@ -665,9 +660,6 @@ def main():
 
         
         # Replace variables
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS )
-
         replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_STRATEGY", replace_var_with=VAR_CORELIGHT_INDEX_STRATEGY )
 
         replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG)
@@ -700,6 +692,32 @@ def main():
             pass
             #TODO: upload files use Final_Pipeline_Dir
 
+    if use_templates:
+
+        if not 'USE_CUSTOM_INDEX_NAMES' in locals():
+            USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index template settings?",default=False )
+        if USE_CUSTOM_INDEX_NAMES:
+            VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = input(f'\nIndex Template Pattern for Main Logs. Qoute input, seperate list with comma ("logs-corelight.*"): ')
+            VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS = input(f'\nIndex Template Priority for Main Logs. (901): ')
+            VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = input(f'\nIndex Template Pattern for Metrics and Stats Logs. ("zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"): ')
+            VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS = input(f'\nIndex Template Priority for Metrics and Stats Logs. (901): ')
+            VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS  = input(f'\nIndex Template Pattern for Parse Failures Logs. ("parse_failures-corelight.*"): ')
+            VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS = input(f'\nIndex Template Priority for Parse Failures Logs. (901): ')
+        else:
+            VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = '"logs-corelight.*"'
+            VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS = '901'
+            VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = '"zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"'
+            VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS = '901'
+            VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS = '"parse_failures-corelight.*"'
+            VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS = '901'
+
+        # Replace variables
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS )
 
     sys.exit(1)
     #TODO:finish rest of templates and upload
