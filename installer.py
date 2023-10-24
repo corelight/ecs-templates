@@ -475,9 +475,13 @@ def replace_var_in_directory(directory, replace_var="VAR_CORELIGHT_INDEX_STRATEG
         logger.info(f"Successfully replaced {replace_var} with {replace_var_with} {replaced_var_count} times in {sorted(set(replaced_var_files))}")
 def main():
     install_templates = input_bool(f"Will you be installing Elasticsearch templates, mappings, and settings? Recommended with any updates.", default=True)
-    pipeline_type = input(f"\nWill you be using Ingest Pipelines or Logstash Pipelines? (Enter 'ingest'/'i', 'logstash'/'l', or 'no'/'n'): ").strip().lower()
+    pipeline_type = input(f"\nWill you be installing Pipelines? Ingest Pipelines, Logstash Pipelines, or no (Enter 'ingest'/'i', 'logstash'/'l', or 'no'/'n'/'none'): ").strip("'").strip().lower()
     while pipeline_type.lower() not in ['ingest', 'i', 'logstash', 'l', 'no', 'n']:
-        pipeline_type = input(f"Invalid input. Please enter 'ingest'/'i', 'logstash'/'l', or 'no'/'n': ")
+        pipeline_type = input(f"Invalid input. Please enter one of:"
+                              f"\n'ingest' or 'i' for Ingest Pipelines"
+                              f"\n'logstash' or 'l' for Logstash Pipelines"
+                              f"\n'no' or 'n' for skipping installation of pipelines"
+                              f"\n: ")
     if pipeline_type == 'i':
         pipeline_type = 'ingest'
     elif pipeline_type == 'l':
@@ -485,8 +489,11 @@ def main():
     elif pipeline_type == 'n':
         pipeline_type = 'no'
     VAR_CORELIGHT_INDEX_STRATEGY = input(f"\nWhat index strategy will you be using? (Enter 'datastream'/'d', 'legacy'/'l'): ").strip().lower()
-    while VAR_CORELIGHT_INDEX_STRATEGY.lower() not in ['datastream', 'd', 'legacy', 'l']:
-        VAR_CORELIGHT_INDEX_STRATEGY = input(f"Invalid input. Please enter 'datastream'/'d', 'legacacy'/'l': ")
+    while VAR_CORELIGHT_INDEX_STRATEGY.strip("'").strip().lower() not in ['datastream', 'd', 'legacy', 'l']:
+        VAR_CORELIGHT_INDEX_STRATEGY = input(f"Invalid input. Please enter one of:"
+                                             f"\n'datastream' or 'd' for datastream index strategy"
+                                             f"\n'legacacy' or 'l' for legacy index strategy"
+                                             f"\n: ")
 
     use_pipeline = False if pipeline_type == 'no' else True
     use_templates = install_templates
@@ -514,6 +521,7 @@ def main():
     #   - [x] variable replacements
     #     - [x] priority
     #     - [x] index_patterns
+    #   - [ ] tell user files to modify at the end
 
     if use_templates:
         # Source templates
