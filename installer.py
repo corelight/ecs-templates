@@ -13,16 +13,20 @@ import subprocess
 import getpass
 import errno
 import re
-requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+from urllib.parse import urlparse
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
+
+git_fork = "brasitech"
 
 # Script Version
 script_version = '2023102201'
 # Default Variables
-git_logstash_repo = "https://github.com/corelight/ecs-logstash-mappings/archive/refs/heads/Dev.zip"
+git_logstash_repo = f"https://github.com/{git_fork}/ecs-logstash-mappings/archive/refs/heads/Dev.zip"
 git_logstash_sub_dir = "pipeline"
-git_ingest_repo = "https://github.com/corelight/ecs-mapping/archive/refs/heads/dev.zip"
+git_ingest_repo = f"https://github.com/{git_fork}/ecs-mapping/archive/refs/heads/dev.zip"
 git_ingest_sub_dir = "automatic_install"
-git_templates_repo = "https://github.com/corelight/ecs-templates/archive/refs/heads/dev.zip"
+git_templates_repo = f"https://github.com/{git_fork}/ecs-templates/archive/refs/heads/dev.zip"
 git_templates_sub_dir = "templates"
 git_example_logstash_pipeline_root_dir = "/etc/logstash/conf.d"
 git_example_logstash_pipeline_sub_dir = "CorelightPipelines"
@@ -121,11 +125,35 @@ def input_int(question):
             print("Invalid response")
 
 def testConnection(session, baseURI):
-    testUri = "/_cat/indices?v&pretty"
+    #testUri = "/_cat/indices?v&pretty"
+    testUri = "/"
     uri = baseURI + testUri
-    response = session.get(uri, timeout=5)
-    checkRequest(response)
-    response.raise_for_status()
+    try:
+        response = session.get(uri, timeout=5)
+        checkRequest(response)
+        response.raise_for_status()
+    except requests.exceptions.SSLError as e:
+        if "SSL: CERTIFICATE_VERIFY_FAILED" in str(e):
+            logger.warning(f"SSL Error: {e}")
+            return "prompt_ignore_cert"
+            response = session.get(uri, timeout=5, verify=False)
+            checkRequest(response)
+            response.raise_for_status()
+        else:
+            raise
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            logger.warning(f"Authentication Error: {e}")
+            return "prompt_auth"
+            response = session.get(uri, timeout=5)
+            checkRequest(response)
+            response.raise_for_status()
+        else:
+            logger.error(f"HTTP Error: {e}")
+            raise
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Request Error: {e}")
+        raise
 
 def updateLogstash(directory):
     source = "./ecs-logstash-mappings-Dev/pipeline/"
@@ -141,39 +169,27 @@ def postPorcessing(logstashLocation, datastream, logstashVersion):
     if logstashVersion:
         sedCommand = 'sed -i "s/#ecs_compatibility =>/ecs_compatibility =>/" ' + ls_pipeline_install_dir + '/*.conf'
         subprocess.call([sedCommand],shell=True)
-    if datastream:
-        filename = ls_pipeline_install_dir + "0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf.disabled"
-        f = open(filename)
-        ds = f.read()
-        if '=> "VAR_CORELIGHT_INDEX_STRATEGY"' in ds:
-            dsEnabled = ds.replace('=> "VAR_CORELIGHT_INDEX_STRATEGY"', '=> "datastream"')
-            f.close()
-            dsOut = ls_pipeline_install_dir + "0101-corelight-ecs-user_defined-set_indexing_strategy-filter.conf"
-            f = open(dsOut, "wt")
-            f.write(dsEnabled)
-            f.close()
 
-def exportToElastic(session, baseURI, filePath, pipeline, path, retry=4):
-    filename = filePath + pipeline
-    if pipeline != "zeek-enrichment-conn-policy/_execute":
-        try:
-            with open(filename) as f:
-                postData = f.read()
-        except FileNotFoundError:
-            logger.error(f"Error: File {filename} not found")
-            return
+def exportToElastic(session, baseURI, filePath, fileName, path, retry=4):
+    #if pipeline != "zeek-enrichment-conn-policy/_execute":
+    try:
+        with open(filePath) as f:
+            postData = f.read()
+    except FileNotFoundError:
+        logger.error(f"Error: File {filePath} not found")
+        return
 
-    uri = baseURI + path + pipeline
+    uri = baseURI + path + fileName
     for i in range(retry):
         response = session.put(uri, data=postData, timeout=10)
         response = checkRequest(response)
         if response in (400, 409):
-            logger.warning(f"Error uploading {pipeline} status code {response}")
+            logger.warning(f"Error uploading {fileName} status code {response}")
         elif response == 200:
-            logger.info(f"{pipeline} uploaded successfully")
+            logger.info(f"{fileName} uploaded successfully")
             return
         else:
-            logger.error(f"Error uploading {pipeline} status code {response}")
+            logger.error(f"Error uploading {fileName} status code {response}")
             logger.error(f"URI = {uri}")
             sys.exit(1)
 
@@ -213,54 +229,92 @@ def elasticDel(session, baseURI, pipeline, retry=4):
     logger.error(f"Failed to delete {pipeline} after {retry} attempts")
     #sys.exit(1)
 
-def get_config():
+def get_elasticsearch_connection_config():
     """Return a baseURI and session"""
-
+    ignoreCertErrors = False
+    use_https = False
     while True:
-        ipHost = input("Enter the hostname or IP of your Elasticsearch cluster: ")
-        if not ipHost:
-            print("Hostname or IP cannot be empty. Please try again.")
+        baseURI = input("\nEnter the Elasticsearch host including whether http or https and the port (ie: the full URL, http://somedomain:9200 or https://someip:9200 or https://somedomain:9200)\n: ")
+        if not baseURI:
+            print("Cannot be empty. Please try again.")
+            continue
+        parsed_baseURI = urlparse( baseURI )
+        # Catch common errors
+        if not (baseURI.startswith("http://") or baseURI.startswith("https://") ):
+            print("Must include http:// or https://. Please try again.")
+            continue
+        # Determine if a port was entered
+        if not parsed_baseURI.port:
+            print("No port was entered, please try again and specify the port even if port 443 or 80")
             continue
         break
-
-    while True:
-        try:
-            port = int(input("Enter the port number of your Elasticsearch cluster: "))
-            if not (0 <= port <= 65535):
-                print("Invalid port number. Please enter a valid integer between 0 and 65535.")
-                continue
-            break
-        except ValueError:
-            print("Invalid port number. Please enter a valid integer.")
 
     s = requests.Session()
     s.headers={'Content-Type': 'application/json'}
 
-    while True:
-        auth = input_bool("Do you want to use user and password authentication?", default=None)
-        if auth:
-            user = input("Enter the username: ")
-            password = getpass.getpass("Enter the password: ")
-            s.auth = (user, password)
-            break
-        else:
-            break
+    # Prompt if user wants to ignore certificate errors if https
+    if baseURI.startswith( "https://" ):
+        use_https = True
+        ignore_cert_errors = prompt_for_es_ignore_certificate_errors(try_again=False)
+        if ignore_cert_errors:
+            s.verify = False
+            # Suprress SSL Warnings if not verifying SSL
+            urllib3.disable_warnings(category=InsecureRequestWarning)
+    else:
+        #proto = "http"
+        pass
 
+    # Prompt for user and password authentication
+    auth = prompt_for_es_user_and_password(try_again=False)
+    if auth and auth[0] and auth[1]:
+        s.auth = (auth[0], auth[1])
+    else:
+        pass
+
+    # Test the connection, so can reprompt if it fails
     while True:
-        secure = input_bool("Do you want to use https?", default=None)
-        if secure:
-            proto = "https"
-            ignoreCertErrors = input_bool("Do you want to ignore certificate errors? (y/n): ", default=True)
-            if ignoreCertErrors:
+        reprompt = testConnection( s, baseURI )
+        if reprompt == "prompt_ignore_cert":
+            ignore_cert_errors = prompt_for_es_ignore_certificate_errors(try_again=True)
+            if ignore_cert_errors:
                 s.verify = False
-            break
+                # Suprress SSL Warnings if not verifying SSL
+                urllib3.disable_warnings(category=InsecureRequestWarning)
+            else:
+                logger.error(f"Failed to verify SSL to the Elasticsearch connection with baseURI: {baseURI}")
+                sys.exit(1)
+        elif reprompt == "prompt_auth":
+            auth = prompt_for_es_user_and_password(try_again=True)
+            if auth and auth[ 0 ] and auth[ 1 ]:
+                s.auth = (auth[ 0 ], auth[ 1 ])
+            else:
+                logger.error(f"Failed to authenticate the Elasticsearch connection with baseURI: {baseURI}")
+                sys.exit(1)
         else:
-            proto = "http"
             break
 
-    baseURI = f"{proto}://{ipHost}:{port}"
+    #baseURI = f"{proto}://{ipHost}:{port}"
     logger.info(f"Successfully configured Elasticsearch connection with baseURI: {baseURI}")
     return baseURI, s
+
+def prompt_for_es_ignore_certificate_errors(try_again=False):
+    if not try_again:
+        ignore_cert_errors = input_bool("Do you want to ignore certificate errors?", default=True)
+    else:
+        ignore_cert_errors = input_bool("SSL Certificate ERROR ocurred. Do you want to try again and ignore certificate errors?", default=None)
+    return ignore_cert_errors
+
+def prompt_for_es_user_and_password(try_again=False):
+    if not try_again:
+        auth = input_bool("Do you want to use user and password authentication?", default=None)
+    else:
+        auth = input_bool("Authentication failed. Do you want to try to enter the username and password again?", default=None)
+    if auth:
+        user = input("Enter the username: ")
+        password = getpass.getpass("Enter the password: ")
+        return [user, password]
+    else:
+        return None
 
 def export_templates(session, baseURI, source, path, retry=4):
     """Export templates to ElasticSearch"""
@@ -305,23 +359,20 @@ def component( session, baseURI, updateTemplates ):
     for filename in fileList:
         exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=4)
 
-def index(session, baseURI, logstash,updateTemplates):
-    source = "./templates-component/templates-legacy/"
-    fileList=os.listdir(source)
+def index(session, baseURI, source_dir=None, updateTemplates=False):
+    fileList=os.listdir(source_dir)
     for filename in fileList:
-        exportToElastic(session, baseURI, source, filename, "/_template/", retry=4)
+        exportToElastic(session, baseURI, source_dir, filename, "/_template/", retry=4)
 
-    if not logstash:
-        fileList=os.listdir(ingest)
-        for filename in fileList:
-                exportToElastic(session, baseURI, ingest, filename, "/_template/", retry=4)
-
-def uploadIngestPipelines(session,baseURI):
-    source = "./ecs-mapping-master/automatic_install/"
-    fileList=os.listdir(source)
-    for filename in fileList:
-        if "deprecated" not in filename:
-            exportToElastic(session, baseURI, source, filename, "/_ingest/pipeline/", retry=4)
+def uploadIngestPipelines(session,baseURI, source_dir=None):
+    logger.info(f"Uploading ingest pipelines from {source_dir}")
+    for root, dirs, files in os.walk( source_dir ):
+        for filename in files:
+            # Set the full path variable
+            filePath = os.path.join( root, filename )
+            filename_without_extension = os.path.splitext( filename )[ 0 ]
+            extension = os.path.splitext( filename )[ 1 ]
+            exportToElastic( session, baseURI, filePath, filename, "/_ingest/pipeline/", retry=4 )
 
 
 def input_bool(question, default=None):
@@ -354,7 +405,7 @@ def unzipGit(filename):
         logger.error(f"Error occurred while unzipping Git file: {e}")
         raise ValueError(f"Error occurred while unzipping Git file: {e}")
 
-def source_repository(name, repo_type, proxy=None, verify=None):
+def source_repository(name, repo_type, proxy=None, ssl_verify=None):
     # URL
     if name.startswith("http"):
         if proxy:
@@ -369,7 +420,7 @@ def source_repository(name, repo_type, proxy=None, verify=None):
         filename = os.path.join(Temp_Output_Dir, f"{repo_type}_repo_{timestamp}_{randomNum}.zip")
         # Download the repository (zip file)
         try:
-            with requests.get(name, proxies=proxies, stream=True, verify=verify) as r:
+            with requests.get(name, proxies=proxies, stream=True, verify=ssl_verify) as r:
                 with open(filename, 'wb') as f:
                     shutil.copyfileobj(r.raw, f)
             logger.info(f"Successfully downloaded repository: {name}")
@@ -391,40 +442,50 @@ def source_repository(name, repo_type, proxy=None, verify=None):
         raise ValueError(f"Invalid repository name or path for {name}")
 
 
-def copy_configs(source_dir=None, dest_dir=None, sub_dir=None, error_on_overwrites=False, ignore_file_extensions=None):
-    final_dir = dest_dir
+def copy_configs(src=None, dest=None, sub_dir=None, error_on_overwrites=False, ignore_file_extensions=None):
+    final_dir = src
     if sub_dir and not final_dir.endswith(sub_dir):
         final_dir = os.path.join(final_dir, sub_dir)
     try:
-        if os.path.exists(dest_dir):
+        if os.path.exists(dest):
             if os.path.exists(final_dir) and error_on_overwrites:
                 logger.error(f"The path {final_dir} already exists. Please select the update operation.")
                 raise ValueError(f"The path {final_dir} already exists. Please select the update operation.")
             else:
-                # Check if directory already exists
-                # If it does then copy the contents within the source_dir into final_dir
-                if os.path.exists( final_dir ):
-                    for root, dirs, files in os.walk(source_dir):
-                        for filename in files:
-                            fname = os.path.splitext(filename)[0]
-                            fextension = os.path.splitext(filename)[1]
-                            if not ignore_file_extensions:
-                                file_path = os.path.join(root, filename)
-                                shutil.copy(file_path, final_dir)
-                            if ignore_file_extensions and not fextension in ignore_file_extensions:
-                                file_path = os.path.join(root, filename)
-                                shutil.copy(file_path, final_dir)
-                else:
-                    shutil.copytree(source_dir, final_dir)
+                # Check if the source directory exists
+                if not os.path.exists( src ):
+                    logger.error( f"The source directory {src} does not exist." )
+                    return
+                # Create the destination directory if it doesn't exist
+                if not os.path.exists( dest ):
+                    os.makedirs( dest )
+                # Walk the source directory
+                for dirpath, dirnames, filenames in os.walk( src ):
+                    # Create the corresponding directory in the destination
+                    dest_dir = os.path.join( dest, os.path.relpath( dirpath, src ) )
+                    if not os.path.exists( dest_dir ):
+                        os.mkdir( dest_dir )
+                    # Copy each file to the destination directory
+                    for filename in filenames:
+                        fname = os.path.splitext( filename )[ 0 ]
+                        fextension = os.path.splitext( filename )[ 1 ]
+                        if not ignore_file_extensions:
+                            src_file = os.path.join( dirpath, filename )
+                            dest_file = os.path.join( dest_dir, filename )
+                            shutil.copy2( src_file, dest_file )  # copy
+                        if ignore_file_extensions and not fextension in ignore_file_extensions:
+                            src_file = os.path.join( dirpath, filename )
+                            dest_file = os.path.join( dest_dir, filename )
+                            shutil.copy2( src_file, dest_file )  # copy
                 logger.info(f"Files sucessfully copied to {final_dir}.")
         else:
-            create_dir = input_bool(f"The path {dest_dir} does not exist. Would you like to create it?", default=True)
+            create_dir = input_bool(f"The path {dest} does not exist. Would you like to create it?", default=True)
             if create_dir:
-                os.makedirs(dest_dir)
-                copy_configs(source_dir,final_dir)
+                os.makedirs(dest)
+                copy_configs(src,final_dir, sub_dir=sub_dir, error_on_overwrites=error_on_overwrites, ignore_file_extensions=ignore_file_extensions)
             else:
-                logger.error(f"Installation aborted. The path {dest_dir} does not exist." % dest_dir)
-                raise ValueError(f"Installation aborted. The path {dest_dir} does not exist." % dest_dir)
+                logger.error(f"Installation aborted. The path {dest} does not exist." % dest)
+                raise ValueError(f"Installation aborted. The path {dest} does not exist." % dest)
     except Exception as e:
         logger.error(f"Error occurred while copying files: {e}")
         raise ValueError(f"Error occurred while copying files: {e}")
@@ -471,9 +532,12 @@ def replace_var_in_directory(directory, replace_var="VAR_CORELIGHT_INDEX_STRATEG
                     # Write the modified content back to the file
                     with open(file_path, 'w', encoding='utf-8') as file:
                         file.write(updated_contents)
-
-        logger.info(f"Successfully replaced {replace_var} with {replace_var_with} {replaced_var_count} times in {sorted(set(replaced_var_files))}")
+        if replaced_var_count == 0:
+            logger.debug(f"Did not find {replace_var} in {directory}")
+        else:
+            logger.debug(f"Successfully replaced {replace_var} with {replace_var_with} {replaced_var_count} times in {sorted(set(replaced_var_files))}")
 def main():
+    dry_run = input_bool(f"Is this a dry run? (No changes will be made files will be generated and left in {Final_Config_Dir})", default=False)
     install_templates = input_bool(f"Will you be installing Elasticsearch templates, mappings, and settings? Recommended with any updates.", default=True)
     pipeline_type = input(f"\nWill you be installing Pipelines? Ingest Pipelines, Logstash Pipelines, or no (Enter 'ingest'/'i', 'logstash'/'l', or 'no'/'n'/'none'): ").strip("'").strip().lower()
     while pipeline_type.lower() not in ['ingest', 'i', 'logstash', 'l', 'no', 'n']:
@@ -482,7 +546,9 @@ def main():
                               f"\n'logstash' or 'l' for Logstash Pipelines"
                               f"\n'no' or 'n' for skipping installation of pipelines"
                               f"\n: ")
+    create_es_connection = False
     if pipeline_type == 'i':
+        create_es_connection = True
         pipeline_type = 'ingest'
     elif pipeline_type == 'l':
         pipeline_type = 'logstash'
@@ -497,6 +563,8 @@ def main():
 
     use_pipeline = False if pipeline_type == 'no' else True
     use_templates = install_templates
+    if use_templates:
+        create_es_connection = True
 
     # - [x] Use proxy ?
     # Templates only ?
@@ -544,12 +612,19 @@ def main():
         else:
             ignore_proxy_cert_errors = None
             proxy = None
+        if ignore_proxy_cert_errors:
+            ssl_verify = False
+            urllib3.disable_warnings( category=InsecureRequestWarning )
+        else:
+            ssl_verify = None
         # Set source
-        templates_source_directory =  source_repository(templates_source, repo_type="templates", proxy=proxy, verify=not ignore_proxy_cert_errors if ignore_proxy_cert_errors else None)
+        templates_source_directory =  source_repository(templates_source, repo_type="templates", proxy=proxy, ssl_verify=ssl_verify)
         templates_source_directory = os.path.join(templates_source_directory, git_templates_sub_dir)
         if VAR_CORELIGHT_INDEX_STRATEGY == "datastream" or "d":
+            VAR_CORELIGHT_INDEX_STRATEGY = "datastream"
             templates_sub_dir = "component"
         elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy" or "l":
+            VAR_CORELIGHT_INDEX_STRATEGY = "legacy"
             templates_sub_dir = "legacy"
         else:
             templates_sub_dir = ""
@@ -557,11 +632,10 @@ def main():
         logger.info(f"Using {templates_source_directory} as the source for the templates.")
 
         # Copy all sourced files to temporary directory
-        copy_configs( source_dir=templates_source_directory, dest_dir=Final_Templates_Dir )
+        copy_configs( src=templates_source_directory, dest=Final_Templates_Dir )
         logger.info(f"Using {Final_Templates_Dir} as the temporary directory for the templates.")
 
     if use_pipeline:
-
         # Logstash Pipelines
         if pipeline_type == 'logstash':
             git_pipeline_repo = git_logstash_repo
@@ -595,13 +669,18 @@ def main():
         else:
             ignore_proxy_cert_errors = None
             proxy = None
+        if ignore_proxy_cert_errors:
+            ssl_verify = False
+            urllib3.disable_warnings( category=InsecureRequestWarning )
+        else:
+            ssl_verify = None
         # Set source
-        pipeline_source_directory =  source_repository(pipeline_source, repo_type=pipeline_type, proxy=proxy, verify=not ignore_proxy_cert_errors if ignore_proxy_cert_errors else None)
+        pipeline_source_directory =  source_repository(pipeline_source, repo_type=pipeline_type, proxy=proxy, ssl_verify=ssl_verify)
         pipeline_source_directory = os.path.join(pipeline_source_directory, pipeline_sub_dir)
         logger.info(f"Using {pipeline_source_directory} as the source for the {pipeline_type} pipelines.")
 
         # Copy all sourced files to temporary directory
-        copy_configs( source_dir=pipeline_source_directory, dest_dir=Final_Pipeline_Dir, ignore_file_extensions=['.disabled'] )
+        copy_configs( src=pipeline_source_directory, dest=Final_Pipeline_Dir, ignore_file_extensions=['.disabled'] )
         logger.info(f"Using {Final_Pipeline_Dir} as the temporary directory for the {pipeline_type} pipelines.")
 
         # Logstash Pipelines Specifics
@@ -688,17 +767,9 @@ def main():
         replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES)
         replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES)
 
-        # Final config placement or upload
-        if pipeline_type == 'logstash':
-            # Get destination from user
-            pipeline_destination_directory = input( f"\nEnter the path to store the Logstash pipeline files in (ie: {git_example_logstsh_pipeline_dir}). Leave blank to skip: " )
-            if not pipeline_destination_directory:
-                pipeline_destination_directory = Final_Pipeline_Dir
-            else:
-                copy_configs(source_dir=Final_Pipeline_Dir, dest_dir=pipeline_destination_directory, error_on_overwrites=True )
-        elif pipeline_type == 'ingest':
-            pass
-            #TODO: upload files use Final_Pipeline_Dir
+
+    if create_es_connection and not dry_run:
+        baseURI, session = get_elasticsearch_connection_config()
 
     if use_templates:
 
@@ -727,29 +798,26 @@ def main():
         replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS )
         replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS )
 
-    sys.exit(1)
-    #TODO:finish rest of templates and upload
+        if not dry_run:
+            if "a" == "b":
+                #TODO:finish rest of templates and upload
+                if VAR_CORELIGHT_INDEX_STRATEGY == "datastream":
+                    datastreams(session,baseURI)
+                elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy":
+                    index(session,baseURI,logstash)
 
-    baseURI, session = get_config()
-    testConnection(session, baseURI)
-
-    templateDS = input_bool(f"Will you be using Datastreams?", default=True)
-    if templateDS:
-        datastreams(session,baseURI)
-        if logstash and not updateLogstash:
-            postPorcessing(logstash_destination_directory, templateDS, logstashVersion)
-    else:
-        templateComponent = input_bool(f"Will you be using Component Templates?", default=True)
-        if templateComponent:
-            component( session, baseURI )
-            if logstash and not updateLogstash:
-                postPorcessing(logstash_destination_directory, templateDS, logstashVersion)
+    # Final config placement or upload
+    if pipeline_type == 'logstash' and not dry_run:
+        # Get destination from user
+        pipeline_destination_directory = input(
+            f"\nEnter the path to store the Logstash pipeline files in (ie: {git_example_logstsh_pipeline_dir}). Leave blank to skip: " )
+        if not pipeline_destination_directory:
+            pipeline_destination_directory = Final_Pipeline_Dir
         else:
-            templateLegcy = input_bool(f"Will you be using Legcy Templates? This is not supported on version 8.x and above?", default=False)
-            if templateLegcy:
-                index(session,baseURI,logstash)
-                if logstash and not updateLogstash:
-                    postPorcessing(logstash_destination_directory, templateDS, logstashVersion)
+            copy_configs( src=Final_Pipeline_Dir, dest=pipeline_destination_directory, error_on_overwrites=True )
+    elif pipeline_type == 'ingest' and not dry_run:
+        uploadIngestPipelines( session, baseURI, source_dir=Final_Pipeline_Dir )
+    logger.info(f"Installation complete. You can review the final files that were saved and or uploaded by viewing them in {Final_Config_Dir} as needed.")
 
 if __name__ == "__main__":
     try:
