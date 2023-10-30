@@ -350,7 +350,7 @@ def index(session, baseURI, source_dir=None, updateTemplates=False):
     for filename in fileList:
         exportToElastic(session, baseURI, source_dir, filename, "/_template/", retry=2)
 
-def uploadIngestPipelines(session,baseURI, source_dir=None):
+def upload_ingest_pipelines(session,baseURI, source_dir=None):
     logger.info(f"Uploading ingest pipelines from {source_dir}")
     for root, dirs, files in os.walk( source_dir ):
         for filename in files:
@@ -869,7 +869,7 @@ def make_modifications(pipeline_type=None, final_templates_dir=None, final_pipel
             index(session,baseURI,logstash)
     # Upload Ingest Pipelines
     if pipeline_type == 'ingest':
-        uploadIngestPipelines( session, baseURI, source_dir=final_pipelines_dir )
+        upload_ingest_pipelines( session, baseURI, source_dir=final_pipelines_dir )
 
 if __name__ == "__main__":
     try:
