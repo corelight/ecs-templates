@@ -92,49 +92,68 @@ logger.addHandler(ch)
 
 
 
-def checkRequest(responseObj):
-    code = responseObj.status_code
-    if code == 200:
-        return 200
+def input_bool(question, default=None):
+    prompt = " [Y/n]:" if default else " [y/N]:"
+    while True:
+        val = input(f"\n{question}{prompt}").strip().lower()
+        if not val:
+            return default
+        if val in ('y', 'yes'):
+            return True
+        if val in ('n', 'no'):
+            return False
+        print("Invalid response")
 
-    if 400 <= code <= 500:
-        print(responseObj.json())
-        time.sleep(5)
-        return code
-    return code
+def input_string(question=None, default=None):
+    val = None
+    if question:
+        val = input(f"\n{question}. Default: '{default}': ")
+        if not val:
+            return default
+        else:
+            val = val.strip()
+    return val
 
-
-def input_int(question):
+def input_int(question, default=None):
     while True:
         try:
-            return int(input(question + ": "))
+            val = int(input(f"\n{question}. Default: '{default}': "))
+            if not val:
+                return default
+            else:
+                return val
         except ValueError:
-            print("Invalid response")
+            print("Invalid response, please enter a number")
 
-def testConnection(session, baseURI):
-    #testUri = "/_cat/indices?v&pretty"
+def check_request_status_code(responseObj, code=None):
+    if not code:
+        code = responseObj.status_code
+    if code == 200:
+        pass
+    elif 400 <= code <= 599:
+        logger.error(responseObj.json())
+    else:
+        code = None
+        logger.error(f"No status code found for {responseObj}")
+    return code
+
+def test_connection(session, baseURI):
     testUri = "/"
-    uri = baseURI + testUri
+    uri = f'{baseURI}{testUri}'
     try:
         response = session.get(uri, timeout=5)
-        checkRequest(response)
+        check_status_code = check_request_status_code(response)
         response.raise_for_status()
     except requests.exceptions.SSLError as e:
         if "SSL: CERTIFICATE_VERIFY_FAILED" in str(e):
             logger.warning(f"SSL Error: {e}")
             return "prompt_ignore_cert"
-            response = session.get(uri, timeout=5, verify=False)
-            checkRequest(response)
-            response.raise_for_status()
         else:
             raise
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 401:
             logger.warning(f"Authentication Error: {e}")
             return "prompt_auth"
-            response = session.get(uri, timeout=5)
-            checkRequest(response)
-            response.raise_for_status()
         else:
             logger.error(f"HTTP Error: {e}")
             raise
@@ -142,78 +161,28 @@ def testConnection(session, baseURI):
         logger.error(f"Request Error: {e}")
         raise
 
-def updateLogstash(directory):
-    source = "./ecs-logstash-mappings-Dev/pipeline/"
-    tcp = ""
-    path = directory + "/CorelightPipelines"
-    if os.path.exists(directory):
-        fileList=os.listdir(source)
-        for filename in fileList:
-            shutil.copy2(os.path.join(source,filename), path)
-
-def postPorcessing(logstashLocation, datastream, logstashVersion):
-    ls_pipeline_install_dir = logstashLocation + "/CorelightPipelines/"
-    if logstashVersion:
-        sedCommand = 'sed -i "s/#ecs_compatibility =>/ecs_compatibility =>/" ' + ls_pipeline_install_dir + '/*.conf'
-        subprocess.call([sedCommand],shell=True)
-
-def exportToElastic(session, baseURI, filePath, fileName, path, retry=2):
+def es_export_to_elastic(session, baseURI, filepath, filename, path, retry=2, timeout=10):
     try:
-        with open(filePath) as f:
+        with open(filepath) as f:
             postData = f.read()
     except FileNotFoundError:
-        logger.error(f"Error: File {filePath} not found")
+        logger.error(f"Error: File {filepath} not found")
         return
 
-    uri = baseURI + path + fileName
+    uri = f'{baseURI}{path}{filename}'
+    response = None
     for i in range(retry):
-        response = session.put(uri, data=postData, timeout=10)
-        response = checkRequest(response)
-        if response in (400, 409):
-            logger.warning(f"Error uploading {fileName} status code {response}")
-        elif response == 200:
-            logger.info(f"{fileName} uploaded successfully")
+        response = session.put(uri, data=postData, timeout=timeout)
+        response_code = response.status_code
+        response_text = response.text
+        check_status_code = check_request_status_code(response, code=response_code)
+        if check_status_code == 200:
+            logger.info(f"{filename} uploaded successfully")
             return
+        elif check_status_code in (400, 409):
+            logger.error(f"Error uploading '{filename}' to '{uri}' with status code '{response_code}' and response '{response_text}'")
         else:
-            logger.error(f"Error uploading {fileName} status code {response}")
-            logger.error(f"URI = {uri}")
-            raise HTTPError(f"Error uploading {fileName} status code {response}")
-
-
-def elasticDel(session, baseURI, pipeline, retry=2):
-    """
-    Delete an Elasticsearch ingest pipeline or enrich policy.
-
-    Args:
-        session: requests.Session object
-        baseURI: str, Elasticsearch base URI
-        pipeline: str, name of the pipeline or policy to delete
-        retry: int, number of times to retry the request if it fails
-
-    Returns:
-        int, HTTP status code of the response
-    """
-    uri = baseURI + "/_ingest/pipeline/" + pipeline
-    if pipeline.endswith("-policy"):
-        uri = baseURI + "/_enrich/policy/" + pipeline
-
-    print("Deleting URI = %s" % uri)
-
-    for i in range(retry):
-        response = session.delete(uri, timeout=5)
-        result = checkRequest(response)
-        if result == 200:
-            logger.info(f"{pipeline} deleted successfully")
-            return result
-        elif result in (400, 404):
-            logger.warning(f"Error deleting {pipeline} status code {result}")
-        else:
-            logger.error(f"Error deleting {pipeline} status code {result}")
-            logger.error(f"URI = {uri}")
-            #sys.exit(1)
-
-    logger.error(f"Failed to delete {pipeline} after {retry} attempts")
-    #sys.exit(1)
+            logger.error(f"Error uploading. '{filename}' to '{uri}' with status code '{response_code}' and response '{response_text}'")
 
 def get_elasticsearch_connection_config():
     """Return a baseURI and session"""
@@ -259,7 +228,7 @@ def get_elasticsearch_connection_config():
 
     # Test the connection, so can reprompt if it fails
     while True:
-        reprompt = testConnection( s, baseURI )
+        reprompt = test_connection( s, baseURI )
         if reprompt == "prompt_ignore_cert":
             ignore_cert_errors = prompt_for_es_ignore_certificate_errors(try_again=True)
             if ignore_cert_errors:
@@ -301,86 +270,6 @@ def prompt_for_es_user_and_password(try_again=False):
         return [user, password]
     else:
         return None
-
-def export_templates(session, baseURI, source, path, retry=2):
-    """Export templates to ElasticSearch"""
-    fileList = os.listdir(source)
-    for filename in fileList:
-        filepath = os.path.join(source, filename)
-        if os.path.isfile(filepath):
-            exportToElastic(session, baseURI, source, filename, path, retry=retry)
-        else:
-            logger.warning(f"{filepath} is not a file. Skipping export.")
-
-def datastreams(session, baseURI, updateTemplates=False):
-    """Export data stream templates to ElasticSearch"""
-    source = "./templates-component/data_stream/"
-    component_templates = source + "components_template/"
-    ilm_templates = source + "ilm_policy/"
-    index_templates = source + "index_template/"
-
-    # Export component templates
-    export_templates(session, baseURI, component_templates, "/_component_template/", retry=2)
-
-    # Export ILM policies if updateTemplates is False
-    if not updateTemplates:
-        export_templates(session, baseURI, ilm_templates, "/_ilm/policy/", retry=2)
-
-    # Export index templates
-    export_templates(session, baseURI, index_templates, "/_index_template/", retry=2)
-
-def component( session, baseURI, updateTemplates ):
-    source = "./templates-component/non_data_stream/"
-    component = source + "component_template/"
-    ilm = source + "ilm_policy/"
-    index = source + "index_template/"
-    fileList=os.listdir(component)
-    for filename in fileList:
-         exportToElastic(session, baseURI, component,filename, "/_component_template/", retry=2)
-    if not updateTemplates:
-        fileList=os.listdir(ilm)
-        for filename in fileList:
-            exportToElastic(session, baseURI, ilm, filename, "/_ilm/policy/", retry=2)
-    fileList=os.listdir(index)
-    for filename in fileList:
-        exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=2)
-
-def index(session, baseURI, source_dir=None, updateTemplates=False):
-    fileList=os.listdir(source_dir)
-    for filename in fileList:
-        exportToElastic(session, baseURI, source_dir, filename, "/_template/", retry=2)
-
-def upload_ingest_pipelines(session,baseURI, source_dir=None):
-    logger.info(f"Uploading ingest pipelines from {source_dir}")
-    for root, dirs, files in os.walk( source_dir ):
-        for filename in files:
-            # Set the full path variable
-            filePath = os.path.join( root, filename )
-            filename_without_extension = os.path.splitext( filename )[ 0 ]
-            extension = os.path.splitext( filename )[ 1 ]
-            exportToElastic( session, baseURI, filePath, filename, "/_ingest/pipeline/", retry=2 )
-
-
-def input_bool(question, default=None):
-    prompt = " [Y/n]:" if default else " [y/N]:"
-    while True:
-        val = input(f"\n{question}{prompt}").strip().lower()
-        if not val:
-            return default
-        if val in ('y', 'yes'):
-            return True
-        if val in ('n', 'no'):
-            return False
-        print("Invalid response")
-def input_string(question=None, default=None):
-    val = None
-    if question:
-        val = input(f"\n{question}. Default: '{default}': ")
-        if not val:
-            return default
-        else:
-            val = val.strip()
-    return val
 
 def unzip_git(filename):
     try:
@@ -532,6 +421,82 @@ def replace_var_in_directory(directory, replace_var="VAR_CORELIGHT_INDEX_STRATEG
         else:
             logger.debug(f"Successfully replaced {replace_var} with {replace_var_with} {replaced_var_count} times in {sorted(set(replaced_var_files))}")
 
+def es_export_upload_file(session, baseURI, uri_path, source_dir=None, human_path_name=None, retry=2,timeout=10):
+    """Upload files to Elasticsearch. Removes the file extension (only if '.json') from the filename and uses the remaining as the name in Elasticsearch."""
+    if source_dir and os.path.isdir(source_dir):
+        logger.info(f"Uploading {human_path_name} files from {source_dir}")
+        for root, dirs, files in os.walk( source_dir ):
+            for filename in files:
+                # Set the full path variable
+                filePath = os.path.join( root, filename )
+                filename_without_extension = os.path.splitext( filename )[ 0 ]
+                extension = os.path.splitext( filename )[ 1 ]
+                es_export_to_elastic( session, baseURI, filePath, filename_without_extension, uri_path, retry=2, timeout=10 )
+    else:
+        logger.error( f"'{source_dir}' is not specified or is not a directory")
+
+def make_modifications(session=None, baseURI=None, pipeline_type=None, final_templates_dir=None, final_pipelines_dir=None, VAR_CORELIGHT_INDEX_STRATEGY=None, use_templates=False):
+    """Use modified files and upload"""
+    # Templates
+    if use_templates:
+        if VAR_CORELIGHT_INDEX_STRATEGY == "datastream":
+            # Component Templates
+            source_dir = os.path.join( final_templates_dir, "component_template" )
+            human_path_name = "component template"
+            es_export_upload_file( session, baseURI, "/_component_template/", source_dir=source_dir, human_path_name=human_path_name, retry=2, timeout=10 )
+            # ILM Policies
+            source_dir = os.path.join( final_templates_dir, "ilm_policy" )
+            es_export_upload_file( session, baseURI, "/_ilm/policy/", source_dir=source_dir, human_path_name=human_path_name,  retry=2, timeout=10 )
+            human_path_name = "ilm policy"
+            # Index Templates
+            source_dir = os.path.join( final_templates_dir, "index_template" )
+            es_export_upload_file( session, baseURI, "/_index_template/", source_dir=source_dir, human_path_name=human_path_name,  retry=2, timeout=10 )
+            human_path_name = "index template"
+
+        else: # Unsupported index strategy
+            logger.error(f"Unsupported index strategy: {VAR_CORELIGHT_INDEX_STRATEGY}")
+    # Ingest Pipelines
+    if pipeline_type == 'ingest':
+        source_dir = final_pipelines_dir
+        human_path_name = "ingest pipeline"
+        es_export_upload_file( session, baseURI, "/_ingest/pipeline/", source_dir=source_dir,  human_path_name=human_path_name,  retry=2, timeout=10 )
+
+def elasticDel(session, baseURI, pipeline, retry=2): #TODO: Keep Or Not
+    """
+    Delete an Elasticsearch ingest pipeline or enrich policy.
+
+    Args:
+        session: requests.Session object
+        baseURI: str, Elasticsearch base URI
+        pipeline: str, name of the pipeline or policy to delete
+        retry: int, number of times to retry the request if it fails
+
+    Returns:
+        int, HTTP status code of the response
+    """
+    uri = baseURI + "/_ingest/pipeline/" + pipeline
+    if pipeline.endswith("-policy"):
+        uri = baseURI + "/_enrich/policy/" + pipeline
+
+    print("Deleting URI = %s" % uri)
+
+    for i in range(retry):
+        response = session.delete(uri, timeout=5)
+        check_status_code = check_request_status_code(response)
+        if check_status_code == 200:
+            logger.info(f"{pipeline} deleted successfully")
+            return check_status_code
+        elif check_status_code in (400, 404):
+            logger.warning(f"Error deleting {pipeline} status code {check_status_code}")
+        else:
+            logger.error(f"Error deleting {pipeline} status code {check_status_code}")
+            logger.error(f"URI = {uri}")
+            #sys.exit(1)
+
+    logger.error(f"Failed to delete {pipeline} after {retry} attempts")
+    #sys.exit(1)
+    #END# #TODO: Keep Or Not #END#
+
 def main():
     create_es_connection = False
     dry_run = False
@@ -597,15 +562,15 @@ def main():
         elif pipeline_type == 'n':
             pipeline_type = 'no'
         VAR_CORELIGHT_INDEX_STRATEGY = input(f"\nWhat index strategy will you be using? (Enter 'datastream'/'d', 'legacy'/'l'): ").strip().lower()
-        while VAR_CORELIGHT_INDEX_STRATEGY.strip("'").strip().lower() not in ['datastream', 'd', 'legacy', 'l']:
+        while VAR_CORELIGHT_INDEX_STRATEGY.strip("'").strip().lower() not in ['datastream', 'd']:#, 'legacy', 'l']:
             VAR_CORELIGHT_INDEX_STRATEGY = input(f"Invalid input. Please enter one of:"
                                                  f"\n'datastream' or 'd' for datastream index strategy"
-                                                 f"\n'legacacy' or 'l' for legacy index strategy"
+                                                 #f"\n'legacacy' or 'l' for legacy index strategy"
                                                  f"\n: ")
         if VAR_CORELIGHT_INDEX_STRATEGY == "datastream" or "d":
             VAR_CORELIGHT_INDEX_STRATEGY = "datastream"
-        elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy" or "l":
-            VAR_CORELIGHT_INDEX_STRATEGY = "legacy"
+        #elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy" or "l":
+        #    VAR_CORELIGHT_INDEX_STRATEGY = "legacy"
 
         use_pipeline = False if pipeline_type == 'no' else True
         use_templates = install_templates
@@ -642,15 +607,15 @@ def main():
             templates_source_directory = os.path.join(templates_source_directory, git_templates_sub_dir)
             if VAR_CORELIGHT_INDEX_STRATEGY == "datastream":
                 templates_sub_dir = "component"
-            elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy":
-                templates_sub_dir = "legacy"
+            #elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy":
+            #    templates_sub_dir = "legacy"
             else:
                 templates_sub_dir = ""
             templates_source_directory = os.path.join(templates_source_directory, templates_sub_dir)
             logger.info(f"Using {templates_source_directory} as the source for the templates.")
 
             # Copy all sourced files to temporary directory
-            copy_configs( src=templates_source_directory, dest=Final_Templates_Dir )
+            copy_configs(src=templates_source_directory, dest=Final_Templates_Dir)
             logger.info(f"Using {Final_Templates_Dir} as the temporary directory for the templates.")
 
         if use_pipeline:
@@ -698,7 +663,7 @@ def main():
             logger.info(f"Using {pipeline_source_directory} as the source for the {pipeline_type} pipelines.")
 
             # Copy all sourced files to temporary directory
-            copy_configs( src=pipeline_source_directory, dest=Final_Pipelines_Dir, ignore_file_extensions=['.disabled'] )
+            copy_configs(src=pipeline_source_directory, dest=Final_Pipelines_Dir, ignore_file_extensions=['.disabled'])
             logger.info(f"Using {Final_Pipelines_Dir} as the temporary directory for the {pipeline_type} pipelines.")
 
             # Logstash Pipelines Specifics
@@ -813,16 +778,16 @@ def main():
         # Save parameters to file
         param_path = None
         try:
-            param_path = f"{Final_Config_Dir}/param_pipeline_type.txt"
+            param_path = f"{Final_Config_Dir}/param_pipeline_type.var"
             with open(f"{param_path}", "w") as f:
                 f.write(str(pipeline_type))
-            param_path = f"{Final_Config_Dir}/param_create_es_connection.txt"
+            param_path = f"{Final_Config_Dir}/param_create_es_connection.var"
             with open(f"{param_path}", "w") as f:
                 f.write(str(create_es_connection))
-            param_path = f"{Final_Config_Dir}/param_VAR_CORELIGHT_INDEX_STRATEGY.txt"
+            param_path = f"{Final_Config_Dir}/param_VAR_CORELIGHT_INDEX_STRATEGY.var"
             with open(f"{param_path}", "w") as f:
                 f.write(str(VAR_CORELIGHT_INDEX_STRATEGY))
-            param_path = f"{Final_Config_Dir}/param_use_templates.txt"
+            param_path = f"{Final_Config_Dir}/param_use_templates.var"
             with open(f"{param_path}", "w") as f:
                 f.write(str(use_templates))
         except Exception as e:
@@ -830,23 +795,23 @@ def main():
             raise ValueError(f"Error occurred while saving parameters to file: {e}")
 
         # Copy all files to Previous_Config_Dir
-        copy_configs( src=Final_Config_Dir, dest=Previous_Config_Dir )
+        copy_configs(src=Final_Config_Dir, dest=Previous_Config_Dir)
         logger.info(f"A copy has been saved to {Previous_Config_Dir}")
 
     if use_last_run or not dry_run:
-        if use_last_run:
+        if use_last_run: # Set parameters from file if using last run
             param_path = None
             try:
-                param_path = f"{Final_Config_Dir}/param_create_es_connection.txt"
+                param_path = f"{Final_Config_Dir}/param_create_es_connection.var"
                 with open(f"{param_path}", "r") as f:
                     create_es_connection = f.read().strip()
-                param_path = f"{Final_Config_Dir}/param_pipeline_type.txt"
+                param_path = f"{Final_Config_Dir}/param_pipeline_type.var"
                 with open(f"{param_path}", "r") as f:
                     pipeline_type = f.read().strip()
-                param_path = f"{Final_Config_Dir}/param_VAR_CORELIGHT_INDEX_STRATEGY.txt"
+                param_path = f"{Final_Config_Dir}/param_VAR_CORELIGHT_INDEX_STRATEGY.var"
                 with open(f"{param_path}", "r") as f:
                     VAR_CORELIGHT_INDEX_STRATEGY = f.read().strip()
-                param_path = f"{Final_Config_Dir}/param_use_templates.txt"
+                param_path = f"{Final_Config_Dir}/param_use_templates.var"
                 with open(f"{param_path}", "r") as f:
                     use_templates = f.read().strip()
             except:
@@ -854,22 +819,18 @@ def main():
                 raise ValueError(f"Unable to read parameters from {param_path}")
         if create_es_connection:
             baseURI, session = get_elasticsearch_connection_config()
-            make_modifications(pipeline_type=pipeline_type, final_templates_dir=Final_Templates_Dir, final_pipelines_dir=Final_Pipelines_Dir, use_templates=use_templates, VAR_CORELIGHT_INDEX_STRATEGY=VAR_CORELIGHT_INDEX_STRATEGY, session=session, baseURI=baseURI)
+            make_modifications(
+                session=session,
+                baseURI=baseURI,
+                pipeline_type=pipeline_type,
+                final_templates_dir=Final_Templates_Dir,
+                final_pipelines_dir=Final_Pipelines_Dir,
+                use_templates=use_templates,
+                VAR_CORELIGHT_INDEX_STRATEGY=VAR_CORELIGHT_INDEX_STRATEGY
+            )
 
     # Final config placement
     logger.info(f"Script has finished. You can review the final configurations in {Final_Config_Dir}")
-
-def make_modifications(pipeline_type=None, final_templates_dir=None, final_pipelines_dir=None, VAR_CORELIGHT_INDEX_STRATEGY=None, use_templates=False, session=None, baseURI=None):
-    # Upload Templates
-    if use_templates:
-        #TODO:finish rest of templates and upload
-        if VAR_CORELIGHT_INDEX_STRATEGY == "datastream":
-            datastreams(session,baseURI)
-        elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy":
-            index(session,baseURI,logstash)
-    # Upload Ingest Pipelines
-    if pipeline_type == 'ingest':
-        upload_ingest_pipelines( session, baseURI, source_dir=final_pipelines_dir )
 
 if __name__ == "__main__":
     try:
