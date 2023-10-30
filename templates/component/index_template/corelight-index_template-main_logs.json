@@ -1,18 +1,18 @@
 {
   "composed_of": [
-    "corelight-main_logs-base-settings",
     "corelight-main_logs-aliases",
+    "corelight-main_logs-base-settings",
     "corelight-main_logs-ilm-settings",
     "corelight-main_logs-mappings",
+    "corelight-main_logs-aliases@custom",
     "corelight-main_logs-base-settings@custom",
-    "corelight-main_logs-create_ecs_corelight-aliases@custom",
     "corelight-main_logs-ilm-settings@custom",
     "corelight-main_logs-mappings@custom"
   ],
   "data_stream": { },
   "ignore_missing_component_templates": [
-    "corelight-main_logs-base-settings@custom",
     "corelight-main_logs-aliases@custom",
+    "corelight-main_logs-base-settings@custom",
     "corelight-main_logs-ilm-settings@custom",
     "corelight-main_logs-mappings@custom"
   ],
