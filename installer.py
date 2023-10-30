@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+from datetime import datetime
 import shutil
 import requests
 from urllib3.exceptions import InsecureRequestWarning
@@ -15,7 +16,7 @@ import errno
 import re
 from urllib.parse import urlparse
 import urllib3
-from urllib3.exceptions import InsecureRequestWarning
+from urllib3.exceptions import InsecureRequestWarning, HTTPError
 
 git_fork = "brasitech"
 
@@ -35,41 +36,27 @@ logstash_input_choices = [ 'tcp', 'tcp_ssl', 'kafka', 'hec', 'udp' ]
 logstash_elasticsearch_output_file = "9940-elasticsearch-corelight_zeek-datastream-output.conf.disabled"
 # General
 #version = script_version
+time_now = time.time() # Get the current time
+dir_time = time.strftime( '%Y-%m-%d_%H%M%S', time.gmtime( time_now ) )
 script_name = os.path.basename( __file__ )
 script_dir = os.path.realpath( os.path.join( __file__, '..' ) )
 Script_UID = str( random.randint( 1000000000, 9999999999 ) )  # Random 10 digit number for correlating a specific run of the script to the logs.
 # Main Output Directory
 Script_Output_Dir = os.path.realpath( os.path.join( script_dir, "z_installer" ) )
 # Temp Output Directory
-Temp_Output_Dir = os.path.realpath( os.path.join( Script_Output_Dir, "temp" ) )
-# Final config directory
-Final_Config_Dir = os.path.realpath( os.path.join( Script_Output_Dir, "final_config" ) )
-Final_Pipeline_Dir = os.path.realpath( os.path.join( Final_Config_Dir, "pipelines" ) )
-Final_Templates_Dir = os.path.realpath( os.path.join( Final_Config_Dir, "templates" ) )
-
+Temp_Output_Dir = os.path.join( Script_Output_Dir, "temp" )
+Config_Dir = os.path.join( Script_Output_Dir, "final_config" )
 # Create the output directories if they don't exist
 try:
-    os.makedirs(Script_Output_Dir)
+    os.makedirs( Script_Output_Dir )
 except OSError as e:
     if e.errno != errno.EEXIST:
         raise
 try:
-    os.makedirs(Temp_Output_Dir)
+    os.makedirs( Temp_Output_Dir )
 except OSError as e:
     if e.errno != errno.EEXIST:
         raise
-# Clean final config directory before use
-try:
-    shutil.rmtree(Final_Config_Dir) # Delete the directory
-except FileNotFoundError:
-    pass
-# Recreate the directories
-try:
-    os.makedirs(Final_Config_Dir)
-    os.makedirs(Final_Pipeline_Dir)
-    os.makedirs(Final_Templates_Dir)
-except OSError as e:
-    print(f"Unable to create necessary directories: {e}")
 
 # Set up logging
 COLORS = {
@@ -170,8 +157,7 @@ def postPorcessing(logstashLocation, datastream, logstashVersion):
         sedCommand = 'sed -i "s/#ecs_compatibility =>/ecs_compatibility =>/" ' + ls_pipeline_install_dir + '/*.conf'
         subprocess.call([sedCommand],shell=True)
 
-def exportToElastic(session, baseURI, filePath, fileName, path, retry=4):
-    #if pipeline != "zeek-enrichment-conn-policy/_execute":
+def exportToElastic(session, baseURI, filePath, fileName, path, retry=2):
     try:
         with open(filePath) as f:
             postData = f.read()
@@ -191,10 +177,10 @@ def exportToElastic(session, baseURI, filePath, fileName, path, retry=4):
         else:
             logger.error(f"Error uploading {fileName} status code {response}")
             logger.error(f"URI = {uri}")
-            sys.exit(1)
+            raise HTTPError(f"Error uploading {fileName} status code {response}")
 
 
-def elasticDel(session, baseURI, pipeline, retry=4):
+def elasticDel(session, baseURI, pipeline, retry=2):
     """
     Delete an Elasticsearch ingest pipeline or enrich policy.
 
@@ -316,7 +302,7 @@ def prompt_for_es_user_and_password(try_again=False):
     else:
         return None
 
-def export_templates(session, baseURI, source, path, retry=4):
+def export_templates(session, baseURI, source, path, retry=2):
     """Export templates to ElasticSearch"""
     fileList = os.listdir(source)
     for filename in fileList:
@@ -334,14 +320,14 @@ def datastreams(session, baseURI, updateTemplates=False):
     index_templates = source + "index_template/"
 
     # Export component templates
-    export_templates(session, baseURI, component_templates, "/_component_template/", retry=4)
+    export_templates(session, baseURI, component_templates, "/_component_template/", retry=2)
 
     # Export ILM policies if updateTemplates is False
     if not updateTemplates:
-        export_templates(session, baseURI, ilm_templates, "/_ilm/policy/", retry=4)
+        export_templates(session, baseURI, ilm_templates, "/_ilm/policy/", retry=2)
 
     # Export index templates
-    export_templates(session, baseURI, index_templates, "/_index_template/", retry=4)
+    export_templates(session, baseURI, index_templates, "/_index_template/", retry=2)
 
 def component( session, baseURI, updateTemplates ):
     source = "./templates-component/non_data_stream/"
@@ -350,19 +336,19 @@ def component( session, baseURI, updateTemplates ):
     index = source + "index_template/"
     fileList=os.listdir(component)
     for filename in fileList:
-         exportToElastic(session, baseURI, component,filename, "/_component_template/", retry=4)
+         exportToElastic(session, baseURI, component,filename, "/_component_template/", retry=2)
     if not updateTemplates:
         fileList=os.listdir(ilm)
         for filename in fileList:
-            exportToElastic(session, baseURI, ilm, filename, "/_ilm/policy/", retry=4)
+            exportToElastic(session, baseURI, ilm, filename, "/_ilm/policy/", retry=2)
     fileList=os.listdir(index)
     for filename in fileList:
-        exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=4)
+        exportToElastic(session, baseURI, index, filename, "/_index_template/", retry=2)
 
 def index(session, baseURI, source_dir=None, updateTemplates=False):
     fileList=os.listdir(source_dir)
     for filename in fileList:
-        exportToElastic(session, baseURI, source_dir, filename, "/_template/", retry=4)
+        exportToElastic(session, baseURI, source_dir, filename, "/_template/", retry=2)
 
 def uploadIngestPipelines(session,baseURI, source_dir=None):
     logger.info(f"Uploading ingest pipelines from {source_dir}")
@@ -372,13 +358,13 @@ def uploadIngestPipelines(session,baseURI, source_dir=None):
             filePath = os.path.join( root, filename )
             filename_without_extension = os.path.splitext( filename )[ 0 ]
             extension = os.path.splitext( filename )[ 1 ]
-            exportToElastic( session, baseURI, filePath, filename, "/_ingest/pipeline/", retry=4 )
+            exportToElastic( session, baseURI, filePath, filename, "/_ingest/pipeline/", retry=2 )
 
 
 def input_bool(question, default=None):
     prompt = " [Y/n]:" if default else " [y/N]:"
     while True:
-        val = input(f"\n{question} {prompt}").strip().lower()
+        val = input(f"\n{question}{prompt}").strip().lower()
         if not val:
             return default
         if val in ('y', 'yes'):
@@ -386,8 +372,17 @@ def input_bool(question, default=None):
         if val in ('n', 'no'):
             return False
         print("Invalid response")
+def input_string(question=None, default=None):
+    val = None
+    if question:
+        val = input(f"\n{question}. Default: '{default}': ")
+        if not val:
+            return default
+        else:
+            val = val.strip()
+    return val
 
-def unzipGit(filename):
+def unzip_git(filename):
     try:
         fname = os.path.basename(filename)
         git_unzip_dir_name = os.path.join( Temp_Output_Dir, os.path.splitext(fname)[0] )
@@ -428,11 +423,11 @@ def source_repository(name, repo_type, proxy=None, ssl_verify=None):
             logger.error(f"Error occurred while downloading repository: {e}")
             raise ValueError(f"Error occurred while downloading repository: {e}")
         # Unzip the repository
-        name = unzipGit(filename)
+        name = unzip_git(filename)
         return name
     # Zip
     elif name.endswith(".zip") and os.path.isfile(name):
-        name = unzipGit(name)
+        name = unzip_git(name)
         return name
     # Path
     elif os.path.exists(name):
@@ -509,7 +504,7 @@ def enable_ls_input(source_dir=None, ingest_type=None, raw=None, destination_dir
     dest = os.path.join(destination_dir, dest_file_name)
     try:
         shutil.copy(source, dest)
-        logger.info(f"Successfully enabled {ingest_type} at {dest}") #TODO: tell user to modify at the end
+        logger.info(f"Successfully enabled {ingest_type} at {dest}")
     except Exception as e:
         logger.error(f"Error occurred while enabling {ingest_type} {e}")
         raise ValueError(f"Error occurred while enabling {ingest_type} {e}")
@@ -536,288 +531,345 @@ def replace_var_in_directory(directory, replace_var="VAR_CORELIGHT_INDEX_STRATEG
             logger.debug(f"Did not find {replace_var} in {directory}")
         else:
             logger.debug(f"Successfully replaced {replace_var} with {replace_var_with} {replaced_var_count} times in {sorted(set(replaced_var_files))}")
+
 def main():
-    dry_run = input_bool(f"Is this a dry run? (No changes will be made files will be generated and left in {Final_Config_Dir})", default=False)
-    install_templates = input_bool(f"Will you be installing Elasticsearch templates, mappings, and settings? Recommended with any updates.", default=True)
-    pipeline_type = input(f"\nWill you be installing Pipelines? Ingest Pipelines, Logstash Pipelines, or no (Enter 'ingest'/'i', 'logstash'/'l', or 'no'/'n'/'none'): ").strip("'").strip().lower()
-    while pipeline_type.lower() not in ['ingest', 'i', 'logstash', 'l', 'no', 'n']:
-        pipeline_type = input(f"Invalid input. Please enter one of:"
-                              f"\n'ingest' or 'i' for Ingest Pipelines"
-                              f"\n'logstash' or 'l' for Logstash Pipelines"
-                              f"\n'no' or 'n' for skipping installation of pipelines"
-                              f"\n: ")
     create_es_connection = False
-    if pipeline_type == 'i':
-        create_es_connection = True
-        pipeline_type = 'ingest'
-    elif pipeline_type == 'l':
-        pipeline_type = 'logstash'
-    elif pipeline_type == 'n':
-        pipeline_type = 'no'
-    VAR_CORELIGHT_INDEX_STRATEGY = input(f"\nWhat index strategy will you be using? (Enter 'datastream'/'d', 'legacy'/'l'): ").strip().lower()
-    while VAR_CORELIGHT_INDEX_STRATEGY.strip("'").strip().lower() not in ['datastream', 'd', 'legacy', 'l']:
-        VAR_CORELIGHT_INDEX_STRATEGY = input(f"Invalid input. Please enter one of:"
-                                             f"\n'datastream' or 'd' for datastream index strategy"
-                                             f"\n'legacacy' or 'l' for legacy index strategy"
-                                             f"\n: ")
+    dry_run = False
+    # Final config directory
+    Final_Config_Dir = os.path.join( Config_Dir, "last_run" )
+    Final_Pipelines_Dir = os.path.join( Final_Config_Dir,  "pipelines" )
+    Final_Templates_Dir = os.path.join( Final_Config_Dir, "templates" )
+    Previous_Config_Dir = os.path.join( Config_Dir, "previous", dir_time )
 
-    use_pipeline = False if pipeline_type == 'no' else True
-    use_templates = install_templates
-    if use_templates:
-        create_es_connection = True
-
-    # - [x] Use proxy ?
-    # Templates only ?
-    # Logstash or Ingest Pipelines ?
-    #
-    #  - [ ] finish index variables for ingest pipelines same as logstash
-    # a) logstash pipelines
-    #  - [x] download or use local
-    #  - [x] input config logstash pipelines
-    #  - [x] replace variables / input
-    #    - [x] input type
-    #    - [x] VAR_CORELIGHT_INDEX_STRATEGY
-    #  - [ ] config creator for central pipeline management
-    # b) ingest pipelines
-    #  - [x] download or use local
-    #  - [x] var replacement, done since made function universal
-    #  - [ ] upload ingest pipelines
-    # Elasticsearch templates, mappings, and settings
-    #   - [ ] upload templates
-    #   - [ ] upload mappings
-    #   - [ ] upload settings
-    #   - [x] variable replacements
-    #     - [x] priority
-    #     - [x] index_patterns
-    #   - [ ] tell user files to modify at the end
-
-    if use_templates:
-        # Source templates
-        # Get source from user
-        templates_source = input(f"\nHow will you source the templates?"
-                                f"\n  - Download git zip of repository. Requires the full URL. ({git_templates_repo})"
-                                f"\n  - Local zip path of a repistory. Requires the full path ending in .zip"
-                                f"\n  - Local path or git clone. Requires the full path (default {script_dir})"
-                                f"\nEnter the url, path, or press enter for default {script_dir}: ")
-        # Use default if no input
-        if not templates_source:
-            templates_source = script_dir
-        if templates_source.startswith('http'):
-            proxy = input( f"\nEnter proxy URL if desired (leave empty, press enter, if not using a proxy): " )
-            if proxy:
-                ignore_proxy_cert_errors = input_bool( f"Do you want to ignore proxy certificate errors?", default=True )
-            else:
-                ignore_proxy_cert_errors = None
-                proxy = None
+    # Prompt user if they want to use configs from last run, if they exist
+    use_last_run = input_bool(f"Would you like to use the configs from the last run?", default=False)
+    # Prompt user for the directory of the last run
+    if use_last_run:
+        Final_Config_Dir = input_string(f"Enter the directory of the last run",default=Final_Config_Dir)
+        Final_Pipelines_Dir = os.path.join( Final_Config_Dir, "pipelines" )
+        Final_Templates_Dir = os.path.join( Final_Config_Dir, "templates" )
+        if os.path.exists(Final_Config_Dir):
+            logger.info(f"Using configs from last run: {Final_Config_Dir}")
         else:
-            ignore_proxy_cert_errors = None
-            proxy = None
-        if ignore_proxy_cert_errors:
-            ssl_verify = False
-            urllib3.disable_warnings( category=InsecureRequestWarning )
-        else:
-            ssl_verify = None
-        # Set source
-        templates_source_directory =  source_repository(templates_source, repo_type="templates", proxy=proxy, ssl_verify=ssl_verify)
-        templates_source_directory = os.path.join(templates_source_directory, git_templates_sub_dir)
+            logger.error(f"Unable to find last run directory: '{Final_Config_Dir}'")
+            raise ValueError(f"Unable to find last run directory: '{Final_Config_Dir}'")
+    else:
+        # Recreate final config directory before use
+        try:
+            shutil.rmtree(Final_Config_Dir) # Delete the directory
+        except FileNotFoundError:
+            pass
+        try:
+            os.makedirs( Final_Config_Dir )
+        except OSError as e:
+            logger.error( f"Unable to create necessary directories: {e}" )
+            sys.exit( 1 )
+        # Create the output directories if they don't exist
+        try:
+            os.makedirs( Final_Pipelines_Dir )
+        except OSError as e:
+            logger.error( f"Unable to create necessary directories: {e}" )
+            sys.exit( 1 )
+        try:
+            os.makedirs( Final_Templates_Dir )
+        except OSError as e:
+            logger.error( f"Unable to create necessary directories: {e}" )
+            sys.exit( 1 )
+        try:
+            os.makedirs( Previous_Config_Dir )
+        except OSError as e:
+            logger.error( f"Unable to create necessary directories: {e}" )
+            sys.exit( 1 )
+        dry_run = input_bool(f"Is this a dry run? No changes will be installed/uploaded.", default=False)
+        install_templates = input_bool(f"Will you be installing Elasticsearch templates, mappings, and settings? Recommended with any updates.", default=True)
+        pipeline_type = input(f"\nWill you be installing Pipelines? Ingest Pipelines, Logstash Pipelines, or no (Enter 'ingest'/'i', 'logstash'/'l', or 'no'/'n'/'none'): ").strip("'").strip().lower()
+        while pipeline_type.lower() not in ['ingest', 'i', 'logstash', 'l', 'no', 'n']:
+            pipeline_type = input(f"Invalid input. Please enter one of:"
+                                  f"\n'ingest' or 'i' for Ingest Pipelines"
+                                  f"\n'logstash' or 'l' for Logstash Pipelines"
+                                  f"\n'no' or 'n' for skipping installation of pipelines"
+                                  f"\n: ")
+        if pipeline_type == 'i':
+            create_es_connection = True
+            pipeline_type = 'ingest'
+        elif pipeline_type == 'l':
+            pipeline_type = 'logstash'
+        elif pipeline_type == 'n':
+            pipeline_type = 'no'
+        VAR_CORELIGHT_INDEX_STRATEGY = input(f"\nWhat index strategy will you be using? (Enter 'datastream'/'d', 'legacy'/'l'): ").strip().lower()
+        while VAR_CORELIGHT_INDEX_STRATEGY.strip("'").strip().lower() not in ['datastream', 'd', 'legacy', 'l']:
+            VAR_CORELIGHT_INDEX_STRATEGY = input(f"Invalid input. Please enter one of:"
+                                                 f"\n'datastream' or 'd' for datastream index strategy"
+                                                 f"\n'legacacy' or 'l' for legacy index strategy"
+                                                 f"\n: ")
         if VAR_CORELIGHT_INDEX_STRATEGY == "datastream" or "d":
             VAR_CORELIGHT_INDEX_STRATEGY = "datastream"
-            templates_sub_dir = "component"
         elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy" or "l":
             VAR_CORELIGHT_INDEX_STRATEGY = "legacy"
-            templates_sub_dir = "legacy"
-        else:
-            templates_sub_dir = ""
-        templates_source_directory = os.path.join(templates_source_directory, templates_sub_dir)
-        logger.info(f"Using {templates_source_directory} as the source for the templates.")
 
-        # Copy all sourced files to temporary directory
-        copy_configs( src=templates_source_directory, dest=Final_Templates_Dir )
-        logger.info(f"Using {Final_Templates_Dir} as the temporary directory for the templates.")
+        use_pipeline = False if pipeline_type == 'no' else True
+        use_templates = install_templates
 
-    if use_pipeline:
-        # Logstash Pipelines
-        if pipeline_type == 'logstash':
-            git_pipeline_repo = git_logstash_repo
-            pipeline_sub_dir = git_logstash_sub_dir
-            pipeline_destination_directory = None
-        elif pipeline_type == 'ingest':
-            git_pipeline_repo = git_ingest_repo
-            pipeline_sub_dir = git_ingest_sub_dir
-            pipeline_destination_directory = None
-        else:
-            logger.error(f"Invalid pipeline type: {pipeline_type}")
-            raise ValueError(f"Invalid pipeline type: {pipeline_type}")
-
-        # Source Pipeline
-        # Get source from user
-        pipeline_source = input(f"\nHow will you source the {pipeline_type} pipelines?"
-                                f"\n  - Download git zip of repository. Requires the full URL. ({git_pipeline_repo})"
-                                f"\n  - Local zip path of a repistory. Requires the full path ending in .zip"
-                                f"\n  - Local path or git clone. Requires the full path"
-                                f"\nEnter the url, path, or press enter for default {git_pipeline_repo}: ")
-        # Use default if no input
-        if not pipeline_source:
-            pipeline_source = git_pipeline_repo
-        if pipeline_source.startswith('http'):
-            proxy = input( f"\nEnter proxy URL if desired (leave empty, press enter, if not using a proxy): " )
-            if proxy:
-                ignore_proxy_cert_errors = input_bool( f"Do you want to ignore proxy certificate errors?", default=True )
+        if use_templates:
+            create_es_connection = True
+            # Source templates
+            # Get source from user
+            templates_source = input(f"\nHow will you source the templates?"
+                                    f"\n  - Download git zip of repository. Requires the full URL. ({git_templates_repo})"
+                                    f"\n  - Local zip path of a repistory. Requires the full path ending in .zip"
+                                    f"\n  - Local path or git clone. Requires the full path (default {script_dir})"
+                                    f"\nEnter the url, path, or press enter for '{script_dir}': ")
+            # Use default if no input
+            if not templates_source:
+                templates_source = script_dir
+            if templates_source.startswith('http'):
+                proxy = input( f"\nEnter proxy URL if desired (leave empty or 'n'/'no' if not using a proxy): " )
+                if proxy and not proxy in ["n", "no"]:
+                    ignore_proxy_cert_errors = input_bool( f"Do you want to ignore proxy certificate errors?", default=True )
+                else:
+                    ignore_proxy_cert_errors = None
+                    proxy = None
             else:
                 ignore_proxy_cert_errors = None
                 proxy = None
-        else:
-            ignore_proxy_cert_errors = None
-            proxy = None
-        if ignore_proxy_cert_errors:
-            ssl_verify = False
-            urllib3.disable_warnings( category=InsecureRequestWarning )
-        else:
-            ssl_verify = None
-        # Set source
-        pipeline_source_directory =  source_repository(pipeline_source, repo_type=pipeline_type, proxy=proxy, ssl_verify=ssl_verify)
-        pipeline_source_directory = os.path.join(pipeline_source_directory, pipeline_sub_dir)
-        logger.info(f"Using {pipeline_source_directory} as the source for the {pipeline_type} pipelines.")
+            if ignore_proxy_cert_errors:
+                ssl_verify = False
+                urllib3.disable_warnings( category=InsecureRequestWarning )
+            else:
+                ssl_verify = None
+            # Set source
+            templates_source_directory =  source_repository(templates_source, repo_type="templates", proxy=proxy, ssl_verify=ssl_verify)
+            templates_source_directory = os.path.join(templates_source_directory, git_templates_sub_dir)
+            if VAR_CORELIGHT_INDEX_STRATEGY == "datastream":
+                templates_sub_dir = "component"
+            elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy":
+                templates_sub_dir = "legacy"
+            else:
+                templates_sub_dir = ""
+            templates_source_directory = os.path.join(templates_source_directory, templates_sub_dir)
+            logger.info(f"Using {templates_source_directory} as the source for the templates.")
 
-        # Copy all sourced files to temporary directory
-        copy_configs( src=pipeline_source_directory, dest=Final_Pipeline_Dir, ignore_file_extensions=['.disabled'] )
-        logger.info(f"Using {Final_Pipeline_Dir} as the temporary directory for the {pipeline_type} pipelines.")
+            # Copy all sourced files to temporary directory
+            copy_configs( src=templates_source_directory, dest=Final_Templates_Dir )
+            logger.info(f"Using {Final_Templates_Dir} as the temporary directory for the templates.")
 
-        # Logstash Pipelines Specifics
-        if pipeline_type == 'logstash':
+        if use_pipeline:
+            # Logstash Pipelines
+            if pipeline_type == 'logstash':
+                git_pipeline_repo = git_logstash_repo
+                pipeline_sub_dir = git_logstash_sub_dir
+                pipeline_destination_directory = None
+            elif pipeline_type == 'ingest':
+                git_pipeline_repo = git_ingest_repo
+                pipeline_sub_dir = git_ingest_sub_dir
+                pipeline_destination_directory = None
+            else:
+                logger.error(f"Invalid pipeline type: {pipeline_type}")
+                raise ValueError(f"Invalid pipeline type: {pipeline_type}")
 
-            # Get specifics and change variables
-            #logstashVersion = input_bool( f"\nAre you running Logstash version 8.x or higher?", default=True ) #TODO:keep or not
-            input_type = input(f"\nHow will send data to Logstash?"
-                               f"\n  tcp        - JSON over TCP"
-                               f"\n  tcp_ssl    - JSON over TCP with SSL/TLS enabled"
-                               f"\n  hec        - HTTP Event Collector"
-                               f"\n  kafka      - Kafka"
-                               f"\n  udp        - UDP"
-                               f"\n Enter one of {logstash_input_choices}: ")
-            while input_type.strip().lower() not in logstash_input_choices:
-                input_type = input(f"Invalid input. Please enter one of {logstash_input_choices}: ")
-            keep_raw = input_bool( "Do you want to keep the raw message? (This will increase storage space but is useful in certain environments for data integrity or troubleshooting)", default=False )
-            enable_ls_input( source_dir=pipeline_source_directory, ingest_type=input_type, raw=keep_raw, destination_dir=Final_Pipeline_Dir)
+            # Source Pipeline
+            # Get source from user
+            pipeline_source = input(f"\nHow will you source the {pipeline_type} pipelines?"
+                                    f"\n  - Download git zip of repository. Requires the full URL. ({git_pipeline_repo})"
+                                    f"\n  - Local zip path of a repistory. Requires the full path ending in .zip"
+                                    f"\n  - Local path or git clone. Requires the full path"
+                                    f"\nEnter the url, path, or press enter for '{git_pipeline_repo}': ")
+            # Use default if no input
+            if not pipeline_source:
+                pipeline_source = git_pipeline_repo
+            if pipeline_source.startswith('http'):
+                proxy = input( f"\nEnter proxy URL if desired (leave empty, press enter, if not using a proxy): " )
+                if proxy:
+                    ignore_proxy_cert_errors = input_bool( f"Do you want to ignore proxy certificate errors?", default=True )
+                else:
+                    ignore_proxy_cert_errors = None
+                    proxy = None
+            else:
+                ignore_proxy_cert_errors = None
+                proxy = None
+            if ignore_proxy_cert_errors:
+                ssl_verify = False
+                urllib3.disable_warnings( category=InsecureRequestWarning )
+            else:
+                ssl_verify = None
+            # Set source
+            pipeline_source_directory =  source_repository(pipeline_source, repo_type=pipeline_type, proxy=proxy, ssl_verify=ssl_verify)
+            pipeline_source_directory = os.path.join(pipeline_source_directory, pipeline_sub_dir)
+            logger.info(f"Using {pipeline_source_directory} as the source for the {pipeline_type} pipelines.")
 
-        # Ingest Pipelines Specifics
-        elif pipeline_type == 'ingest':
-            pass
+            # Copy all sourced files to temporary directory
+            copy_configs( src=pipeline_source_directory, dest=Final_Pipelines_Dir, ignore_file_extensions=['.disabled'] )
+            logger.info(f"Using {Final_Pipelines_Dir} as the temporary directory for the {pipeline_type} pipelines.")
 
-        # For everything
-        USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index names?",default=False )
-        if USE_CUSTOM_INDEX_NAMES:
-            # Protocol Log
-            VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG = input(f"\nIndex Name Type for Protocol Logs. (logs): ")
-            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG = input(f"\nIndex Dataset for Protocol Logs. (corelight): ")
-            VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG = input(f"\nIndex Namespace for Protocol Logs. (default): ")
-            # Unknown Protocol Log
-            VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN = input(f"\nIndex Name Type for Protocol Logs Unknown (logs): ")
-            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN = input(f"\nIndex Dataset for Protocol Logs Unknown (corelight): ")
-            VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN = input(f"\nIndex Dataset suffix for Protocol Logs Unknown (unknown): ")
-            VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN = input(f"\nIndex Namespace for Protocol Logs Unknown (default): ")
-            # Metrics and Stats
-            VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG = input(f"\nIndex Name Type for Metrics and Stats Logs (zeek): ")
-            VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG = input(f"\nIndex Dataset for Metrics and Stats Logs(corelight): ")
-            VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG = input(f"\nIndex Namespace for Metrics and Stats Logs(default): ")
-            # Parse_Failures
-            VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES = input(f"\nIndex Name Type for Parse Failures (parse_failures): ")
-            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES = input(f"\nIndex Dataset for Parse Failures (corelight): ")
-            VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES = input(f"\nIndex Dataset suffix for Parse Failures (failed): ")
-            VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES = input(f"\nIndex Namespace for Parse Failures (default): ")
-        else:
-            # Protocol Log
-            VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG = "logs"
-            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG = "corelight"
-            VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG = "default"
-            # Unknown Protocol Log
-            VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN = "logs"
-            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN = "corelight"
-            VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN = "unknown"
-            VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN = "default"
-            # Metrics and Stats
-            VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG = "zeek"
-            VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG = "corelight"
-            VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG = "default"
-            # Parse_Failures
-            VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES = "parse_failures"
-            VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES = "corelight"
-            VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES = "failed"
-            VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES = "default"
+            # Logstash Pipelines Specifics
+            if pipeline_type == 'logstash':
 
-        
-        # Replace variables
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_STRATEGY", replace_var_with=VAR_CORELIGHT_INDEX_STRATEGY )
+                # Get specifics and change variables
+                input_type = input(f"\nHow will send data to Logstash?"
+                                   f"\n  tcp        - JSON over TCP"
+                                   f"\n  tcp_ssl    - JSON over TCP with SSL/TLS enabled"
+                                   f"\n  hec        - HTTP Event Collector"
+                                   f"\n  kafka      - Kafka"
+                                   f"\n  udp        - UDP"
+                                   f"\n Enter one of {logstash_input_choices}: ")
+                while input_type.strip().lower() not in logstash_input_choices:
+                    input_type = input(f"Invalid input. Please enter one of {logstash_input_choices}: ")
+                keep_raw = input_bool( "Do you want to keep the raw message? (This will increase storage space but is useful in certain environments for data integrity or troubleshooting)", default=False )
+                enable_ls_input( source_dir=pipeline_source_directory, ingest_type=input_type, raw=keep_raw, destination_dir=Final_Pipelines_Dir)
 
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG)
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG)
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG)
+            # Ingest Pipelines Specifics
+            elif pipeline_type == 'ingest':
+                pass
 
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN)
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN)
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN)
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN)
-
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG)
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG)
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG)
-
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES)
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES)
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES)
-        replace_var_in_directory( Final_Pipeline_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES)
+            # For everything
+            USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index names?",default=False )
+            if USE_CUSTOM_INDEX_NAMES:
+                # Protocol Log
+                VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG = input_string(question=f"Enter the Index Name Type for Protocol Logs", default=f"logs")
+                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG = input_string(question=f"Enter the Index Dataset for Protocol Logs", default=f"corelight")
+                VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG = input_string(question=f"Enter the Index Namespace for Protocol Logs", default=f"default")
+                # Unknown Protocol Log
+                VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN = input_string(question=f"Enter the Index Name Type for Protocol Logs Unknown", default=f"logs")
+                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN = input_string(question=f"Enter the Index Dataset for Protocol Logs Unknown", default=f"corelight")
+                VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN = input_string(question=f"Enter the Index Dataset suffix for Protocol Logs Unknown", default=f"unknown")
+                VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN = input_string(question=f"Enter the Index Namespace for Protocol Logs Unknown", default=f"default")
+                # Metrics and Stats
+                VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG = input_string(question=f"Enter the Index Name Type for Metrics and Stats Logs", default=f"zeek")
+                VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG = input_string(question=f"Enter the Index Dataset for Metrics and Stats Logs", default=f"corelight")
+                VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG = input_string(question=f"Enter the Index Namespace for Metrics and Stats Logs", default=f"default")
+                # Parse_Failures
+                VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES = input_string(question=f"Enter the Index Name Type for Parse Failures", default=f"parse_failures")
+                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES = input_string(question=f"Enter the Index Dataset for Parse Failures", default=f"corelight")
+                VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES = input_string(question=f"Enter the Index Dataset suffix for Parse Failures", default=f"failed")
+                VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES = input_string(question=f"Enter the Index Namespace for Parse Failures", default=f"default")
+            else:
+                # Protocol Log
+                VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG = "logs"
+                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG = "corelight"
+                VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG = "default"
+                # Unknown Protocol Log
+                VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN = "logs"
+                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN = "corelight"
+                VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN = "unknown"
+                VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN = "default"
+                # Metrics and Stats
+                VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG = "zeek"
+                VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG = "corelight"
+                VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG = "default"
+                # Parse_Failures
+                VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES = "parse_failures"
+                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES = "corelight"
+                VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES = "failed"
+                VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES = "default"
 
 
-    if create_es_connection and not dry_run:
-        baseURI, session = get_elasticsearch_connection_config()
+            # Replace variables
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_STRATEGY", replace_var_with=VAR_CORELIGHT_INDEX_STRATEGY )
 
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG)
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG)
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG)
+
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN)
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN)
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN)
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN)
+
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG)
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG)
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG)
+
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES)
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES)
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES)
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES)
+
+        if use_templates:
+            if not 'USE_CUSTOM_INDEX_NAMES' in locals():
+                USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index template settings?",default=False )
+            if USE_CUSTOM_INDEX_NAMES:
+                VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = input_string(question=f"Enter the Index Template Pattern for Main Logs. Qoute input, seperate list with commas", default=f'"logs-corelight.*"')
+                VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS = input_string(question=f"Enter the Index Template Priority for Main Logs", default=f"901")
+                VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = input_string(question=f"Enter the Index Template Pattern for Metrics and Stats Logs. Qoute input, seperate list with commas", default=f'"zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"')
+                VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS = input_string(question=f"Enter the Index Template Priority for Metrics and Stats Logs", default=f"901")
+                VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS  = input_string(question=f"Enter the Index Template Pattern for Parse Failures Logs. Qoute input, seperate list with commas", default=f'"parse_failures-corelight.*"')
+                VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS = input_string(question=f"Enter the Index Template Priority for Parse Failures Logs", default=f"901")
+            else:
+                VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = '"logs-corelight.*"'
+                VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS = '901'
+                VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = '"zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"'
+                VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS = '901'
+                VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS = '"parse_failures-corelight.*"'
+                VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS = '901'
+
+            # Replace variables
+            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS )
+            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS )
+            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS )
+            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS )
+            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS )
+            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS )
+
+        # Save parameters to file
+        param_path = None
+        try:
+            param_path = f"{Final_Config_Dir}/param_pipeline_type.txt"
+            with open(f"{param_path}", "w") as f:
+                f.write(str(pipeline_type))
+            param_path = f"{Final_Config_Dir}/param_create_es_connection.txt"
+            with open(f"{param_path}", "w") as f:
+                f.write(str(create_es_connection))
+            param_path = f"{Final_Config_Dir}/param_VAR_CORELIGHT_INDEX_STRATEGY.txt"
+            with open(f"{param_path}", "w") as f:
+                f.write(str(VAR_CORELIGHT_INDEX_STRATEGY))
+            param_path = f"{Final_Config_Dir}/param_use_templates.txt"
+            with open(f"{param_path}", "w") as f:
+                f.write(str(use_templates))
+        except Exception as e:
+            logger.error(f"Error occurred while saving parameters to file: {e}")
+            raise ValueError(f"Error occurred while saving parameters to file: {e}")
+
+        # Copy all files to Previous_Config_Dir
+        copy_configs( src=Final_Config_Dir, dest=Previous_Config_Dir )
+        logger.info(f"A copy has been saved to {Previous_Config_Dir}")
+
+    if use_last_run or not dry_run:
+        if use_last_run:
+            param_path = None
+            try:
+                param_path = f"{Final_Config_Dir}/param_create_es_connection.txt"
+                with open(f"{param_path}", "r") as f:
+                    create_es_connection = f.read().strip()
+                param_path = f"{Final_Config_Dir}/param_pipeline_type.txt"
+                with open(f"{param_path}", "r") as f:
+                    pipeline_type = f.read().strip()
+                param_path = f"{Final_Config_Dir}/param_VAR_CORELIGHT_INDEX_STRATEGY.txt"
+                with open(f"{param_path}", "r") as f:
+                    VAR_CORELIGHT_INDEX_STRATEGY = f.read().strip()
+                param_path = f"{Final_Config_Dir}/param_use_templates.txt"
+                with open(f"{param_path}", "r") as f:
+                    use_templates = f.read().strip()
+            except:
+                logger.error(f"Unable to read parameters from {param_path}")
+                raise ValueError(f"Unable to read parameters from {param_path}")
+        if create_es_connection:
+            baseURI, session = get_elasticsearch_connection_config()
+            make_modifications(pipeline_type=pipeline_type, final_templates_dir=Final_Templates_Dir, final_pipelines_dir=Final_Pipelines_Dir, use_templates=use_templates, VAR_CORELIGHT_INDEX_STRATEGY=VAR_CORELIGHT_INDEX_STRATEGY, session=session, baseURI=baseURI)
+
+    # Final config placement
+    logger.info(f"Script has finished. You can review the final configurations in {Final_Config_Dir}")
+
+def make_modifications(pipeline_type=None, final_templates_dir=None, final_pipelines_dir=None, VAR_CORELIGHT_INDEX_STRATEGY=None, use_templates=False, session=None, baseURI=None):
+    # Upload Templates
     if use_templates:
-
-        if not 'USE_CUSTOM_INDEX_NAMES' in locals():
-            USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index template settings?",default=False )
-        if USE_CUSTOM_INDEX_NAMES:
-            VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = input(f'\nIndex Template Pattern for Main Logs. Qoute input, seperate list with comma ("logs-corelight.*"): ')
-            VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS = input(f'\nIndex Template Priority for Main Logs. (901): ')
-            VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = input(f'\nIndex Template Pattern for Metrics and Stats Logs. ("zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"): ')
-            VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS = input(f'\nIndex Template Priority for Metrics and Stats Logs. (901): ')
-            VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS  = input(f'\nIndex Template Pattern for Parse Failures Logs. ("parse_failures-corelight.*"): ')
-            VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS = input(f'\nIndex Template Priority for Parse Failures Logs. (901): ')
-        else:
-            VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = '"logs-corelight.*"'
-            VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS = '901'
-            VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = '"zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"'
-            VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS = '901'
-            VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS = '"parse_failures-corelight.*"'
-            VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS = '901'
-
-        # Replace variables
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS )
-
-        if not dry_run:
-            if "a" == "b":
-                #TODO:finish rest of templates and upload
-                if VAR_CORELIGHT_INDEX_STRATEGY == "datastream":
-                    datastreams(session,baseURI)
-                elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy":
-                    index(session,baseURI,logstash)
-
-    # Final config placement or upload
-    if pipeline_type == 'logstash' and not dry_run:
-        # Get destination from user
-        pipeline_destination_directory = input(
-            f"\nEnter the path to store the Logstash pipeline files in (ie: {git_example_logstsh_pipeline_dir}). Leave blank to skip: " )
-        if not pipeline_destination_directory:
-            pipeline_destination_directory = Final_Pipeline_Dir
-        else:
-            copy_configs( src=Final_Pipeline_Dir, dest=pipeline_destination_directory, error_on_overwrites=True )
-    elif pipeline_type == 'ingest' and not dry_run:
-        uploadIngestPipelines( session, baseURI, source_dir=Final_Pipeline_Dir )
-    logger.info(f"Installation complete. You can review the final files that were saved and or uploaded by viewing them in {Final_Config_Dir} as needed.")
+        #TODO:finish rest of templates and upload
+        if VAR_CORELIGHT_INDEX_STRATEGY == "datastream":
+            datastreams(session,baseURI)
+        elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy":
+            index(session,baseURI,logstash)
+    # Upload Ingest Pipelines
+    if pipeline_type == 'ingest':
+        uploadIngestPipelines( session, baseURI, source_dir=final_pipelines_dir )
 
 if __name__ == "__main__":
     try:
