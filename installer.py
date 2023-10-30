@@ -561,7 +561,7 @@ def main():
             pipeline_type = 'logstash'
         elif pipeline_type == 'n':
             pipeline_type = 'no'
-        VAR_CORELIGHT_INDEX_STRATEGY = input(f"\nWhat index strategy will you be using? (Enter 'datastream'/'d', 'legacy'/'l'): ").strip().lower()
+        VAR_CORELIGHT_INDEX_STRATEGY = input(f"\nWhat index strategy will you be using? (Enter 'datastream'/'d'): ").strip().lower() #, 'legacy'/'l'): ").strip().lower()
         while VAR_CORELIGHT_INDEX_STRATEGY.strip("'").strip().lower() not in ['datastream', 'd']:#, 'legacy', 'l']:
             VAR_CORELIGHT_INDEX_STRATEGY = input(f"Invalid input. Please enter one of:"
                                                  f"\n'datastream' or 'd' for datastream index strategy"
