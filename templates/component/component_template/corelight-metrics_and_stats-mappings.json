@@ -6,7 +6,8 @@
           "total_fields.limit": 10000,
           "ignore_malformed": true
         }
-      },
+      }
+    },
     "mappings": {
       "date_detection": true,
       "dynamic": "true",
