@@ -17,7 +17,7 @@ filebeat.inputs:
   message_max_bytes: 10MiB
   host: "localhost:8926"
   tags: ["forwarded", "filebeat_corelight"]
-  pipeline: "corelight_main_pipeline"
+  pipeline: "corelight-ecs-common-main"
   processors:
     - decode_json_fields:
         fields: ["message"]
