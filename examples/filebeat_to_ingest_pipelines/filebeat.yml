@@ -17,7 +17,7 @@ filebeat.inputs:
   message_max_bytes: 10MiB
   host: "localhost:8926"
   tags: ["forwarded", "filebeat_corelight"]
-  pipeline: "corelight-ecs-common-main"
+  pipeline: "corelight-ecs-main-pipeline"
   processors:
     - decode_json_fields:
         fields: ["message"]
@@ -78,4 +78,4 @@ output.elasticsearch:
 # reporting is disabled by default.
 
 # Set to true to enable the monitoring reporter.
-monitoring.enabled: true    
+monitoring.enabled: true
