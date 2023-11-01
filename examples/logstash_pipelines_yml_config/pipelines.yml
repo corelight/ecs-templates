@@ -15,7 +15,7 @@
   queue.type: persisted
   queue.max_bytes: 1gb
   path.config: "/etc/logstash/conf.d/ecs-ingest-pipelines-corelight/*.conf"
-  pipeline.workers: 2
+  pipeline.workers: 8
 
 # Previous pipeline you still want to use or have (may not be applicable, just an example)
 # - pipeline.id: main
