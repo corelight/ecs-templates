@@ -1,58 +1,81 @@
+# #TODO: Few things left
+- [ ] tell user files to modify at the end (logstash input and output)
+- [ ] remove brasitech references/defaults before finalizing
+- [ ] concat all the logstash files into one file for upload for central pipeline management. basically no matter what, always save a central_pipeline_management.conf file
+- [ ] option/choice to output metrics/non protocol logs to a seperate cluster . like an else statement or just seperate file, using input choice 1 or 2 (single output or metrics go somewhere else and then use 9940 and 9941 or something)
+
+
 # Corelight ECS Elasticsearch Templates
-This repository contains the necessary Elasticsearch templates or component templates for your ECS deployment of Corelight/Zeek.
+This repository contains the necessary Elasticsearch index templates, mappings, and ilm policies to support the Corelight ECS pipeline.
+Also, it contains the functionality to install the necessary pipelines to parse the logs via either ingest pipelines or logstash.
 
-ECS install
+**Please read all the necessary requirements before using this repository.**
 
-Note: to limit the number of indices Corelight/Zeek create, we use a strategy that only the  following indices  types will be created
+## Custom Options
 
-Conn
-Dns
-Files
-Http
-Smb
-Ssl
-Suricata
-x509
-Stats
-System
-Various - This is the location for all logs that are not stated above 
+### Mappings
+Each index template is specified to call a component template that you can use to override mappings. Create the component template in elasticsearch and supply whichever settings fit your environment. The name of the component template needs to be:
+- `corelight-ecs-main_logs-mappings@custom`
+- `corelight-ecs-metrics_and_stats-mappings@custom`
+- `corelight-ecs-parse_failures-mappings@custom`
 
-First, clone or download the Corelight ECS-templates repository and run the python script install.py and answer the following questions:
+### Aliases
+Each index template is specified to call a component template that you can use to override index settings. Create the component template in elasticsearch and supply whichever settings fit your environment. The name of the component template needs to be:
+- `corelight-ecs-main_logs-base-aliases@custom`
+- `corelight-ecs-metrics_and_stats-base-aliases@custom`
+- `corelight-ecs-parse_failures-base-aliases@custom`
 
-* Will you be using a Logstash pipeline?  Answer yes if you want to run the Corelight ECS pipeline in logstash and not the ingest pipeline.
-* Will you only be installing templates? If using ingest pipeline, answer No. This will allow you to install only templates, no Logstash pipelines or ingest pipelines will be installed.
-* Is this an update to the existing template? If so, ILM will not be installed. This will apply all new Corelight templates to the unit and not update ILM policies.
-* If you answered yes to the above, you will get the following questions:
-    
-    * This script needs to be run on the Logstash box. Does this box have Logstash running, and is Logstash ingesting? At this time the script will only install the pipeline on the local host.
-    * The script will now access Corelight git hub repro ecs-logstash-mapping and download the latest pipelines.
-    * You will then be asked how you want to ingest the data. 
-        * Do you want to keep the raw message, this will increase storage space - This will put the Zeek output in the original format in a field so you can see both ECS and raw Zeek.
-        * Are you sending the data to Logstash over JSON over TCP - this will set up a listener on TCP port 8515 to listen for Corelight/Zeek logs.
-        * Will you enabeing SSL? - Will it be JSON over TLS? if so, the TCP port will be 8615.
-        * Are you sending Data to Logstash via Kafka - This will tell Logstash to use Kafka ingest - you will need to set up Kafka and update the config file to point to the Kafka topic and server.
-        * Are you sending data to Logstash over HTTP Event Collector? - This will enable Logstash to use the HEC and strip off the HTTP headers from the event.
-    * The Script will now start asking about how to get data into Elastic
-        * Will you be using Datastreams - This is Elastic Time series data. This will push templates to the server to support Datastreams.
-        * Will you be using Component Templates - This will push component templates to elastic. If you are running 8.x and above and not Datastreams you need to use this
-        * Will you be using legacy Templates - this will be used in 7.x but will not work in 8.x
-    * The script will now install the correct templates to the Elastic Servers
-    * If you did not pick Logstash the system will download the Corelight Git repo ecs-mappings and upload ingest pipelines to the server
+### Index Settings (Shards, Replicas, etc)
+Each index template is specified to call a component template that you can use to override index settings. Create the component template in elasticsearch and supply whichever settings fit your environment. The name of the component template needs to be:
+- `corelight-ecs-main_logs-base-settings@custom`
+- `corelight-ecs-metrics_and_stats-base-settings@custom`
+- `corelight-ecs-parse_failures-base-settings@custom`
+
+### Index Lifecycle Management (ILM) Policies
+Each index template is specified to call a component template that contains the ILM policy. That are supplied last so they will override any ilm from this repository. Therefore you do not need to modify the index templates to use your own ILM policies. You just need to create component template and whichever ilm you want to call from it. The name of the component template needs to be:
+- `corelight-ecs-main_logs-ilm-settings@custom`
+- `corelight-ecs-metrics_and_stats-ilm-settings@custom`
+- `corelight-ecs-parse_failures-ilm-settings@custom`
+
+### Index Patterns
+In the installer script there is an option to set your own dataset, prefix, suffix, etc for the main `logs`, `metrics`, and `parse_failures`. 
+
+### Catch All Ingest Pipeline
+At the **beginning** of the ingest pipelines, before any Corelight pipelines are called, there is a function to use the pipeline named `corelight-ecs-custom-common-pipeline`. 
+You can create an ingest pipeline with that name if there are things you want to do before the Corelight pipelines are called.
+If you do not create the pipeline the function silently passes it, therefore it is optional.
+
+### Final Ingest Pipeline
+At the **end** of the ingest pipelines, after all Corelight pipelines are called, there is a function to use the pipeline named `corelight-ecs-custom-final-pipeline`.
+You can create an ingest pipeline with that name if there are things you want to do before the Corelight pipelines are called.
+If you do not create the pipeline the function silently passes it, therefore it is optional.
+
+## 
+
+# Usage
+```shell
+git clone $ThisRepositoryURL
+cd ecs-templates
+python3 installer.py
+```
+
+# Requirements
+1. Python 3.6 or higher
+2. Elasticsearch 7.17 or higher
+3. Logstash 7.17 or higher
+4. Datastream indexing strategy
+5. Using the script. It is not recommended to manually install the templates and pipelines because there are many variables throughout the files that get replaced with the installer input.
+
+## Post-install steps for logstash
+Certain values may need changed post install, such as parameters for input and output.
+This would include whether using a custom certificate for elasticsearch, various topics for kafka, and so on.
+Because there are over 20 options in the elasticsearch output and over 60 options across 5 different inputs, the installer does not provide,prompt, and check validity of all of them
+However, each file contains an environment variable that can be used automate the process of changing the values in the files after install. You will just need to uncomment the lines after the install.
 
 
-Post-install steps for logstash 
 
-* If you are using Datastreams you need to do the following
-  * Edit the file 9939-elasticsearch-corelight_zeek-output.conf.disable and add how to connect to the elastic server and then rename the file to 9939-elasticsearch-corelight_zeek-output.conf
- 
-*  There is a new output file 9939-elasticsearch-corelight_zeek-output_with_metrics_cluster.conf.disabled this will let you send Corelight metrics to another cluster. You configure it like the other 9939 just add the config to connect to the Security cluster and the metrics cluster and change the name from .disable to .conf
-
-Last step would be to edit you pipeline.yaml file to load the pipeline in the CorelightPipelines directory 
-
-Example as follows
-
- pipeline.id: main
-  path.config: "/etc/logstash/CorelightPipelines/*.conf"
+# Examples
+See the directory [examples](./examples) for examples of how to use the templates and pipelines.
 
 
 
