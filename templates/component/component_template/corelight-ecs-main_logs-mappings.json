@@ -2315,6 +2315,11 @@
                   "norms": false,
                   "type": "keyword"
                 },
+                "elasticsearch_index_name_namespace": {
+                  "doc_values": false,
+                  "norms": false,
+                  "type": "keyword"
+                },
                 "elasticsearch_index_strategy": {
                   "doc_values": false,
                   "norms": false,
@@ -2367,6 +2372,11 @@
                       "type": "date"
                     }
                   }
+                },
+                "logstash_hostname": {
+                  "ignore_above": 4096,
+                  "norms": false,
+                  "type": "keyword"
                 },
                 "pipeline": {
                   "doc_values": false,
