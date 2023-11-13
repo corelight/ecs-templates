@@ -97,7 +97,7 @@
           "zeek_ssh_stepping_ips": {
             "path_match": "ssh.stepping.*_ip",
             "mapping": {
-              "type": "ip",
+              "type": "ip"
             }
           }
         },
@@ -105,7 +105,7 @@
           "zeek_ssh_stepping_uids": {
             "path_match": "ssh.stepping.uid*",
             "mapping": {
-              "type": "keyword",
+              "type": "keyword"
             }
           }
         }
@@ -486,7 +486,7 @@
                   "type": "long"
                 },
                 "remote_ip": {
-                  "type": "ip",
+                  "type": "ip"
                 }
               },
               "type": "object"
