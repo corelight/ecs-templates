@@ -98,7 +98,6 @@
             "path_match": "ssh.stepping.*_ip",
             "mapping": {
               "type": "ip",
-              "copy_to": "related.ip"
             }
           }
         },
@@ -107,7 +106,6 @@
             "path_match": "ssh.stepping.uid*",
             "mapping": {
               "type": "keyword",
-              "copy_to": "related.id"
             }
           }
         }
@@ -330,7 +328,6 @@
               }
             },
             "ip": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "mac": {
@@ -490,7 +487,6 @@
                 },
                 "remote_ip": {
                   "type": "ip",
-                  "copy_to": "related.ip"
                 }
               },
               "type": "object"
@@ -574,7 +570,6 @@
               "type": "keyword"
             },
             "domain": {
-              "copy_to": "related.hosts",
               "fields": {
                 "security": {
                   "type": "text",
@@ -664,7 +659,6 @@
               }
             },
             "fqdn": {
-              "copy_to": "related.hosts",
               "fields": {
                 "security": {
                   "type": "text",
@@ -736,7 +730,6 @@
               }
             },
             "hostname": {
-              "copy_to": "related.hosts",
               "fields": {
                 "security": {
                   "type": "text",
@@ -747,7 +740,6 @@
               "type": "keyword"
             },
             "ip": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "ip_public": {
@@ -767,6 +759,11 @@
             },
             "is_ipv6": {
               "type": "boolean"
+            },
+            "level_1n2_ip": {
+              "ignore_above": 1024,
+              "norms": false,
+              "type": "keyword"
             },
             "level_1_domain": {
               "path": "destination.top_level_domain",
@@ -828,7 +825,6 @@
               "type": "long"
             },
             "mac": {
-              "copy_to": "related.mac",
               "ignore_above": 4096,
               "type": "keyword"
             },
@@ -931,7 +927,6 @@
               "type": "keyword"
             },
             "assigned_addr": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "circuit_id": {
@@ -966,7 +961,6 @@
               "type": "float"
             },
             "msg_orig": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "msg_types": {
@@ -974,7 +968,6 @@
               "type": "keyword"
             },
             "requested_addr": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "server_message": {
@@ -1101,7 +1094,6 @@
                   "type": "keyword"
                 },
                 "resolved_ip": {
-                  "copy_to": "related.ip",
                   "type": "ip"
                 },
                 "type": {
@@ -1408,7 +1400,6 @@
               "ignore_above": 8192
             },
             "device": {
-              "copy_to": "related.hosts",
               "fields": {
                 "security": {
                   "type": "text",
@@ -1446,37 +1437,30 @@
             "hash": {
               "properties": {
                 "imphash": {
-                  "copy_to": "related.hash",
                   "ignore_above": 10000,
                   "type": "keyword"
                 },
                 "md5": {
-                  "copy_to": "related.hash",
                   "ignore_above": 4096,
                   "type": "keyword"
                 },
                 "murmur3": {
-                  "copy_to": "related.hash",
                   "ignore_above": 4096,
                   "type": "keyword"
                 },
                 "sha1": {
-                  "copy_to": "related.hash",
                   "ignore_above": 4096,
                   "type": "keyword"
                 },
                 "sha256": {
-                  "copy_to": "related.hash",
                   "ignore_above": 4096,
                   "type": "keyword"
                 },
                 "sha512": {
-                  "copy_to": "related.hash",
                   "ignore_above": 4096,
                   "type": "keyword"
                 },
                 "ssdeep": {
-                  "copy_to": "related.hash",
                   "ignore_above": 10000,
                   "type": "keyword"
                 }
@@ -1777,7 +1761,6 @@
                   "type": "keyword"
                 },
                 "san_ip": {
-                  "copy_to": "related.ip",
                   "type": "ip"
                 },
                 "san_uri": {
@@ -1944,15 +1927,12 @@
               "type": "keyword"
             },
             "host": {
-              "copy_to": "related.hosts",
               "type": "keyword"
             },
             "hostname": {
-              "copy_to": "related.hosts",
               "type": "keyword"
             },
             "mac": {
-              "copy_to": "related.mac",
               "ignore_above": 4096,
               "type": "keyword"
             },
@@ -1967,7 +1947,6 @@
               "type": "keyword"
             },
             "ip": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "ip_public": {
@@ -1987,6 +1966,11 @@
             },
             "is_ipv6": {
               "type": "boolean"
+            },
+            "level_1n2_ip": {
+              "ignore_above": 1024,
+              "norms": false,
+              "type": "keyword"
             },
             "port": {
               "type": "long"
@@ -2414,122 +2398,98 @@
             "id": {
               "properties": {
                 "cert_chain_fuids": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "client_cert_chain_fuids": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "client_cert_fuid": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "conn_uids": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "fid": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "flow_id": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "fuid": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "fuids": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "id": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "kuid": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "last_active_session": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "orig_fuids": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "parent_fuid": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "rdpeudp_uid": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "related_fuids": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "resp_fuids": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "server_cert_fuid": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "suri_id": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "suri_ids": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "tunnel_parents": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "tx_id": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "uid": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "uids": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 },
                 "uuid": {
-                  "copy_to": "related.id",
                   "ignore_above": 2048,
                   "type": "keyword"
                 }
@@ -2640,7 +2600,6 @@
               "type": "keyword"
             },
             "forwarded_ip": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "iana_number": {
@@ -2842,7 +2801,6 @@
         "observer": {
           "properties": {
             "hostname": {
-              "copy_to": "related.hosts",
               "ignore_above": 4096,
               "type": "keyword"
             },
@@ -2850,7 +2808,6 @@
               "type": "ip"
             },
             "mac": {
-              "copy_to": "related.mac",
               "ignore_above": 4096,
               "type": "keyword"
             },
@@ -2883,13 +2840,11 @@
             "framed": {
               "properties": {
                 "ip": {
-                  "copy_to": "related.ip",
                   "type": "ip"
                 }
               }
             },
             "mac": {
-              "copy_to": "related.mac",
               "ignore_above": 4096,
               "type": "keyword"
             },
@@ -3235,7 +3190,6 @@
               }
             },
             "ip": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "mac": {
@@ -3448,7 +3402,6 @@
               "ignore_above": 8192
             },
             "path": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "rcptto": {
@@ -3504,7 +3457,6 @@
               "type": "long"
             },
             "x_originating_ip": {
-              "copy_to": "related.ip",
               "type": "ip"
             }
           }
@@ -3514,7 +3466,6 @@
             "bound": {
               "properties": {
                 "ip": {
-                  "copy_to": "related.ip",
                   "type": "ip"
                 },
                 "name": {
@@ -3534,7 +3485,6 @@
             "request": {
               "properties": {
                 "ip": {
-                  "copy_to": "related.ip",
                   "type": "ip"
                 },
                 "name": {
@@ -3670,7 +3620,6 @@
               "type": "keyword"
             },
             "domain": {
-              "copy_to": "related.hosts",
               "fields": {
                 "security": {
                   "type": "text",
@@ -3709,7 +3658,6 @@
               }
             },
             "fqdn": {
-              "copy_to": "related.hosts",
               "fields": {
                 "security": {
                   "type": "text",
@@ -3781,7 +3729,6 @@
               }
             },
             "hostname": {
-              "copy_to": "related.hosts",
               "fields": {
                 "security": {
                   "type": "text",
@@ -3792,7 +3739,6 @@
               "type": "keyword"
             },
             "ip": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "ip_public": {
@@ -3813,8 +3759,12 @@
             "is_ipv6": {
               "type": "boolean"
             },
+            "level_1n2_ip": {
+              "ignore_above": 1024,
+              "norms": false,
+              "type": "keyword"
+            },
             "mac": {
-              "copy_to": "related.mac",
               "ignore_above": 4096,
               "type": "keyword"
             },
@@ -4428,7 +4378,6 @@
         "url": {
           "properties": {
             "domain": {
-              "copy_to": "related.hosts",
               "fields": {
                 "security": {
                   "type": "text",
@@ -4531,7 +4480,6 @@
               "type": "long"
             },
             "username": {
-              "copy_to": "related.user",
               "fields": {
                 "security": {
                   "type": "text",
@@ -4572,6 +4520,12 @@
                   "type": "keyword"
                 }
               }
+            },
+            "has_non_ascii": {
+              "type": "boolean"
+            },
+            "has_whitespace": {
+              "type": "boolean"
             },
             "major": {
               "type": "long"
@@ -4744,7 +4698,6 @@
               "type": "keyword"
             },
             "lan_addrs": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "length": {
@@ -4804,7 +4757,6 @@
               "type": "keyword"
             },
             "wan_addrs": {
-              "copy_to": "related.ip",
               "type": "ip"
             },
             "wan_ports": {
