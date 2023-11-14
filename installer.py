@@ -346,13 +346,13 @@ def main():
                 fileName=download_repository( ingestRepo )
             unzipGit(fileName)
             uploadIngestPipelines(session,baseURI)
-    templateDS = input_bool("Will you be useing Datastreams?", default=True)
+    templateDS = input_bool("Will you be using Datastreams?", default=True)
     if templateDS:
         datastreams(session,baseURI,logstash,updateTemplates)
         if logstash and not updateLogstash:
             postPorcessing(logstashLocation, templateDS, logstashVersion)
     else:
-        templateComponent = input_bool("Will you be useing Component Templates?", default=True)
+        templateComponent = input_bool("Will you be using Component Templates?", default=True)
         if templateComponent:
             component( session, baseURI, logstash, updateTemplates )
             if logstash and not updateLogstash:
