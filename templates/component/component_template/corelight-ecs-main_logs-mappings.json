@@ -2088,6 +2088,10 @@
             "mtime": {
               "type": "date"
             },
+            "mtime_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
             "name": {
               "fields": {
                 "security": {
@@ -2300,13 +2304,7 @@
                 "logcert": {
                   "type": "boolean"
                 },
-                "nonformatted_not_after": {
-                  "fields": {
-                    "security": {
-                      "analyzer": "es_stk_analyzer",
-                      "type": "text"
-                    }
-                  },
+                "not_after_non_formatted_date": {
                   "type": "keyword"
                 },
                 "not_after": {
@@ -2314,6 +2312,9 @@
                 },
                 "not_before": {
                   "type": "date"
+                },
+                "not_before_non_formatted_date": {
+                  "type": "keyword"
                 },
                 "public_key_algorithm": {
                   "fields": {
@@ -2831,6 +2832,14 @@
                 },
                 "valid_till": {
                   "type": "date"
+                },
+                "valid_from_non_formatted_date": {
+                  "ignore_above": 8192,
+                  "type": "keyword"
+                },
+                "valid_till_non_formatted_date": {
+                  "ignore_above": 8192,
+                  "type": "keyword"
                 }
               }
             }
@@ -3535,6 +3544,10 @@
             "org_time": {
               "type": "date"
             },
+            "org_time_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
             "poll": {
               "type": "double"
             },
@@ -3544,12 +3557,20 @@
             "rec_time": {
               "type": "date"
             },
+            "rec_time_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
             "ref_id": {
               "ignore_above": 8192,
               "type": "keyword"
             },
             "ref_time": {
               "type": "date"
+            },
+            "ref_time_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
             },
             "root_delay": {
               "type": "double"
@@ -3565,6 +3586,10 @@
             },
             "xmt_time": {
               "type": "date"
+            },
+            "xmt_time_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
             }
           }
         },
@@ -5616,6 +5641,6 @@
           }
         }
       }
-    },
+    }
   }
 }
