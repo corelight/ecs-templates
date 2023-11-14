@@ -4,7 +4,59 @@
     "ecs_version": "8.10.0",
     "labels_corelight_ecs_version": "8.10.0.1"
   },
+  "version": 2023111401,
   "template": {
+    "settings": {
+      "index": {
+        "analysis": {
+          "analyzer": {
+            "es_stk_analyzer": {
+              "char_filter": [
+                "whitespace_no_way"
+              ],
+              "filter": [
+                "trim",
+                "lowercase",
+                "max_token_truncate"
+              ],
+              "tokenizer": "keyword",
+              "type": "custom"
+            }
+          },
+          "char_filter": {
+            "whitespace_no_way": {
+              "pattern": "(\\s)+",
+              "replacement": "$1",
+              "type": "pattern_replace"
+            }
+          },
+          "filter": {
+            "max_token_truncate": {
+              "length": "32766",
+              "type": "truncate"
+            },
+            "path_hierarchy_pattern_filter": {
+              "patterns": [
+                "((?:[^\\\\]*\\\\)*)(.*)",
+                "((?:[^/]*/)*)(.*)"
+              ],
+              "preserve_original": "true",
+              "type": "pattern_capture"
+            }
+          },
+          "tokenizer": {
+            "path_tokenizer": {
+              "delimiter": "\\",
+              "type": "path_hierarchy"
+            }
+          }
+        },
+        "mapping": {
+          "ignore_malformed": true,
+          "total_fields.limit": 10000
+        }
+      }
+    },
     "mappings": {
       "date_detection": true,
       "dynamic_templates": [
@@ -5565,57 +5617,5 @@
         }
       }
     },
-    "settings": {
-      "index": {
-        "analysis": {
-          "analyzer": {
-            "es_stk_analyzer": {
-              "char_filter": [
-                "whitespace_no_way"
-              ],
-              "filter": [
-                "trim",
-                "lowercase",
-                "max_token_truncate"
-              ],
-              "tokenizer": "keyword",
-              "type": "custom"
-            }
-          },
-          "char_filter": {
-            "whitespace_no_way": {
-              "pattern": "(\\s)+",
-              "replacement": "$1",
-              "type": "pattern_replace"
-            }
-          },
-          "filter": {
-            "max_token_truncate": {
-              "length": "32766",
-              "type": "truncate"
-            },
-            "path_hierarchy_pattern_filter": {
-              "patterns": [
-                "((?:[^\\\\]*\\\\)*)(.*)",
-                "((?:[^/]*/)*)(.*)"
-              ],
-              "preserve_original": "true",
-              "type": "pattern_capture"
-            }
-          },
-          "tokenizer": {
-            "path_tokenizer": {
-              "delimiter": "\\",
-              "type": "path_hierarchy"
-            }
-          }
-        },
-        "mapping": {
-          "ignore_malformed": true,
-          "total_fields.limit": 10000
-        }
-      }
-    }
-  },
-  "version": 2023101701
+  }
 }
