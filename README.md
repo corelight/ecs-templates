@@ -12,8 +12,12 @@ The repository is primiarly compromised of two things:
 # License
 The files and automation script are open-source under a BSD license. See ``COPYING``for details.
 
-# Usage
+# Install Steps
 **Please read all sections before running the script.**
+1. [Requirements](#1-requirements)
+2. [Pre Install](#2-pre-insall)
+3. [Install](#3-install)
+4. [Post Install](#4-post-install)
 
  
 ## 1. Requirements
@@ -24,7 +28,7 @@ The files and automation script are open-source under a BSD license. See ``COPYI
 - Elasticsearch Datastream indexing strategy
 
 
-## 2. Pre Insall Steps
+## 2. Pre Insall
 The script is designed to be able to support the following customizations:
 - Number of shards
 - Number of replicas
@@ -91,14 +95,19 @@ If you do not create the pipeline the function silently passes it, therefore it 
 
 
 ## 3. Install
+### Script Usage
 ```shell
 git clone https://github.com/brasitech/ecs-templates
 cd ecs-templates
 python3 corelight_ecs.py
 ```
 
+#### Script arguments
+- `--no-color`: Disable colors for logging.
+- `--debug`: Enable debug level logging.
 
-## 4. Post Install Steps
+
+## 4. Post Install
 
 ### Logstash
 Certain values may need changed post install, such as parameters for input and output.
