@@ -250,6 +250,7 @@ See the directory [examples](./examples) for examples of how to use the template
 - [ ] remove brasitech references/defaults before finalizing
 - [ ] concat all the logstash files into one file for upload for central pipeline management. basically no matter what, always save a central_pipeline_management.conf file
 - [ ] option/choice to output metrics/non protocol logs to a seperate cluster . like an else statement or just seperate file, using input choice 1 or 2 (single output or metrics go somewhere else and then use 9940 and 9941 or something)
+- [ ] ja4 fields https://github.com/FoxIO-LLC/ja4/tree/main/zeek
 - [x] publicly available public version of list of logs and their categories, index pattern, etc..
 - [ ] having removed copy_to for related.X fields, finish logic for ingest pipelines and logstash pipelines
     - [ ] logstash pipelines
