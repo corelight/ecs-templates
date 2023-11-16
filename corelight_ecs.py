@@ -251,7 +251,7 @@ def prompt_for_es_ignore_certificate_errors(try_again=False):
 
 def prompt_for_es_user_and_password(try_again=False):
     if not try_again:
-        auth = input_bool("Do you want to use user and password authentication?", default=None)
+        auth = input_bool("Do you want to use user and password authentication?", default=True)
     else:
         auth = input_bool(f"{LOG_COLORS['WARNING']}Authentication failed. Do you want to try to enter the username and password again? {COLORS['ENDC']}", default=True)
     if auth:
