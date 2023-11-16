@@ -1,5 +1,6 @@
 input {
   file {
+    # copy file from this repository './examples/test_logs/corelight_test.log' to '/tmp/corelight_logs/corelight_test.log'
     path => "/tmp/corelight_logs/corelight_test.log"
     #path => "/tmp/corelight_logs/*.log"
     codec => "json"
