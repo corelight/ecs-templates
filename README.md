@@ -255,6 +255,7 @@ See the directory [examples](./examples) for examples of how to use the template
 - [ ] having removed copy_to for related.X fields, finish logic for ingest pipelines and logstash pipelines
     - [ ] logstash pipelines
     - [x] ingest pipelines
+- [ ] remove or use VAR_CORELIGHT_INDEX_STRATEGY from script and all references in logstash/ingest/settings as only data stream is supported
 - [ ] finish smtp.X to email.X alias backward compatibility- [ ] suricata logs
   - [ ] add payload field for suricata_corelight into logstash and the field to index/component template
     ```
