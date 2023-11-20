@@ -266,17 +266,17 @@ See the directory [examples](./examples) for examples of how to use the template
     - [x] ingest pipelines
 - [ ] remove or use VAR_CORELIGHT_INDEX_STRATEGY from script and all references in logstash/ingest/settings as only data stream is supported
 - [ ] finish smtp.X to email.X alias backward compatibility- [ ] suricata logs
-  - [ ] add payload field for suricata_corelight into logstash and the field to index/component template
-    ```
-      if [typeoflogsfield] {
-        ruby {
-          code => '
-            hexval = event.get("[fieldcontaininghexval]")
-            event.set("[new][fieldforbase64val]", [[base64val].pack("H*")].pack("m0"))
-          '
-        }
+- [ ] add payload field for suricata_corelight into logstash and the field to index/component template
+  ```
+    if [typeoflogsfield] {
+      ruby {
+        code => '
+          hexval = event.get("[fieldcontaininghexval]")
+          event.set("[new][fieldforbase64val]", [[base64val].pack("H*")].pack("m0"))
+        '
       }
-    ```
+    }
+  ```
   - [ ] ingest pipelines
     - [ ] alert
     - [ ] dns
