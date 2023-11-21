@@ -388,7 +388,7 @@ def enable_ls_input(source_dir=None, ingest_type=None, raw=None, destination_dir
         logger.error(f"Error occurred while enabling {ingest_type} {e}")
         raise ValueError(f"Error occurred while enabling {ingest_type} {e}")
 
-def replace_var_in_directory(directory, replace_var="VAR_CORELIGHT_INDEX_STRATEGY", replace_var_with=None):
+def replace_var_in_directory(directory, replace_var="", replace_var_with=None):
     replaced_var_count = 0
     replaced_var_files = []
     if replace_var_with:
