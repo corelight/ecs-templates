@@ -22,7 +22,6 @@ git_fork = "brasitech"
 script_version = '2023102201'
 # Default Variables
 git_logstash_repo = f"https://github.com/{git_fork}/ecs-logstash-mappings/archive/refs/heads/Dev.zip"
-git_logstash_repo = f'/home/neutron/PycharmProjects/corelight/ecs-logstash-mappings'
 git_logstash_sub_dir = "pipeline"
 git_ingest_repo = f"https://github.com/{git_fork}/ecs-mapping/archive/refs/heads/dev.zip"
 git_ingest_sub_dir = "pipeline"
