@@ -84,12 +84,22 @@ Create the following component templates and modify the alias settings as desire
 - `corelight-ecs-parse_failures-base-aliases@custom`
 
 ### Custom Beginning Ingest Pipeline Catchall
-At the **beginning** of the ingest pipelines, before any Corelight pipelines are called, there is a function to use the ingest pipeline named `corelight-ecs-custom-common-pipeline`.
+At the **beginning** of the ingest pipelines, before any Corelight pipelines are called, there is a function to use the ingest pipeline named `corelight-ecs-main-pipeline@custom`.
 You can create an ingest pipeline with that name if there are things you want to do before the Corelight pipelines are called.
 If you do not create the pipeline the function silently passes it, therefore it is optional.
 
 ### Custom Final Ingest Pipeline Catchall
-At the **end** of the ingest pipelines, after all Corelight pipelines are called, there is a function to use the ingest pipeline named `corelight-ecs-custom-final-pipeline`.
+At the **end** of the ingest pipelines, after all Corelight pipelines are called, there is a function to use the ingest pipeline named `corelight-ecs-postprocess-final-main-pipeline@custom`.
+You can create an ingest pipeline with that name if there are things you want to do before the Corelight pipelines are called.
+If you do not create the pipeline the function silently passes it, therefore it is optional.
+
+### Custom Beginning Ingest Pipeline Parse Failure Catchall
+At the **beginning** of the ingest pipelines on_failure catchall for ingest pipeline failures, before any Corelight pipelines are called, there is a function to use the ingest pipeline named `corelight-ecs-parse_failures-pipeline@custom`.
+You can create an ingest pipeline with that name if there are things you want to do before the Corelight pipelines are called.
+If you do not create the pipeline the function silently passes it, therefore it is optional.
+
+### Custom Final Ingest Pipeline Parse Failure Catchall
+At the **end** of the ingest pipelines, after all Corelight pipelines are called, there is a function to use the ingest pipeline named `corelight-ecs-postprocess-final-main-pipeline@custom`.
 You can create an ingest pipeline with that name if there are things you want to do before the Corelight pipelines are called.
 If you do not create the pipeline the function silently passes it, therefore it is optional.
 
@@ -116,229 +126,21 @@ Because there are over 20 options in the elasticsearch output and over 60 option
 However, each file contains an environment variable that can be used automate the process of changing the values in the files after install. You will just need to uncomment and modify the lines you need after the install.
 
 
-
-
-
 # Examples WIP
 See the directory [examples](./examples) for examples of how to use the templates and pipelines.
 
-
 # Changelog WIP
-- Minimum requirements for all software (elasticsearch, logstash, kibana) is 7.17
-
-    - for many reasons, but 1 of many great reasons is Ingest pipeline => 7.11 supports the set processor function "copy\_from"
-
-    - tag\_with\_exception\_message for ruby filter block
-
-        - requires version => 7.17
-        - requires version => 8.x
-
-    - ingest pipelines finally performant in => 8.8
-
-    - logstash more performant in 8.x
-
-    - many many other reasons
-
-- \[@metadata]\[corelight\_env\_vars]\[disable\_legacy\_md5\_fingerprint\_hash] if set to true will disable legacy md5 fingerprint hashes else will call 8811-corelight-ecs-network\_fingerprints-enrich-legacy\_md5-filter.conf and add an array w/ md5 to the existing sha1
-
-- replaced text analyzer with es\_stk\_analyzer
-
-- parse-failures is now parse\_failures & parse-failure is parse\_failure
-
-- changed VAR\_$Corelight\_LS\_Index\_Strategy to VAR\_CORELIGHT\_INDEX\_STRATEGY
-
-- logs that do not explicitly have a pipeline/parser (new or unknown) they get set to event.category tbd (previously used either temporary or event.dataset). not use event.dataset as do not want to autocreate datastreams that would live outside ILM patterns and other control/settings and permissions. can still search the logs as is despite the name in the index pattern. event.dataset still gets set.
-
-- you can set \[@metadata]\[custom\_temporary\_metadata\_index\_name\_namespace] or \[data\_stream]\[namespace] to set a desired namespace for multiple tenants/clients data
-
-    - if \[@metadata]\[custom\_temporary\_metadata\_index\_name\_namespace] is set then it overrides if \[data\_stream]\[namespace] already exists
-
-- for custom mappings,settings,ilm,etc.. use
-
-    - aliases
-
-        - corelight-main\_logs-aliases\@custom
-        - corelight-metrics\_and\_stats-aliases\@custom
-        - corelight-parse\_failures-aliases\@custom
-
-    - base settings
-
-        - corelight-main\_logs-base-settings\@custom
-        - corelight-metrics\_and\_stats-base-settings\@custom
-        - corelight-parse\_failures-base-settings\@custom
-
-    - ilm settings
-
-        - corelight-main\_logs-ilm-settings\@custom
-        - corelight-metrics\_and\_stats-ilm-settings\@custom
-        - corelight-parse\_failures-ilm-settings\@custom
-
-    - mappings
-
-        - corelight-main\_logs-mappings\@custom
-        - corelight-metrics\_and\_stats-mappings\@custom
-        - corelight-parse\_failures-mappings\@custom
-
-- ingest pipelines custom additions user controlled\
-  if the pipelines do not exist, it just ignores them. so in other words, is optional for user
-
-- names are
-
-    - before starting corelight ingest pipelines use 'corelight-ecs-custom-final-pipeline'
-    - after completing corelight ingest pipelines use 'corelight-ecs-custom-final-pipeline'
-
-- date fields that are user/software/attacker controlled (smtp.date for example) or commonly could be invalid (like for x509 cert dates before/after epoch) are always kept now instead of removed. if valid date timestamp then it is copied as such to a new field
-
-- logstash moved 0101-corelight-ecs-user\_defined-set\_indexing\_strategy-filter.conf into 3100-corelight-ecs-common-set\_index\_prefix\_and\_suffix-filter.conf ( no longer need to edit manually anyways)
-
-- installer script, use last run
-
-    - uses last run, allows directory to be specified
-    - this can also be used to just use the script to upload things you generated elsewhere or if already have the files generated
-
-- additional changelog
-
-    - logstash network fingerprints have md5 and sha1, sha1 will be used for future so that ingest pipelines will be able to support to. and ingest pipelines do not have a builtin callable md5 from script processor. only fingerprint processor that unfortunately has a bug of copying a null byte that makes the hash unusuable with other things (like logstash in this case)
-
-    - single quote invalid IPs in event.tag (previously was not quoted)
-
-    - IPs beginning with "0" (ie: 0.0.0.0/8) changed
-
-        - ip\_type from "reserved\_as\_a\_source\_address\_only" to "reserved\_local\_this\_network"
-        - ip\_rfc from "RFC\_1700" to "RFC\_1122-3.2.1.3"
-
-    - split out RFC info for all RFC6890, RFC2544, RFC5737 that were previously tagged together
-
-    - 255.255.255.255 changed from RFC\_8190 to RFC\_919
-
-    - added rfc for 240.0.0.0/4 RFC5735, no longer grouped under multicast
-
-    - carrier grade nat 100.64.0.0-100.127.255.255 fixed type label
-
-    - 0.0.0.0 set to type reserved\_any\_address
-
-    - switched ingest pipeline's main\_pipeline to call pipeline name w/ the event.dataset
-
-    - changed the "genera"/"common" corelight\_genenral\_pipeline to corelight\_common\_pipeline
-
-    - renamed all pipelines (to match similar naming in logstash)
-
-        - corelight\_ to corelight-ecs-
-        - \_pipeline to -pipeline
-
-    - renamed pipelines (to match similar naming in logstash)
-
-        - metrics\_general to common-metrics
-        - netcontrol\_general to common-netcontrol
-        - system\_related\_info\_general to common-system
-        - stats\_general to common-stats
-
-    - extended time fields for pulling out x509 and smtp date fields
-
-    - ECS email field set is GA. previously these were always copied. However, they are now renamed instead. as follows. Alias field mappings are provided for backwards compatibility.
-
-        - smtp.cc > email.cc.address
-        - smtp.from > email.from.address
-        - smtp.mailfrom > email.sender.address
-        - smtp.msg\_id > email.message\_id
-        - smtp.reply\_to > email.reply\_to.address
-        - smtp.subject > email.subject
-        - smtp.to > email.to.address
-        -
-        - smtp.date > smtp.date\_non\_formatted\_date (always kept)
-        - smtp.date\_non\_formatted\_date COPIED to email.origination\_timestamp (if valid date timestamp)
-        -
-        - smtp.subject\_has\_non\_ascii > email.subject\_has\_non\_ascii
-        - smtp.subject\_length > email.subject\_length
-
+see the file [changelog.md](./changelog.md) for a full changelog of the repository.
 
 # To Do List WIP
+see the file [todo.md](./todo.md) for a full list of things to do for the repository.
 
-## Priority 1
-- [ ] tell user files to modify at the end (logstash input and output)
-- [ ] remove brasitech references/defaults before finalizing
-- [ ] concat all the logstash files into one file for upload for central pipeline management. basically no matter what, always save a central_pipeline_management.conf file
-- [ ] option/choice to output metrics/non protocol logs to a seperate cluster . like an else statement or just seperate file, using input choice 1 or 2 (single output or metrics go somewhere else and then use 9940 and 9941 or something)
-- [ ] ja4 fields https://github.com/FoxIO-LLC/ja4/tree/main/zeek
-- [x] publicly available public version of list of logs and their categories, index pattern, etc..
-- [ ] having removed copy_to for related.X fields, finish logic for ingest pipelines and logstash pipelines
-    - [ ] logstash pipelines
-    - [x] ingest pipelines
-- [ ] remove or use VAR_CORELIGHT_INDEX_STRATEGY from script and all references in logstash/ingest/settings as only data stream is supported
-- [ ] finish smtp.X to email.X alias backward compatibility- [ ] suricata logs
-- [ ] add payload field for suricata_corelight into logstash and the field to index/component template
-  ```
-    if [typeoflogsfield] {
-      ruby {
-        code => '
-          hexval = event.get("[fieldcontaininghexval]")
-          event.set("[new][fieldforbase64val]", [[base64val].pack("H*")].pack("m0"))
-        '
-      }
-    }
-  ```
-  - [ ] ingest pipelines
-    - [ ] alert
-    - [ ] dns
-    - [ ] fileinfo
-    - [ ] flow
-    - [ ] http
-    - [ ] smb
-    - [ ] ssh
-    - [ ] tls
-    - [ ] anomaly
-    - [ ] bittorrent-dht
-    - [ ] dhcp
-    - [ ] ftp
-    - [ ] ftp_data
-    - [ ] http2
-    - [ ] ike
-    - [ ] modbus
-    - [ ] mqtt
-    - [ ] pgsql
-    - [ ] quic
-    - [ ] rdp
-    - [ ] rfb
-    - [ ] tftp
-- [ ] logstash pipelines
-    - [ ] alert
-    - [ ] dns
-    - [ ] fileinfo
-    - [ ] flow
-    - [ ] http
-    - [ ] smb
-    - [ ] ssh
-    - [ ] tls
-    - [ ] anomaly
-    - [ ] bittorrent-dht
-    - [ ] dhcp
-    - [ ] ftp
-    - [ ] ftp_data
-    - [ ] http2
-    - [ ] ike
-    - [ ] modbus
-    - [ ] mqtt
-    - [ ] pgsql
-    - [ ] quic
-    - [ ] rdp
-    - [ ] rfb
-    - [ ] tftp
-- [ ] index templates
-- [ ] final change log
-
-## Priority 2
-- [ ] break out each ECS field set into its own file
-- [ ] shouldn't etc_viz service file be net appl/service/protocol
-- [ ] use `[@metadata][etl][logstash_pipelines]`
-    - [ ] logstash pipelines
-- [ ] index mappings
-- [ ] add `[@metadata][etl][ingest_pipelines]`
-    - [ ] ingest pipelines
-    - [ ] index mappings
-
-## Priority 3
-- [ ] change how ecs_compatibility works for inputs, because can actually use this to advantage to not have to do host/forward ip/name check thing collision
-- [ ] add a tuning note if using geoip in ingest node (useful for anybody using elasticsearch corelight logs or not) ingest.geoip.cache_size defaults to only 1,000 and can change in elasticsearch yml
+# Versioning
+The versioning of this repository is based on the version of the Elastic Common Schema (ECS) that it supports.
+Fields are added to the each log:  
+- `labels.corelight.ecs_version`
+- `labels.corelight.ecs_method`
+- `labels.corelight.ecs_method_version`
 
 # Github Repository Definitions
 

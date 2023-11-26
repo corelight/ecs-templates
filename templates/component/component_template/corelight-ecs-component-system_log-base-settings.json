@@ -1,7 +1,15 @@
 {
   "template": {
     "settings": {
-      "index.lifecycle.name": "corelight-ecs-ilm-main_logs"
+      "index": {
+        "mapping": {
+          "coerce": false,
+          "total_fields.limit": 10000
+        },
+        "refresh_interval": "20s"
+      },
+      "number_of_shards": "1",
+      "number_of_replicas": "0"
     }
   },
   "version": 2023101701,

@@ -698,6 +698,15 @@
             },
             "local_resp": {
               "type": "boolean"
+            },
+            "spcap_rule": {
+              "type": "short"
+            },
+            "spcap_trigger": {
+              "type": "keyword"
+            },
+            "spcap_url": {
+              "type": "keyword"
             }
           }
         },
@@ -2844,143 +2853,6 @@
               }
             }
           }
-        },
-        "labels": {
-          "properties": {
-            "corelight": {
-              "properties": {
-                "ecs_method": {
-                  "type": "keyword"
-                },
-                "ecs_version": {
-                  "type": "keyword"
-                },
-                "logstash_input_host_listening_ip": {
-                  "type": "keyword"
-                },
-                "logstash_input_host_listening_port": {
-                  "type": "keyword"
-                },
-                "spcap_rule": {
-                  "type": "short"
-                },
-                "spcap_trigger": {
-                  "type": "keyword"
-                },
-                "spcap_url": {
-                  "type": "keyword"
-                }
-              },
-              "type": "object"
-            },
-            "dns": {
-              "properties": {
-                "query_length": {
-                  "path": "dns.question.name_length",
-                  "type": "alias"
-                }
-              },
-              "type": "object"
-            },
-            "etl": {
-              "properties": {
-                "elasticsearch_index_name_namespace": {
-                  "doc_values": false,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "elasticsearch_index_name_prefix": {
-                  "doc_values": false,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "elasticsearch_index_name_suffix": {
-                  "doc_values": false,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "elasticsearch_index_strategy": {
-                  "doc_values": false,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "format_applied": {
-                  "doc_values": false,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "format_final_codec": {
-                  "doc_values": false,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "format_is_json": {
-                  "doc_values": false,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "info_tags": {
-                  "doc_values": false,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "input_application_protocol": {
-                  "doc_values": false,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "kafka": {
-                  "properties": {
-                    "consumer_group": {
-                      "ignore_above": 4096,
-                      "type": "keyword"
-                    },
-                    "offset": {
-                      "type": "long"
-                    },
-                    "partition": {
-                      "type": "integer"
-                    },
-                    "time": {
-                      "format": "epoch_millis",
-                      "type": "date"
-                    },
-                    "topic": {
-                      "ignore_above": 4096,
-                      "type": "keyword"
-                    }
-                  },
-                  "type": "object"
-                },
-                "logstash_hostname": {
-                  "ignore_above": 4096,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "pipeline": {
-                  "doc_values": false,
-                  "norms": false,
-                  "type": "keyword"
-                },
-                "processed_time": {
-                  "type": "date"
-                }
-              },
-              "type": "object"
-            },
-            "weird": {
-              "properties": {
-                "name": {
-                  "type": "text"
-                },
-                "number_seen": {
-                  "type": "integer"
-                }
-              },
-              "type": "object"
-            }
-          },
-          "type": "object"
         },
         "ldap": {
           "properties": {

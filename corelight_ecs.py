@@ -22,16 +22,13 @@ git_fork = "brasitech"
 script_version = '2023102201'
 # Default Variables
 git_logstash_repo = f"https://github.com/{git_fork}/ecs-logstash-mappings/archive/refs/heads/Dev.zip"
+git_logstash_repo = f'/home/neutron/PycharmProjects/corelight/ecs-logstash-mappings'
 git_logstash_sub_dir = "pipeline"
 git_ingest_repo = f"https://github.com/{git_fork}/ecs-mapping/archive/refs/heads/dev.zip"
-git_ingest_sub_dir = "automatic_install"
+git_ingest_sub_dir = "pipeline"
 git_templates_repo = f"https://github.com/{git_fork}/ecs-templates/archive/refs/heads/dev.zip"
 git_templates_sub_dir = "templates"
-git_example_logstash_pipeline_root_dir = "/etc/logstash/conf.d"
-git_example_logstash_pipeline_sub_dir = "CorelightPipelines"
-git_example_logstsh_pipeline_dir = os.path.join(git_example_logstash_pipeline_root_dir, git_example_logstash_pipeline_sub_dir)
 logstash_input_choices = [ 'tcp', 'tcp_ssl', 'kafka', 'hec', 'udp' ]
-logstash_elasticsearch_output_file = "9940-elasticsearch-corelight_zeek-datastream-output.conf.disabled"
 # General
 #version = script_version
 time_now = time.time() # Get the current time
@@ -104,10 +101,11 @@ def input_string(question=None, default=None):
 def input_int(question, default=None):
     while True:
         try:
-            val = int(input(f"\n{question}. Default: '{default}': "))
+            val = input(f"\n{question}. Default: '{default}': ")
             if not val:
                 return default
             else:
+                int( val )
                 return val
         except ValueError:
             logger.warning("Invalid response, please enter a number")
@@ -515,6 +513,156 @@ def setup_logger(no_color, debug):
     logger.addHandler(ch)
     return logger
 
+def var_replace_prompt(use_templates=False, use_pipelines=False, Final_Pipelines_Dir=None, Final_Templates_Dir=None):
+
+    # Protocol Logs / Main Logs / Known Logs / Known Protocol Logs
+    VAR_CL_DS_TYPE_PROTOCOL_LOG = "logs"
+    VAR_CL_DS_PREFIX_PROTOCOL_LOG = "corelight"
+    VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict = {
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_CONN": "conn",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_DNS": "dns",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_FILES": "files",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_HTTP": "http",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SMB": "smb",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SMTP": "smtp",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SSL": "ssl",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SURICATA_CORELIGHT": "suricata_corelight",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SYSLOG": "syslog",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_VARIOUS": "various",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_WEIRD": "weird",
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_X509": "x509"
+    }
+    VAR_CL_DS_NAMESPACE_PROTOCOL_LOG = "default"
+    VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG = f'901'
+    # Unknown Logs
+    VAR_CL_DS_TYPE_UNKNOWN_LOG = "logs"
+    VAR_CL_DS_PREFIX_UNKNOWN_LOG = "corelight"
+    VAR_CL_DS_SUFFIX_UNKNOWN_LOG = "unknown"
+    VAR_CL_DS_NAMESPACE_UNKNOWN_LOG = "default"
+    VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG = f'901'
+    # Metrics Logs / Non Protocol Log Metrics (Metrics and Stats)
+    VAR_CL_DS_TYPE_METRIC_LOG = "zeek"
+    VAR_CL_DS_PREFIX_METRIC_LOG = "corelight"
+    VAR_CL_DS_SUFFIX_METRIC_LOG = "metric"
+    VAR_CL_DS_NAMESPACE_METRIC_LOG = "default"
+    VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG = f'901'
+    # System Logs / Non Protocol Log System (System, IAM, Netcontrol, and Audit)
+    VAR_CL_DS_TYPE_SYSTEM_LOG = "zeek"
+    VAR_CL_DS_PREFIX_SYSTEM_LOG = "corelight"
+    VAR_CL_DS_SUFFIX_SYSTEM_LOG = "system"
+    VAR_CL_DS_NAMESPACE_SYSTEM_LOG = "default"
+    VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG = f'901'
+    # Parse Failures / Failed Logs / pipeline_error
+    VAR_CL_DS_TYPE_PARSE_FAILURES_LOG = "parse_failures"
+    VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG = "corelight"
+    VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG = "pipeline_error"
+    VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG = "default"
+    VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG = f'901'
+
+    USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index names?", default=False )
+    if USE_CUSTOM_INDEX_NAMES:
+        # Protocol Logs / Main Logs / Known Logs / Known Protocol Logs
+        VAR_CL_DS_TYPE_PROTOCOL_LOG = input_string( question=f"Enter the Datastream 'type' for Protocol Logs", default=f"{VAR_CL_DS_TYPE_PROTOCOL_LOG}" )
+        VAR_CL_DS_PREFIX_PROTOCOL_LOG = input_string( question=f"Enter the Datastream 'prefix' for Protocol Logs", default=f"{VAR_CL_DS_PREFIX_PROTOCOL_LOG}" )
+        VAR_CL_DS_NAMESPACE_PROTOCOL_LOG = input_string( question=f"Enter the Datastream 'namespace' for Protocol Logs", default=f"{VAR_CL_DS_NAMESPACE_PROTOCOL_LOG}" )
+        # Unknown Logs
+        VAR_CL_DS_TYPE_UNKNOWN_LOG = input_string( question=f"Enter the Datastream 'type' for Unknown Protocol Logs", default=f"{VAR_CL_DS_TYPE_UNKNOWN_LOG}" )
+        VAR_CL_DS_PREFIX_UNKNOWN_LOG = input_string( question=f"Enter the Datastream 'prefix' for Unknown Protocol Logs", default=f"{VAR_CL_DS_PREFIX_UNKNOWN_LOG}" )
+        VAR_CL_DS_SUFFIX_UNKNOWN_LOG = input_string( question=f"Enter the Datastream 'suffix' for Unknown Protocol Logs", default=f"{VAR_CL_DS_SUFFIX_UNKNOWN_LOG}" )
+        VAR_CL_DS_NAMESPACE_UNKNOWN_LOG = input_string( question=f"Enter the Datastream 'namespace' for Protocol Logs Unknown", default=f"{VAR_CL_DS_NAMESPACE_UNKNOWN_LOG}" )
+        # Metrics Logs / Non Protocol Log Metrics (Metrics and Stats)
+        VAR_CL_DS_TYPE_METRIC_LOG = input_string( question=f"Enter the Datastream 'type' for Metric Logs", default=f"{VAR_CL_DS_TYPE_METRIC_LOG}" )
+        VAR_CL_DS_PREFIX_METRIC_LOG = input_string( question=f"Enter the Datastream 'prefix' for Metric Logs", default=f"{VAR_CL_DS_PREFIX_METRIC_LOG}" )
+        VAR_CL_DS_SUFFIX_METRIC_LOG = input_string( question=f"Enter the Datastream 'suffix' for Metric Logs", default=f"{VAR_CL_DS_SUFFIX_METRIC_LOG}" )
+        VAR_CL_DS_NAMESPACE_METRIC_LOG = input_string( question=f"Enter the Datastream 'namespace' for Metric Logs", default=f"{VAR_CL_DS_NAMESPACE_METRIC_LOG}" )
+        # System Logs / Non Protocol Log System (System, IAM, Netcontrol, and Audit)
+        VAR_CL_DS_TYPE_SYSTEM_LOG = input_string( question=f"Enter the Datastream 'type' for System Logs", default=f"{VAR_CL_DS_TYPE_SYSTEM_LOG}" )
+        VAR_CL_DS_PREFIX_SYSTEM_LOG = input_string( question=f"Enter the Datastream 'prefix' for System Logs", default=f"{VAR_CL_DS_PREFIX_SYSTEM_LOG}" )
+        VAR_CL_DS_SUFFIX_SYSTEM_LOG = input_string( question=f"Enter the Datastream 'suffix' for System Logs", default=f"{VAR_CL_DS_SUFFIX_SYSTEM_LOG}" )
+        VAR_CL_DS_NAMESPACE_SYSTEM_LOG = input_string( question=f"Enter the Datastream 'namespace' for System Logs", default=f"{VAR_CL_DS_NAMESPACE_SYSTEM_LOG}" )
+        # Parse Failures / Failed Logs / pipeline_error
+        VAR_CL_DS_TYPE_PARSE_FAILURES_LOG = input_string( question=f"Enter the Datastream 'type' for Parse Failures", default=f"{VAR_CL_DS_TYPE_PARSE_FAILURES_LOG}" )
+        VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG = input_string( question=f"Enter the Datastream 'prefix' for Parse Failures", default=f"{VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG}" )
+        VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG = input_string( question=f"Enter the Datastream 'suffix' for Parse Failures", default=f"{VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG}" )
+        VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG = input_string( question=f"Enter the Datastream 'namespace' for Parse Failures", default=f"{VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG}" )
+
+    # Set Index Patterns after choice to use custom index names
+    VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_dict = {
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_CONN": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_CONN")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_DNS": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_DNS")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_FILES": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_FILES")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_HTTP": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_HTTP")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SMB": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SMB")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SMTP": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SMTP")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SSL": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SSL")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SURICATA_CORELIGHT": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SURICATA_CORELIGHT")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SYSLOG": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SYSLOG")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_VARIOUS": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_VARIOUS")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_WEIRD": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_WEIRD")}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_X509": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_X509")}-*',
+    }
+    VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG = f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}'
+    VAR_CL_DS_INDEX_PATTERN_UNKNOWN_LOG = f'{VAR_CL_DS_TYPE_UNKNOWN_LOG}-{VAR_CL_DS_PREFIX_UNKNOWN_LOG}.{VAR_CL_DS_SUFFIX_UNKNOWN_LOG}-*'
+    VAR_CL_DS_INDEX_PATTERN_METRIC_LOG = f'{VAR_CL_DS_TYPE_METRIC_LOG}-{VAR_CL_DS_PREFIX_METRIC_LOG}.{VAR_CL_DS_SUFFIX_METRIC_LOG}-*'
+    VAR_CL_DS_INDEX_PATTERN_SYSTEM_LOG = f'{VAR_CL_DS_TYPE_SYSTEM_LOG}-{VAR_CL_DS_PREFIX_SYSTEM_LOG}.{VAR_CL_DS_SUFFIX_SYSTEM_LOG}-*'
+    VAR_CL_DS_INDEX_PATTERN_PARSE_FAILURES_LOG = f'{VAR_CL_DS_TYPE_PARSE_FAILURES_LOG}-{VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG}.{VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG}-*'
+
+    if use_pipelines:
+        # Protocol Logs / Main Logs / Known Logs / Known Protocol Logs
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_TYPE_PROTOCOL_LOG", replace_var_with=VAR_CL_DS_TYPE_PROTOCOL_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_PREFIX_PROTOCOL_LOG", replace_var_with=VAR_CL_DS_PREFIX_PROTOCOL_LOG )
+        for key, value in VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.items():
+            replace_var_in_directory( Final_Pipelines_Dir, replace_var=f"{key}", replace_var_with=f"{value}" )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_NAMESPACE_PROTOCOL_LOG", replace_var_with=VAR_CL_DS_NAMESPACE_PROTOCOL_LOG )
+        # Unknown Logs
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_TYPE_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_TYPE_UNKNOWN_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_PREFIX_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_PREFIX_UNKNOWN_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_SUFFIX_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_SUFFIX_UNKNOWN_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_NAMESPACE_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_NAMESPACE_UNKNOWN_LOG )
+        # Metrics Logs / Non Protocol Log Metrics (Metrics and Stats)
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_TYPE_METRIC_LOG", replace_var_with=VAR_CL_DS_TYPE_METRIC_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_PREFIX_METRIC_LOG", replace_var_with=VAR_CL_DS_PREFIX_METRIC_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_SUFFIX_METRIC_LOG", replace_var_with=VAR_CL_DS_SUFFIX_METRIC_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_NAMESPACE_METRIC_LOG", replace_var_with=VAR_CL_DS_NAMESPACE_METRIC_LOG )
+        # System Logs / Non Protocol Log System (System, IAM, Netcontrol, and Audit)
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_TYPE_SYSTEM_LOG", replace_var_with=VAR_CL_DS_TYPE_SYSTEM_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_PREFIX_SYSTEM_LOG", replace_var_with=VAR_CL_DS_PREFIX_SYSTEM_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_SUFFIX_SYSTEM_LOG", replace_var_with=VAR_CL_DS_SUFFIX_SYSTEM_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_NAMESPACE_SYSTEM_LOG", replace_var_with=VAR_CL_DS_NAMESPACE_SYSTEM_LOG )
+        # Parse Failures / Failed Logs / pipeline_error
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_TYPE_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_TYPE_PARSE_FAILURES_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG )
+        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG )
+
+    if use_templates:
+        USE_CUSTOM_INDEX_PRIORITIES = input_bool( f"\nDo you want to use custom index priorities?", default=False )
+        if USE_CUSTOM_INDEX_PRIORITIES:
+            # Protocol Logs / Main Logs / Known Logs / Known Protocol Logs
+            VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG = input_int( question=f"Enter the Index Priority for Protocol Logs", default=f"{VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG}" )
+            VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG = input_int( question=f"Enter the Index Priority for Unknown Logs", default=f"{VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG}" )
+            VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG = input_int( question=f"Enter the Index Priority for Metric Logs", default=f"{VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG}" )
+            VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG = input_int( question=f"Enter the Index Priority for System Logs", default=f"{VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG}" )
+            VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG = input_int( question=f"Enter the Index Priority for Parse Failures", default=f"{VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG}" )
+
+
+        # Protocol Logs / Main Logs / Known Logs / Known Protocol Logs
+        for key, value in VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_dict.items():
+            replace_var_in_directory( Final_Templates_Dir, replace_var=f"{key}", replace_var_with=f"{value}" )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG )
+        # Unknown Logsa
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PATTERN_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_INDEX_PATTERN_UNKNOWN_LOG )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG )
+        # System Logs / Non Protocol Log System (System, IAM, Netcontrol, and Audit)
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PATTERN_METRIC_LOG", replace_var_with=VAR_CL_DS_INDEX_PATTERN_METRIC_LOG )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG )
+        # Parse Failures / Failed Logs / pipeline_error
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PATTERN_SYSTEM_LOG", replace_var_with=VAR_CL_DS_INDEX_PATTERN_SYSTEM_LOG )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG )
+
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PATTERN_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_INDEX_PATTERN_PARSE_FAILURES_LOG )
+        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG )
+
 
 def main():
     # Gather args
@@ -586,14 +734,15 @@ def main():
             pipeline_type = 'logstash'
         elif pipeline_type == 'n':
             pipeline_type = 'no'
-        VAR_CORELIGHT_INDEX_STRATEGY = input(f"\nWhat index strategy will you be using? (Enter 'datastream'/'d'): ").strip().lower() #, 'legacy'/'l'): ").strip().lower()
-        while VAR_CORELIGHT_INDEX_STRATEGY.strip("'").strip().lower() not in ['datastream', 'd']:#, 'legacy', 'l']:
-            VAR_CORELIGHT_INDEX_STRATEGY = input(f"{LOG_COLORS['WARNING']}Invalid input. Please enter one of:"
-                                                 f"\n'datastream' or 'd' for datastream index strategy"
-                                                 #f"\n'legacacy' or 'l' for legacy index strategy"
-                                                 f"\n: {COLORS['ENDC']}")
-        if VAR_CORELIGHT_INDEX_STRATEGY == "datastream" or "d":
-            VAR_CORELIGHT_INDEX_STRATEGY = "datastream"
+        VAR_CORELIGHT_INDEX_STRATEGY = "datastream"
+        #VAR_CORELIGHT_INDEX_STRATEGY = input(f"\nWhat index strategy will you be using? (Enter 'datastream'/'d'): ").strip().lower() #, 'legacy'/'l'): ").strip().lower()
+        #while VAR_CORELIGHT_INDEX_STRATEGY.strip("'").strip().lower() not in ['datastream', 'd']:#, 'legacy', 'l']:
+        #    VAR_CORELIGHT_INDEX_STRATEGY = input(f"{LOG_COLORS['WARNING']}Invalid input. Please enter one of:"
+        #                                         f"\n'datastream' or 'd' for datastream index strategy"
+        #                                         #f"\n'legacacy' or 'l' for legacy index strategy"
+        #                                         f"\n: {COLORS['ENDC']}")
+        #if VAR_CORELIGHT_INDEX_STRATEGY == "datastream" or "d":
+        #    VAR_CORELIGHT_INDEX_STRATEGY = "datastream"
         #elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy" or "l":
         #    VAR_CORELIGHT_INDEX_STRATEGY = "legacy"
 
@@ -632,11 +781,11 @@ def main():
             templates_source_directory = os.path.join(templates_source_directory, git_templates_sub_dir)
             if VAR_CORELIGHT_INDEX_STRATEGY == "datastream":
                 templates_sub_dir = "component"
-            #elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy":
-            #    templates_sub_dir = "legacy"
+            elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy":
+                templates_sub_dir = "legacy"
             else:
                 templates_sub_dir = ""
-            templates_source_directory = os.path.join(templates_source_directory, templates_sub_dir)
+            templates_source_directory = os.path.join(templates_source_directory, "component")
             logger.debug(f"Using {templates_source_directory} as the source for the templates.")
 
             # Copy all sourced files to temporary directory
@@ -711,94 +860,7 @@ def main():
             elif pipeline_type == 'ingest':
                 pass
 
-            # For everything
-            USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index names?",default=False )
-            if USE_CUSTOM_INDEX_NAMES:
-                # Protocol Log
-                VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG = input_string(question=f"Enter the Index Name Type for Protocol Logs", default=f"logs")
-                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG = input_string(question=f"Enter the Index Dataset for Protocol Logs", default=f"corelight")
-                VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG = input_string(question=f"Enter the Index Namespace for Protocol Logs", default=f"default")
-                # Unknown Protocol Log
-                VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN = input_string(question=f"Enter the Index Name Type for Protocol Logs Unknown", default=f"logs")
-                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN = input_string(question=f"Enter the Index Dataset for Protocol Logs Unknown", default=f"corelight")
-                VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN = input_string(question=f"Enter the Index Dataset suffix for Protocol Logs Unknown", default=f"unknown")
-                VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN = input_string(question=f"Enter the Index Namespace for Protocol Logs Unknown", default=f"default")
-                # Metrics and Stats
-                VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG = input_string(question=f"Enter the Index Name Type for Metrics and Stats Logs", default=f"zeek")
-                VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG = input_string(question=f"Enter the Index Dataset for Metrics and Stats Logs", default=f"corelight")
-                VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG = input_string(question=f"Enter the Index Namespace for Metrics and Stats Logs", default=f"default")
-                # Parse_Failures
-                VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES = input_string(question=f"Enter the Index Name Type for Parse Failures", default=f"parse_failures")
-                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES = input_string(question=f"Enter the Index Dataset for Parse Failures", default=f"corelight")
-                VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES = input_string(question=f"Enter the Index Dataset suffix for Parse Failures", default=f"failed")
-                VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES = input_string(question=f"Enter the Index Namespace for Parse Failures", default=f"default")
-            else:
-                # Protocol Log
-                VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG = "logs"
-                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG = "corelight"
-                VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG = "default"
-                # Unknown Protocol Log
-                VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN = "logs"
-                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN = "corelight"
-                VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN = "unknown"
-                VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN = "default"
-                # Metrics and Stats
-                VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG = "zeek"
-                VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG = "corelight"
-                VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG = "default"
-                # Parse_Failures
-                VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES = "parse_failures"
-                VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES = "corelight"
-                VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES = "failed"
-                VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES = "default"
-
-
-            # Replace variables
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_STRATEGY", replace_var_with=VAR_CORELIGHT_INDEX_STRATEGY )
-
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG)
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG)
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG)
-
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PROTOCOL_LOG_UNKNOWN)
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PROTOCOL_LOG_UNKNOWN)
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PROTOCOL_LOG_UNKNOWN)
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PROTOCOL_LOG_UNKNOWN)
-
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_NON_PROTOCOL_LOG)
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_NON_PROTOCOL_LOG)
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_NON_PROTOCOL_LOG)
-
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_NAME_TYPE_PARSE_FAILURES)
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_PREFIX_PARSE_FAILURES)
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_DATASET_SUFFIX_PARSE_FAILURES)
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES", replace_var_with=VAR_CORELIGHT_INDEX_NAMESPACE_PARSE_FAILURES)
-
-        if use_templates:
-            if not 'USE_CUSTOM_INDEX_NAMES' in locals():
-                USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index template settings?",default=False )
-            if USE_CUSTOM_INDEX_NAMES:
-                VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = input_string(question=f"Enter the Index Template Pattern for Main Logs. Qoute input, seperate list with commas", default=f'"logs-corelight.*"')
-                VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS = input_string(question=f"Enter the Index Template Priority for Main Logs", default=f"901")
-                VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = input_string(question=f"Enter the Index Template Pattern for Metrics and Stats Logs. Qoute input, seperate list with commas", default=f'"zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"')
-                VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS = input_string(question=f"Enter the Index Template Priority for Metrics and Stats Logs", default=f"901")
-                VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS  = input_string(question=f"Enter the Index Template Pattern for Parse Failures Logs. Qoute input, seperate list with commas", default=f'"parse_failures-corelight.*"')
-                VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS = input_string(question=f"Enter the Index Template Priority for Parse Failures Logs", default=f"901")
-            else:
-                VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS = '"logs-corelight.*"'
-                VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS = '901'
-                VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS = '"zeek-corelight.metrics-*", "zeek-corelight.netcontrol-*", "zeek-corelight.stats-*", "zeek-corelight.system-*"'
-                VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS = '901'
-                VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS = '"parse_failures-corelight.*"'
-                VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS = '901'
-
-            # Replace variables
-            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_MAIN_LOGS )
-            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_MAIN_LOGS )
-            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_METRICS_AND_STATS_LOGS )
-            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_METRICS_AND_STATS_LOGS )
-            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PATTERN_PARSE_FAILURES_LOGS )
-            replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS", replace_var_with=VAR_CORELIGHT_INDEX_PRIORITY_PARSE_FAILURES_LOGS )
+        var_replace_prompt(use_templates=use_templates, use_pipelines=use_pipeline, Final_Pipelines_Dir=Final_Pipelines_Dir, Final_Templates_Dir=Final_Templates_Dir)
 
         # Save parameters to file
         param_path = None
