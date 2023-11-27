@@ -6,10 +6,10 @@
 - [ ] tell user files to modify at the end (logstash input and output)
 - [ ] concat all the logstash files into one file for upload for central pipeline management. basically no matter what, always save a central_pipeline_management.conf file
 - [ ] related.X fields see gdoc for all. having removed copy_to for related.X fields, finish logic for ingest pipelines and logstash pipelines
-    - [ ] logstash pipelines
+    - [x] logstash pipelines
         - [x] related.ip
         - [x] related.host
-        - [ ] related.user
+        - [x] related.user
         - [x] related.hash
         - [x] related.mac
     - [ ] ingest pipelines
