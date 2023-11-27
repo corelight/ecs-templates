@@ -1,16 +1,6 @@
 # To Do
 
 ## Priority 1
-- [ ] for suricata_corelight log for ingest pipeline (see if logstash does same)
-```
-    {
-      ""rename"": {
-        ""field"": ""alert.action"",
-        ""target_field"": ""event.type"",
-        ""ignore_missing"": true
-      }
-    },"
-```
 - [ ] for all metric and system logs, perform '.' fields to '_' for ingest pipeline the same as is done in logstash pipelines
 ```  
 # Remove infinite dotted fields and replace with underscore
@@ -33,7 +23,12 @@
       '
 ```
 - [ ] related.X fields see gdoc for all. having removed copy_to for related.X fields, finish logic for ingest pipelines and logstash pipelines
-    - [x] logstash pipelines
+    - [ ] logstash pipelines
+        - [x] related.ip
+        - [x] related.host
+        - [ ] related.user
+        - [x] related.hash
+        - [x] related.mac
     - [ ] ingest pipelines
         - [ ] related.ip
         - [ ] related.host
@@ -43,12 +38,22 @@
 - [ ] tell user files to modify at the end (logstash input and output)
 - [ ] remove brasitech references/defaults before finalizing
 - [ ] concat all the logstash files into one file for upload for central pipeline management. basically no matter what, always save a central_pipeline_management.conf file
-- [x] option/choice to output metrics/non protocol logs to a seperate cluster . like an else statement or just seperate file, using input choice 1 or 2 (single output or metrics go somewhere else and then use 9940 and 9941 or something)
-- [x] publicly available public version of list of logs and their categories, index pattern, etc..
-- [x] remove or use VAR_CORELIGHT_INDEX_STRATEGY from script and all references in logstash/ingest/settings as only data stream is supported
 - [ ] change intel log fields intel.X to threat.X where applicable
 - [ ] finish smtp.X to email.X alias backward compatibility
 - [ ] final change log
+- [x] for suricata_corelight log for ingest pipeline (see if logstash does same)
+- [x] option/choice to output metrics/non protocol logs to a seperate cluster . like an else statement or just seperate file, using input choice 1 or 2 (single output or metrics go somewhere else and then use 9940 and 9941 or something)
+- [x] publicly available public version of list of logs and their categories, index pattern, etc..
+- [x] remove or use VAR_CORELIGHT_INDEX_STRATEGY from script and all references in logstash/ingest/settings as only data stream is supported
+```
+    {
+      ""rename"": {
+        ""field"": ""alert.action"",
+        ""target_field"": ""event.type"",
+        ""ignore_missing"": true
+      }
+    },"
+```
 
 ## Priority 2
 - [ ] ja4 fields https://github.com/FoxIO-LLC/ja4/tree/main/zeek
