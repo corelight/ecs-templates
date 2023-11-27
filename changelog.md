@@ -177,3 +177,4 @@
     - `labels.etl.elasticsearch_index_strategy`
 - suricata_corelight log
   - append the value from  `suricata.alert.action` to `event.type`. previously `alert.action` was renamed to `event.type` 
+- for metric and system logs, perform '.' fields to '_' for ingest pipeline the same as is done in logstash pipelines
