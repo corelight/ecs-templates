@@ -23,6 +23,5 @@
     "corelight-ecs-component-system_log-mappings@custom"
   ],
   "index_patterns": [ "VAR_CL_DS_INDEX_PATTERN_SYSTEM_LOG" ],
-  "priority": VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG,
-
+  "priority": VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG
 }

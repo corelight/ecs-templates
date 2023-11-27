@@ -31,6 +31,5 @@
     "corelight-ecs-component-protocol_log-various-mappings@custom"
   ],
   "index_patterns": [ "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_VARIOUS" ],
-  "priority": VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG,
-
+  "priority": VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG
 }

@@ -23,6 +23,5 @@
     "corelight-ecs-component-parse_failures-mappings@custom"
   ],
   "index_patterns": [ "VAR_CL_DS_INDEX_PATTERN_PARSE_FAILURES_LOG" ],
-  "priority": VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG,
-
+  "priority": VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG
 }

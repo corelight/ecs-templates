@@ -31,6 +31,5 @@
     "corelight-ecs-component-protocol_log-suricata_corelight-mappings@custom"
   ],
   "index_patterns": [ "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SURICATA_CORELIGHT" ],
-  "priority": VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG,
-
+  "priority": VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG
 }

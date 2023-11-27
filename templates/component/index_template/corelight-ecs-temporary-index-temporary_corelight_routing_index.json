@@ -8,6 +8,5 @@
   ],
   "data_stream": { },
   "index_patterns": [ "temporary_corelight_routing_index" ],
-  "priority": 100,
-
+  "priority": 100
 }

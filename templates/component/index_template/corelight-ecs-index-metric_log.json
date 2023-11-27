@@ -23,6 +23,5 @@
     "corelight-ecs-component-metric_log-mappings@custom"
   ],
   "index_patterns": [ "VAR_CL_DS_INDEX_PATTERN_METRIC_LOG" ],
-  "priority": VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG,
-
+  "priority": VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG
 }
