@@ -7,5 +7,5 @@
     "settings": {
       "index.lifecycle.name": "corelight-ecs-ilm-metric_log"
     }
-  },
+  }
 }
