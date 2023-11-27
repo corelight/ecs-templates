@@ -178,3 +178,6 @@
 - suricata_corelight log
   - append the value from  `suricata.alert.action` to `event.type`. previously `alert.action` was renamed to `event.type` 
 - for metric and system logs, perform '.' fields to '_' for ingest pipeline the same as is done in logstash pipelines
+- http log
+  - logstash pipeline
+    - `username` from `username` to `source.user.name` to match ingest pipeline
