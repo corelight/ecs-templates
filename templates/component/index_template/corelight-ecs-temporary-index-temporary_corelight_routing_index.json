@@ -7,6 +7,6 @@
     "corelight-ecs-component-protocol_log-index.default_pipeline-settings"
   ],
   "data_stream": { },
-  "index_patterns": [ "temporary_corelight_routing_index" ],
+  "index_patterns": [ "temporary_corelight_routing_index*" ],
   "priority": 100
 }
