@@ -1,4 +1,8 @@
 {
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates"
+  },
+  "version": 2023120101,
   "template": {
     "settings": {
       "index": {
@@ -11,11 +15,5 @@
         "refresh_interval": "30s"
       }
     }
-  },
-  "version": 2023101701,
-  "_meta": {
-    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
-    "ecs_version": "8.10.0",
-    "labels_corelight_ecs_version": "8.10.0.1"
   }
 }

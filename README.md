@@ -129,6 +129,9 @@ However, each file contains an environment variable that can be used automate th
 # Examples WIP
 See the directory [examples](./examples) for examples of how to use the templates and pipelines.
 
+- to use an index pattern just to be able to hit the ingest pipelines, like for corelight appliance or testing. using the output index `temporary_corelight_routing_index`
+
+
 # Changelog WIP
 see the file [changelog.md](./changelog.md) for a full changelog of the repository.
 

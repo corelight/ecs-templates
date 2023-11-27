@@ -1,0 +1,13 @@
+{
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates"
+  },
+  "version": 2023120101,
+  "composed_of": [
+    "corelight-ecs-component-protocol_log-index.default_pipeline-settings"
+  ],
+  "data_stream": { },
+  "index_patterns": [ "temporary_corelight_routing_index" ],
+  "priority": 100,
+
+}

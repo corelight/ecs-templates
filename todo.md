@@ -1,6 +1,7 @@
 # To Do
 
 ## Priority 1
+- [x] index template matching an index pattern such as `temporary_corelight_routing_index` that all it does is call the default ingest pipeline
 - [ ] change intel log fields intel.X to threat.X where applicable
 - [ ] finish smtp.X to email.X alias backward compatibility
 - [ ] tell user files to modify at the end (logstash input and output)
