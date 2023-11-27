@@ -1,7 +1,6 @@
 # To Do
 
 ## Priority 1
-- [x] index template matching an index pattern such as `temporary_corelight_routing_index` that all it does is call the default ingest pipeline
 - [ ] change intel log fields intel.X to threat.X where applicable
 - [ ] finish smtp.X to email.X alias backward compatibility
 - [ ] tell user files to modify at the end (logstash input and output)
@@ -21,6 +20,7 @@
         - [ ] related.mac
 - [ ] final change log
   - [ ] remove brasitech references/defaults before finalizing
+- [x] index template matching an index pattern such as `temporary_corelight_routing_index` that all it does is call the default ingest pipeline
 - [x] for all metric and system logs, perform '.' fields to '_' for ingest pipeline the same as is done in logstash pipelines
 - [x] for suricata_corelight log alert.action/event.type for ingest pipeline (see if logstash does same)
 - [x] option/choice to output metrics/non protocol logs to a seperate cluster . like an else statement or just seperate file, using input choice 1 or 2 (single output or metrics go somewhere else and then use 9940 and 9941 or something)
