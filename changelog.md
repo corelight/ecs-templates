@@ -180,4 +180,7 @@
 - for metric and system logs, perform '.' fields to '_' for ingest pipeline the same as is done in logstash pipelines
 - http log
   - logstash pipeline
-    - `username` from `username` to `source.user.name` to match ingest pipeline
+    - `username` from `username` to `url.username` & copy to `source.user.name`
+  - ingest pipeline
+    - `username` from `source.user.name` to `url.username` & copy to `source.user.name`
+    - `password` from `source.user.password` to `url.password` & copy to `source.user.password`
