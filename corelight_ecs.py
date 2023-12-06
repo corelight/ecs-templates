@@ -17,6 +17,7 @@ from urllib3.exceptions import InsecureRequestWarning, HTTPError
 import argparse
 
 git_fork = "brasitech"
+ls_output_filename = "9940-elasticsearch-corelight_zeek-output.conf"
 
 # Script Version
 script_version = '2023102201'
@@ -381,6 +382,7 @@ def enable_ls_input(source_dir=None, ingest_type=None, raw=None, destination_dir
     try:
         shutil.copy(source, dest)
         logger.info(f"Successfully enabled {ingest_type} at {dest}")
+        return dest
     except Exception as e:
         logger.error(f"Error occurred while enabling {ingest_type} {e}")
         raise ValueError(f"Error occurred while enabling {ingest_type} {e}")
@@ -486,6 +488,72 @@ def elasticDel(session, baseURI, pipeline, retry=2): #TODO: Keep Or Not
     #sys.exit(1)
     #END# #TODO: Keep Or Not #END#
 
+def categorize_ls_files(directory):
+    input_files = []
+    filter_files = []
+    output_files = []
+
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+            if file.endswith('-input.conf'):
+                input_files.append(file_path)
+            if file.endswith('-filter.conf'):
+                filter_files.append(file_path)
+            if file.endswith('-output.conf'):
+                output_files.append(file_path)
+    # Sort the lists in alphanumeric order
+    input_files = sorted(input_files)
+    filter_files = sorted(filter_files)
+    output_files = sorted(output_files)
+    return input_files, filter_files, output_files
+
+def clean_ls_content(content, start_pattern, file_name):
+    # Remove the specified pattern at the start and the last closing brace
+    content = re.sub(start_pattern, f'', content, count=1)
+    #content = re.sub(r'(?m)^(?!.*\s*#).*\}\s*$', f'', content, count=1)
+    content = re.sub(r'(?m)^\}(?![\s\S]*^\})', f'######## End "{file_name}" ########', content)
+
+    # Add two spaces to comments at beginning of each line
+    content = re.sub(r'(?m)^(\S)', r'  \1', content)
+
+    return content
+
+def concat_ls_files(input_files, filter_files, output_files, output_file):
+    with open(output_file, 'w') as outfile:
+        # Process input files
+        for i, file_path in enumerate(input_files):
+            file_name = os.path.basename(file_path)
+            with open(file_path, 'r') as infile:
+                content = infile.read()
+                cleaned_content = clean_ls_content(content, r'(?m)^(?!.*\s*#).*\s*input\s*\{', file_name)
+                if i == 0:  # First input file
+                    outfile.write("\n\ninput {\n")
+                outfile.write(f'\n  ######## Begin "{file_name}" ########\n{cleaned_content}')
+                if i == len(input_files) - 1:  # Last input file
+                    outfile.write("\n}")
+        # Process filter files
+        for i, file_path in enumerate(filter_files):
+            file_name = os.path.basename(file_path)
+            with open(file_path, 'r') as infile:
+                content = infile.read()
+                cleaned_content = clean_ls_content(content, r'(?m)^(?!.*\s*#).*\s*filter\s*\{', file_name)
+                if i == 0:  # First filter file
+                    outfile.write("\n\nfilter {\n")
+                outfile.write(f'\n  ######## Begin "{file_name}" ########\n{cleaned_content}')
+                if i == len(filter_files) - 1:  # Last filter file
+                    outfile.write("\n}")
+        # Process output files
+        for i, file_path in enumerate(output_files):
+            file_name = os.path.basename(file_path)
+            with open(file_path, 'r') as infile:
+                content = infile.read()
+                cleaned_content = clean_ls_content(content, r'(?m)^(?!.*\s*#).*\s*output\s*\{', file_name)
+                if i == 0:  # First output file
+                    outfile.write("\n\noutput {\n")
+                outfile.write(f'\n  ######## Begin "{file_name}" ########\n{cleaned_content}')
+                if i == len(output_files) - 1:  # Last output file
+                    outfile.write("\n}")
 
 def setup_logger(no_color, debug):
     # Set up logging
@@ -662,7 +730,6 @@ def var_replace_prompt(use_templates=False, use_pipelines=False, Final_Pipelines
         replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PATTERN_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_INDEX_PATTERN_PARSE_FAILURES_LOG )
         replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG )
 
-
 def main():
     # Gather args
     args = parse_args()
@@ -677,6 +744,8 @@ def main():
     Final_Pipelines_Dir = os.path.join( Final_Config_Dir,  "pipelines" )
     Final_Templates_Dir = os.path.join( Final_Config_Dir, "templates" )
     Previous_Config_Dir = os.path.join( Config_Dir, "previous", dir_time )
+    # List of files to tell user to modify at the end
+    ls_files_to_modify = list()
 
     # Prompt user if they want to use configs from last run, if they exist
     use_last_run = input_bool(f"Would you like to use configs from a previous run?", default=False)
@@ -853,7 +922,8 @@ def main():
                 while input_type.strip().lower() not in logstash_input_choices:
                     input_type = input(f"{LOG_COLORS['WARNING']}Invalid input. Please enter one of {logstash_input_choices}: {COLORS['ENDC']}")
                 keep_raw = input_bool( "Do you want to keep the raw message? (This will increase storage space but is useful in certain environments for data integrity or troubleshooting)", default=False )
-                enable_ls_input( source_dir=pipeline_source_directory, ingest_type=input_type, raw=keep_raw, destination_dir=Final_Pipelines_Dir)
+                ls_files_to_modify.append(enable_ls_input( source_dir=pipeline_source_directory, ingest_type=input_type, raw=keep_raw, destination_dir=Final_Pipelines_Dir))
+                ls_files_to_modify.append(os.path.join(Final_Pipelines_Dir, ls_output_filename))
 
             # Ingest Pipelines Specifics
             elif pipeline_type == 'ingest':
@@ -917,12 +987,16 @@ def main():
 
     # Final config placement
     logger.info(f"Script has finished. You can review the final configurations in {Final_Config_Dir}")
+    if pipeline_type == 'logstash':
+        formatted_filenames = "\n".join( [ f'- "{file}"' for file in ls_files_to_modify ] )
+        logger.info(f"Please review the following logstash files, for input and output, that you will need to modify for your environment:\n{formatted_filenames}")
 
 
 def parse_args():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Logger Color Control")
     parser.add_argument('--no-color', action='store_true', help='Disable colors for logging.')
+    parser.add_argument('--debug', action='store_true', help='Enable debug level logging.')
     parser.add_argument('--debug', action='store_true', help='Enable debug level logging.')
     return parser.parse_args()
 

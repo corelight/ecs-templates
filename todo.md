@@ -3,8 +3,9 @@
 ## Priority 1
 - [ ] change intel log fields intel.X to threat.X where applicable
 - [ ] finish smtp.X to email.X alias backward compatibility
-- [ ] tell user files to modify at the end (logstash input and output)
 - [ ] concat all the logstash files into one file for upload for central pipeline management. basically no matter what, always save a central_pipeline_management.conf file
+  - [x] create functions and test
+  - [ ] add as an arg parse option to the script, where the prompts for directory and path for output file. default option last run.
 - [ ] related.X fields see gdoc for all. having removed copy_to for related.X fields, finish logic for ingest pipelines and logstash pipelines
     - [x] logstash pipelines
         - [x] related.ip
@@ -26,6 +27,7 @@
 - [x] option/choice to output metrics/non protocol logs to a seperate cluster . like an else statement or just seperate file, using input choice 1 or 2 (single output or metrics go somewhere else and then use 9940 and 9941 or something)
 - [x] publicly available public version of list of logs and their categories, index pattern, etc..
 - [x] remove or use VAR_CORELIGHT_INDEX_STRATEGY from script and all references in logstash/ingest/settings as only data stream is supported
+- [x] tell user files to modify at the end (logstash input and output)
 
 ## Priority 2
 - [ ] ja4 fields https://github.com/FoxIO-LLC/ja4/tree/main/zeek
