@@ -1,0 +1,76 @@
+﻿Access Corelight Github in the main branch to install the new ECS pipeline. And either download the code zip or clone. 
+
+
+1. Cd into the ecs template folder
+2. Run python3 corelight_ecs.py
+3. Answer the following questions
+   1. Would you like to use configs from a previous run? [y/N]: This will use the config data stored from the previous run 
+   2. Is this a dry run? All configurations and files will be prepared and stored. However, no changes will be installed/uploaded. [Y/n]: - This will allow you to run the script config and generate the template and pipelines but will not apply them but will put them in the following location relative to the current folder 
+      1. /z_installer/final_config/last_run/pipelines - pipelines
+      2. /z_installer/final_config/last_run/templates
+   3. Will you be installing Elasticsearch templates, mappings, and settings? Recommended with any updates. [Y/n] - This will install the templates/ILM/mappings/etc to the elastic server 
+   4. Will you be installing Pipelines? Ingest Pipelines, Logstash Pipelines, or no (Enter 'ingest'/'i', 'logstash'/'l', or 'no'/'n'/'none'): - Select ingest/logstash or none
+   5. How will you source the templates? The default is that it will run the templates that were downloaded, but you can grab them from another source.
+   6. How will you source the ingest pipelines? The default is to grab the latest from Corelight Git Hub. But you can use your own Github if you give the location or in an Airgaped, give a location ending in a dot zip
+   7. Enter proxy URL if desired (leave empty, press enter, if not using a proxy):  - If using an HTTP proxy, enter it here; otherwise, leave blank
+   8. Do you want to use custom index names? [y/N]: - Do you want to use a non-default index/Datastream naming system if so, enter it here
+   9. Do you want to use custom index priorities? [y/N]: - If you want to use your own templates, you can adjust Corelight template priorities here
+   10. At this point, the script creates the templates and pipelines and saves them in final_config/previous/date
+   11. Enter the Elasticsearch host, including whether http or https and the port (ie: the full URL, http://somedomain:9200 or https://someip:9200 or https://somedomain:9200) - Enter the location of the Elasticsearch API note, not Kibana must be in format protocol://host<ip>:port
+   12. Do you want to use user and password authentication? [Y/n]: - are you using authentication? Answer yes and fill out the user name and password note; the password will not be displayed. If the script gets an Authentication error, it will ask if you want to reenter the username and password
+   13. The system will not upload templates and if selected, ingest pipelines.
+
+
+
+
+
+
+For Logstash there are a few different questions
+
+
+How will send data to Logstash?
+  tcp        - JSON over TCP
+  tcp_ssl    - JSON over TCP with SSL/TLS enabled
+  hec        - HTTP Event Collector
+  kafka      - Kafka
+  udp        - UDP
+
+
+* How is Corelight getting the data to Logstash
+
+
+Do you want to keep the raw message? (This will increase storage space but is useful in certain environments for data integrity or troubleshooting) [y/N]: - This will keep the raw message from Corelight as well as the ECS-compliant message
+
+
+Now the pipelines are created you can access them in the final_config/last_run/Pipelines you will need to copy them to the pipeline directory for logstash - It is recommend that you create a new directory to keep them separate 
+
+
+You will then need to edit the following 0002* this is the Logstash input you will need to fill in the variables example below
+
+
+input {
+  tcp {
+    host => "${LS_INPUT_TCP_HOST}" #"0.0.0.0" #default: "0.0.0.0"
+    port => "${LS_INPUT_TCP_PORT}" #8615
+    ssl_enabled = false
+
+
+    dns_reverse_lookup_enabled => "${LS_INPUT_TCP_DNS_REVERSE_LOOKUP_ENABLED}" #false
+    proxy_protocol => "${LS_INPUT_TCP_PROXY_PROTOCOL}" #false #default: false
+    tcp_keep_alive => "${LS_INPUT_TCP_TCP_KEEP_ALIVE}" #false #default: false
+
+
+If using the default setting just remove everything up to and including the # after the => 
+
+
+Next edit 9940 - and fill out how to connect to Elastic not only change things with ${}
+*Note you should not uncomment auto routeing and index at the same time, this config is not valid
+
+
+The last step would be to edit your pipeline.yaml file to load the pipeline in the CorelightPipelines directory
+
+
+Last step for the ingest pipeline you need to setup the Corelight unit to send to ElasticSearch - The index prefix needs to be the following temporary_corelight_routing_index
+
+
+I

@@ -1,0 +1,5516 @@
+{
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates"
+  },
+  "version": 2023120101,
+  "template": {
+    "settings": {
+      "index": {
+        "analysis": {
+          "analyzer": {
+            "es_stk_analyzer": {
+              "char_filter": [
+                "whitespace_no_way"
+              ],
+              "filter": [
+                "trim",
+                "lowercase",
+                "max_token_truncate"
+              ],
+              "tokenizer": "keyword",
+              "type": "custom"
+            }
+          },
+          "char_filter": {
+            "whitespace_no_way": {
+              "pattern": "(\\s)+",
+              "replacement": "$1",
+              "type": "pattern_replace"
+            }
+          },
+          "filter": {
+            "max_token_truncate": {
+              "length": "32766",
+              "type": "truncate"
+            },
+            "path_hierarchy_pattern_filter": {
+              "patterns": [
+                "((?:[^\\\\]*\\\\)*)(.*)",
+                "((?:[^/]*/)*)(.*)"
+              ],
+              "preserve_original": "true",
+              "type": "pattern_capture"
+            }
+          },
+          "tokenizer": {
+            "path_tokenizer": {
+              "delimiter": "\\",
+              "type": "path_hierarchy"
+            }
+          }
+        },
+        "mapping": {
+          "ignore_malformed": true,
+          "total_fields.limit": 10000
+        }
+      }
+    },
+    "mappings": {
+      "date_detection": true,
+      "dynamic_templates": [
+        {
+          "strings_as_keyword": {
+            "mapping": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "match_mapping_type": "string"
+          }
+        },
+        {
+          "numeric_long_fields": {
+            "mapping": {
+              "type": "long"
+            },
+            "match_mapping_type": "long"
+          }
+        },
+        {
+          "numeric_double_fields": {
+            "mapping": {
+              "type": "double"
+            },
+            "match_mapping_type": "double"
+          }
+        },
+        {
+          "boolean_fields": {
+            "mapping": {
+              "type": "boolean"
+            },
+            "match_mapping_type": "boolean"
+          }
+        },
+        {
+          "zeek_ssh_stepping_ips": {
+            "mapping": {
+              "type": "ip"
+            },
+            "path_match": "ssh.stepping.*_ip"
+          }
+        },
+        {
+          "zeek_ssh_stepping_uids": {
+            "mapping": {
+              "type": "keyword"
+            },
+            "path_match": "ssh.stepping.uid*"
+          }
+        }
+      ],
+      "properties": {
+        "@timestamp": {
+          "format": "strict_date_optional_time||epoch_millis",
+          "ignore_malformed": false,
+          "type": "date"
+        },
+        "@version": {
+          "ignore_above": 1024,
+          "type": "keyword"
+        },
+        "bacnet": {
+          "properties": {
+            "apdu_type": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "array_index": {
+              "type": "long"
+            },
+            "array_value": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "bvlc_function": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "bvlc_len": {
+              "type": "long"
+            },
+            "data": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "instance_number": {
+              "type": "long"
+            },
+            "is_orig": {
+              "type": "boolean"
+            },
+            "object_name": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "object_type": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "pdu_service": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "property": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "range": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "service_choice": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "vender": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            }
+          }
+        },
+        "bsap": {
+          "properties": {
+            "app_func_code": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "ctl": {
+              "type": "long"
+            },
+            "dadd": {
+              "type": "long"
+            },
+            "data": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "data_len": {
+              "type": "long"
+            },
+            "dfun": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "extfun": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "func_code": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "header_size": {
+              "type": "long"
+            },
+            "mes_seq": {
+              "type": "long"
+            },
+            "node_status": {
+              "type": "long"
+            },
+            "num_msg": {
+              "type": "long"
+            },
+            "res_seq": {
+              "type": "long"
+            },
+            "sadd": {
+              "type": "long"
+            },
+            "seq": {
+              "type": "long"
+            },
+            "sequence": {
+              "type": "long"
+            },
+            "ser": {
+              "type": "long"
+            },
+            "sfun": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "type_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "variable_count": {
+              "type": "long"
+            },
+            "variable_value": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "variables": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "cip": {
+          "properties": {
+            "attribute_id": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "cip_extended_status": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "cip_extended_status_code": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "cip_sequence_count": {
+              "type": "long"
+            },
+            "cip_service": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "cip_service_code": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "cip_status": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "cip_status_code": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "class_id": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "class_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "connection_id": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "data_length": {
+              "type": "long"
+            },
+            "device_state": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "device_status": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "device_type_id": {
+              "type": "long"
+            },
+            "device_type_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "encapsulation_version": {
+              "type": "long"
+            },
+            "instance_id": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "io_data": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "is_orig": {
+              "type": "boolean"
+            },
+            "product_code": {
+              "type": "long"
+            },
+            "product_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "revision": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "sequence_number": {
+              "type": "long"
+            },
+            "serial_number": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "socket_address": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "socket_port": {
+              "type": "integer"
+            },
+            "vendor_id": {
+              "type": "long"
+            },
+            "vendor_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "client": {
+          "properties": {
+            "address": {
+              "path": "source.address",
+              "type": "alias"
+            },
+            "as": {
+              "properties": {
+                "number": {
+                  "type": "long"
+                },
+                "organization": {
+                  "properties": {
+                    "name": {
+                      "fields": {
+                        "text": {
+                          "norms": false,
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            },
+            "bytes": {
+              "type": "long"
+            },
+            "domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "geo": {
+              "properties": {
+                "city_name": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "continent_code": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "continent_name": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "country_iso_code": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "country_name": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "location": {
+                  "type": "geo_point"
+                },
+                "name": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "postal_code": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "region_iso_code": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "region_name": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "timezone": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "ip": {
+              "type": "ip"
+            },
+            "mac": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "nat": {
+              "properties": {
+                "ip": {
+                  "type": "ip"
+                },
+                "port": {
+                  "type": "long"
+                }
+              }
+            },
+            "packets": {
+              "type": "long"
+            },
+            "port": {
+              "type": "long"
+            },
+            "registered_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "subdomain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "top_level_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "user": {
+              "properties": {
+                "domain": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "email": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "full_name": {
+                  "fields": {
+                    "text": {
+                      "norms": false,
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "group": {
+                  "properties": {
+                    "domain": {
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    },
+                    "id": {
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    },
+                    "name": {
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "hash": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "id": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "text": {
+                      "norms": false,
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "roles": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "viz": {
+              "properties": {
+                "clr_ex": {
+                  "fields": {
+                    "keyword": {
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    }
+                  },
+                  "type": "text"
+                },
+                "clr_frac": {
+                  "type": "float"
+                },
+                "enc_dev": {
+                  "type": "float"
+                },
+                "enc_frac": {
+                  "type": "float"
+                },
+                "pdu1_enc": {
+                  "type": "boolean"
+                },
+                "size": {
+                  "type": "long"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "conn": {
+          "properties": {
+            "local_orig": {
+              "type": "boolean"
+            },
+            "local_resp": {
+              "type": "boolean"
+            },
+            "spcap_rule": {
+              "type": "short"
+            },
+            "spcap_trigger": {
+              "type": "keyword"
+            },
+            "spcap_url": {
+              "type": "keyword"
+            }
+          }
+        },
+        "corelight": {
+          "properties": {
+            "known": {
+              "properties": {
+                "conns_closed": {
+                  "type": "long"
+                },
+                "conns_opened": {
+                  "type": "long"
+                },
+                "conns_pending": {
+                  "type": "long"
+                },
+                "host_type": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "last_active_interval": {
+                  "type": "float"
+                },
+                "long_conns": {
+                  "type": "long"
+                },
+                "num_conns": {
+                  "type": "long"
+                },
+                "remote_ip": {
+                  "type": "ip"
+                }
+              },
+              "type": "object"
+            },
+            "unknown_mime_type_discovery": {
+              "properties": {
+                "bof": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "cotp": {
+          "properties": {
+            "is_orig": {
+              "type": "boolean"
+            },
+            "pdu_code": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "pdu_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "destination": {
+          "properties": {
+            "address": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "as": {
+              "properties": {
+                "number": {
+                  "type": "long"
+                },
+                "organization": {
+                  "properties": {
+                    "name": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above": 10000,
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            },
+            "bytes": {
+              "type": "long"
+            },
+            "connection_history": {
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "connection_history_detailed": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "domain": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "domain_ends_with_integer": {
+              "type": "boolean"
+            },
+            "domain_has_colon": {
+              "type": "boolean"
+            },
+            "domain_has_dot": {
+              "type": "boolean"
+            },
+            "domain_has_non_ascii": {
+              "type": "boolean"
+            },
+            "domain_has_whitespace": {
+              "type": "boolean"
+            },
+            "domain_is_all_upper": {
+              "type": "boolean"
+            },
+            "domain_is_idn": {
+              "type": "boolean"
+            },
+            "domain_length": {
+              "type": "long"
+            },
+            "domain_total_alphanumeric": {
+              "type": "long"
+            },
+            "domain_total_consonants": {
+              "type": "long"
+            },
+            "domain_total_digits": {
+              "type": "long"
+            },
+            "domain_total_hex": {
+              "type": "long"
+            },
+            "domain_total_invalid_characters": {
+              "type": "long"
+            },
+            "domain_total_letters": {
+              "type": "long"
+            },
+            "domain_total_levels": {
+              "type": "long"
+            },
+            "domain_total_punctuation": {
+              "type": "long"
+            },
+            "domain_total_vowels": {
+              "type": "long"
+            },
+            "file": {
+              "properties": {
+                "extension": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "mime_type": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "fqdn": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "geo": {
+              "properties": {
+                "city_name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "continent_code": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "continent_name": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "country_code2": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "country_code3": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "country_iso_code": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "country_name": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "location": {
+                  "type": "geo_point"
+                },
+                "name": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "postal_code": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "region_iso_code": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "region_name": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "timezone": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                }
+              }
+            },
+            "hostname": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "ip": {
+              "type": "ip"
+            },
+            "ip_public": {
+              "type": "boolean"
+            },
+            "ip_rfc": {
+              "type": "keyword"
+            },
+            "ip_type": {
+              "type": "keyword"
+            },
+            "ip_valid_count": {
+              "type": "integer"
+            },
+            "ip_version": {
+              "type": "keyword"
+            },
+            "is_ipv6": {
+              "type": "boolean"
+            },
+            "level_1_domain": {
+              "path": "destination.top_level_domain",
+              "type": "alias"
+            },
+            "level_1_domain_length": {
+              "path": "destination.top_level_domain_length",
+              "type": "alias"
+            },
+            "level_1_ends_with_integer": {
+              "path": "destination.domain_ends_with_integer",
+              "type": "alias"
+            },
+            "level_1n2_domain": {
+              "path": "destination.registered_domain",
+              "type": "alias"
+            },
+            "level_1n2_ip": {
+              "ignore_above": 1024,
+              "norms": false,
+              "type": "keyword"
+            },
+            "level_1n2n3_domain": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "level_2_domain": {
+              "path": "destination.parent_domain",
+              "type": "alias"
+            },
+            "level_2_domain_length": {
+              "path": "destination.parent_domain_length",
+              "type": "alias"
+            },
+            "level_2_ends_with_integer": {
+              "path": "destination.parent_domain_ends_with_integer",
+              "type": "alias"
+            },
+            "level_3_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "level_3_domain_length": {
+              "type": "long"
+            },
+            "level_4_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "level_4_domain_length": {
+              "type": "long"
+            },
+            "level_5_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "level_5_domain_length": {
+              "type": "long"
+            },
+            "mac": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "packets": {
+              "type": "long"
+            },
+            "parent_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "parent_domain_ends_with_integer": {
+              "type": "boolean"
+            },
+            "parent_domain_length": {
+              "type": "long"
+            },
+            "port": {
+              "type": "long"
+            },
+            "registered_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "software": {
+              "properties": {
+                "major_version": {
+                  "type": "keyword"
+                },
+                "minor_version": {
+                  "type": "keyword"
+                },
+                "original": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32766,
+                  "type": "keyword"
+                }
+              }
+            },
+            "subdomain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "subdomain_length": {
+              "type": "long"
+            },
+            "top_level_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "top_level_domain_ends_with_integer": {
+              "type": "boolean"
+            },
+            "top_level_domain_length": {
+              "type": "long"
+            },
+            "user": {
+              "properties": {
+                "full_name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "hash": {
+                  "type": "keyword"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "password": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "dhcp": {
+          "properties": {
+            "agent_remote_id": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "assigned_addr": {
+              "type": "ip"
+            },
+            "circuit_id": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "client_fqdn": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "client_message": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "client_software": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "lease_time": {
+              "type": "float"
+            },
+            "msg_orig": {
+              "type": "ip"
+            },
+            "msg_types": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "requested_addr": {
+              "type": "ip"
+            },
+            "server_message": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "server_software": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "subscriber_id": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            }
+          }
+        },
+        "dnp3": {
+          "properties": {
+            "block_type": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "execute_count": {
+              "type": "long"
+            },
+            "fc_reply": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "fc_request": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "function_code": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "iin": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "index_number": {
+              "type": "long"
+            },
+            "object_count": {
+              "type": "long"
+            },
+            "off_time": {
+              "type": "long"
+            },
+            "on_time": {
+              "type": "long"
+            },
+            "operation_type": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "range_high": {
+              "type": "long"
+            },
+            "range_low": {
+              "type": "long"
+            },
+            "status_code": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "trip_control_code": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "dns": {
+          "properties": {
+            "answers": {
+              "properties": {
+                "class": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "data": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "ttl": {
+                  "type": "long"
+                },
+                "type": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                }
+              }
+            },
+            "answers_count": {
+              "type": "long"
+            },
+            "flags": {
+              "properties": {
+                "authoritative": {
+                  "type": "boolean"
+                },
+                "recursion": {
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "desired": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "rejected": {
+                  "type": "boolean"
+                },
+                "truncated": {
+                  "properties": {
+                    "response": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "z_bit": {
+                  "type": "integer"
+                }
+              }
+            },
+            "header_flags": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "id": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "op_code": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "question": {
+              "properties": {
+                "class": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "etld_plus_one": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "name_length": {
+                  "type": "long"
+                },
+                "registered_domain": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "resolved_ip": {
+                  "type": "ip"
+                },
+                "type": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                }
+              }
+            },
+            "response_code": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "status_code": {
+              "type": "long"
+            },
+            "type": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            }
+          }
+        },
+        "ecat": {
+          "properties": {
+            "arp_type": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "build": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "cmd": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "command": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "data": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "dataoffset": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "dev_type": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "dpram": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "drive_num": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "dstmac": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "element_flags": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "error": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "error_code": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "features": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "filename": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "fmmucnt": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "incomplete": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "index": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "length": {
+              "type": "long"
+            },
+            "log_addr": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "number": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "opcode": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "packet_num": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "ports": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "register_addr": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "req_resp": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "reserved": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "revision": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "senderid": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "senderport": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "sha": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "slave_addr": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "slave_id": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "smcount": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "spa": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "srcmac": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "stateflag": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "subindex": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "targetid": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "targetport": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "tha": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "tpa": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "type": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "ecs": {
+          "properties": {
+            "version": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            }
+          }
+        },
+        "email": {
+          "properties": {
+            "attachments": {
+              "properties": {
+                "file": {
+                  "properties": {
+                    "extension": {
+                      "ignore_above": 1024,
+                      "type": "keyword"
+                    },
+                    "hash": {
+                      "properties": {
+                        "md5": {
+                          "ignore_above": 1024,
+                          "type": "keyword"
+                        },
+                        "sha1": {
+                          "ignore_above": 1024,
+                          "type": "keyword"
+                        },
+                        "sha256": {
+                          "ignore_above": 1024,
+                          "type": "keyword"
+                        },
+                        "sha384": {
+                          "ignore_above": 1024,
+                          "type": "keyword"
+                        },
+                        "sha512": {
+                          "ignore_above": 1024,
+                          "type": "keyword"
+                        },
+                        "ssdeep": {
+                          "ignore_above": 1024,
+                          "type": "keyword"
+                        },
+                        "tlsh": {
+                          "ignore_above": 1024,
+                          "type": "keyword"
+                        }
+                      }
+                    },
+                    "mime_type": {
+                      "ignore_above": 1024,
+                      "type": "keyword"
+                    },
+                    "name": {
+                      "ignore_above": 1024,
+                      "type": "keyword"
+                    },
+                    "size": {
+                      "type": "long"
+                    }
+                  }
+                }
+              },
+              "type": "nested"
+            },
+            "bcc": {
+              "properties": {
+                "address": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                }
+              }
+            },
+            "cc": {
+              "properties": {
+                "address": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "content_type": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            },
+            "delivery_timestamp": {
+              "type": "date"
+            },
+            "direction": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            },
+            "from": {
+              "properties": {
+                "address": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "local_id": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            },
+            "message_id": {
+              "type": "wildcard"
+            },
+            "origination_timestamp": {
+              "type": "date"
+            },
+            "reply_to": {
+              "properties": {
+                "address": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "sender": {
+              "properties": {
+                "address": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "subject": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                },
+                "text": {
+                  "type": "match_only_text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "subject_has_non_ascii": {
+              "type": "boolean"
+            },
+            "subject_length": {
+              "type": "long"
+            },
+            "to": {
+              "properties": {
+                "address": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "x_mailer": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "enip": {
+          "properties": {
+            "command": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "enip_command": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "enip_command_code": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "enip_status": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "is_orig": {
+              "type": "boolean"
+            },
+            "length": {
+              "type": "long"
+            },
+            "options": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "sender_context": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "sender_handle": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "status": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "error": {
+          "properties": {
+            "code": {
+              "type": "keyword"
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "message": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "stack_trace": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "type": {
+              "type": "keyword"
+            }
+          }
+        },
+        "etc_viz": {
+          "properties": {
+            "service": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "viz_stat": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "event": {
+          "properties": {
+            "category": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "created": {
+              "type": "date"
+            },
+            "dataset": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "duration": {
+              "type": "long"
+            },
+            "end": {
+              "type": "date"
+            },
+            "facility": {
+              "type": "keyword"
+            },
+            "hash": {
+              "type": "keyword"
+            },
+            "id": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "ingested": {
+              "type": "date"
+            },
+            "kind": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "module": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "original": {
+              "doc_values": false,
+              "index": false,
+              "type": "keyword"
+            },
+            "outcome": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "priority": {
+              "type": "keyword"
+            },
+            "risk_score": {
+              "type": "float"
+            },
+            "risk_score_norm": {
+              "type": "float"
+            },
+            "severity": {
+              "type": "keyword"
+            },
+            "start": {
+              "type": "date"
+            },
+            "timezone": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            }
+          }
+        },
+        "file": {
+          "properties": {
+            "accessed": {
+              "type": "date"
+            },
+            "accessed_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "changed": {
+              "path": "file.ctime",
+              "type": "alias"
+            },
+            "changed_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "created": {
+              "type": "date"
+            },
+            "created_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "ctime": {
+              "type": "date"
+            },
+            "ctime_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "device": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "directory": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "extension": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "extension_length": {
+              "type": "integer"
+            },
+            "gid": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "group": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "hash": {
+              "properties": {
+                "imphash": {
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "md5": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "murmur3": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "sha1": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "sha256": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "sha512": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "ssdeep": {
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "inode": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "mime_type": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "mode": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "modified": {
+              "path": "file.mtime",
+              "type": "alias"
+            },
+            "mtime": {
+              "type": "date"
+            },
+            "mtime_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "name": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "name_has_multi_underscores": {
+              "type": "boolean"
+            },
+            "name_has_non_ascii": {
+              "type": "boolean"
+            },
+            "name_length": {
+              "type": "integer"
+            },
+            "owner": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "path": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "path_ends_with_dollar_sign": {
+              "type": "boolean"
+            },
+            "path_has_multi_underscores": {
+              "type": "boolean"
+            },
+            "path_has_non_ascii": {
+              "type": "boolean"
+            },
+            "path_is_full_path": {
+              "type": "boolean"
+            },
+            "path_is_unc_share": {
+              "type": "boolean"
+            },
+            "path_length": {
+              "type": "integer"
+            },
+            "path_system_type": {
+              "type": "keyword"
+            },
+            "path_total_paths": {
+              "type": "integer"
+            },
+            "size": {
+              "type": "long"
+            },
+            "system": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "target_path": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "type": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "unc_share_first_path": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "unc_share_last_path": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "uuid": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "x509": {
+              "properties": {
+                "certificate": {
+                  "properties": {
+                    "basic_constraints": {
+                      "properties": {
+                        "ca": {
+                          "type": "boolean"
+                        },
+                        "path_length": {
+                          "type": "long"
+                        }
+                      }
+                    },
+                    "common_name": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "exponent": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "client_cert": {
+                  "type": "boolean"
+                },
+                "host_cert": {
+                  "type": "boolean"
+                },
+                "issuer": {
+                  "properties": {
+                    "common_name": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "country": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "distinguished_name": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "locality": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "organization": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "organizational_unit": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "state_or_province": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "logcert": {
+                  "type": "boolean"
+                },
+                "not_after_non_formatted_date": {
+                  "type": "keyword"
+                },
+                "not_after": {
+                  "type": "date"
+                },
+                "not_before": {
+                  "type": "date"
+                },
+                "not_before_non_formatted_date": {
+                  "type": "keyword"
+                },
+                "public_key_algorithm": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "type": "keyword"
+                },
+                "public_key_curve": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "type": "keyword"
+                },
+                "public_key_exponent": {
+                  "type": "long"
+                },
+                "public_key_size": {
+                  "type": "long"
+                },
+                "public_key_type": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "type": "keyword"
+                },
+                "san_dns": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "type": "keyword"
+                },
+                "san_email": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "type": "keyword"
+                },
+                "san_ip": {
+                  "type": "ip"
+                },
+                "san_uri": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "type": "keyword"
+                },
+                "serial_number": {
+                  "type": "keyword"
+                },
+                "signature_algorithm": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "type": "keyword"
+                },
+                "subject": {
+                  "properties": {
+                    "common_name": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "country": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "distinguished_name": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "locality": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "organization": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "organizational_unit": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "state_or_province": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "version_number": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "files": {
+          "properties": {
+            "analyzers": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "depth": {
+              "type": "long"
+            },
+            "entropy": {
+              "type": "double"
+            },
+            "extracted": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "extracted_cutoff": {
+              "type": "boolean"
+            },
+            "extracted_size": {
+              "type": "long"
+            },
+            "is_originating": {
+              "type": "boolean"
+            },
+            "local_orig": {
+              "type": "boolean"
+            },
+            "missing_bytes": {
+              "type": "long"
+            },
+            "overflow_bytes": {
+              "type": "long"
+            },
+            "red_ts_original": {
+              "type": "date"
+            },
+            "rx_hosts": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "seen_bytes": {
+              "type": "long"
+            },
+            "timedout": {
+              "type": "boolean"
+            },
+            "tx_hosts": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "genisys": {
+          "properties": {
+            "crc_calculated": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "crc_transmitted": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "direction": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "header": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "payload": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "server": {
+              "type": "long"
+            }
+          }
+        },
+        "host": {
+          "properties": {
+            "architecture": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "host": {
+              "type": "keyword"
+            },
+            "hostname": {
+              "type": "keyword"
+            },
+            "ip": {
+              "type": "ip"
+            },
+            "ip_public": {
+              "type": "boolean"
+            },
+            "ip_rfc": {
+              "type": "keyword"
+            },
+            "ip_type": {
+              "type": "keyword"
+            },
+            "ip_valid_count": {
+              "type": "integer"
+            },
+            "ip_version": {
+              "type": "keyword"
+            },
+            "is_ipv6": {
+              "type": "boolean"
+            },
+            "level_1n2_ip": {
+              "ignore_above": 1024,
+              "norms": false,
+              "type": "keyword"
+            },
+            "mac": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "mac_oui_vendor_name": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 9192,
+              "type": "keyword"
+            },
+            "port": {
+              "type": "long"
+            },
+            "type": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            }
+          }
+        },
+        "http": {
+          "properties": {
+            "cookie_variables": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "request": {
+              "properties": {
+                "body": {
+                  "properties": {
+                    "bytes": {
+                      "type": "long"
+                    },
+                    "content": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "bytes": {
+                  "type": "long"
+                },
+                "header_names": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "method": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "mime_type": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "origin": {
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "proxied": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "referrer": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "response": {
+              "properties": {
+                "body": {
+                  "properties": {
+                    "bytes": {
+                      "type": "long"
+                    },
+                    "content": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "bytes": {
+                  "type": "long"
+                },
+                "header_names": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "informational_code": {
+                  "type": "long"
+                },
+                "informational_message": {
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "mime_type": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                },
+                "status_code": {
+                  "type": "long"
+                },
+                "status_name": {
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "transaction_depth": {
+              "type": "long"
+            },
+            "version": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            }
+          }
+        },
+        "kerberos": {
+          "properties": {
+            "error_message": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "request": {
+              "properties": {
+                "client": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "successful": {
+                  "type": "boolean"
+                },
+                "ticket": {
+                  "properties": {
+                    "forwardable": {
+                      "type": "boolean"
+                    },
+                    "renewable": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "type": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 8192,
+                  "type": "keyword"
+                }
+              }
+            },
+            "ticket": {
+              "properties": {
+                "service": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "valid_till": {
+                  "type": "date"
+                },
+                "valid_from_non_formatted_date": {
+                  "ignore_above": 8192,
+                  "type": "keyword"
+                },
+                "valid_till_non_formatted_date": {
+                  "ignore_above": 8192,
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "ldap": {
+          "properties": {
+            "argument": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "attributes": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "base_object": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "deref": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "diagnostic_message": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "filter": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "message_id": {
+              "type": "integer"
+            },
+            "object": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "opcode": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "result": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "result_count": {
+              "type": "integer"
+            },
+            "scope": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "version": {
+              "type": "integer"
+            }
+          }
+        },
+        "log": {
+          "properties": {
+            "id": {
+              "properties": {
+                "cert_chain_fuids": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "client_cert_chain_fuids": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "client_cert_fuid": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "conn_uids": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "fid": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "flow_id": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "fuid": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "fuids": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "id": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "kuid": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "last_active_session": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "orig_fuids": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "parent_fuid": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "rdpeudp_uid": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "related_fuids": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "resp_fuids": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "server_cert_fuid": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "suri_id": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "suri_ids": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "tunnel_parents": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "tx_id": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "uid": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "uids": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "uuid": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                }
+              }
+            },
+            "level": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "logger": {
+              "type": "keyword"
+            },
+            "original": {
+              "doc_values": false,
+              "index": false,
+              "type": "keyword"
+            },
+            "syslog": {
+              "properties": {
+                "facility": {
+                  "properties": {
+                    "code": {
+                      "type": "long"
+                    },
+                    "name": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "message": {
+                  "norms": false,
+                  "type": "text"
+                },
+                "priority": {
+                  "type": "long"
+                },
+                "severity": {
+                  "properties": {
+                    "code": {
+                      "type": "long"
+                    },
+                    "name": {
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "log4j": {
+          "properties": {
+            "is_orig": {
+              "type": "boolean"
+            },
+            "matched_name": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "matched_value": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "name": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "stem": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "target_port": {
+              "type": "long"
+            },
+            "value": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "message": {
+          "norms": false,
+          "type": "text"
+        },
+        "ml_results": {
+          "properties": {
+            "predicted_probability": {
+              "type": "integer"
+            },
+            "predicted_tag_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "modbus": {
+          "properties": {
+            "address": {
+              "type": "long"
+            },
+            "and_mask": {
+              "type": "long"
+            },
+            "fuction": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "network_direction": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "or_mask": {
+              "type": "long"
+            },
+            "quantity": {
+              "type": "long"
+            },
+            "read_quantity": {
+              "type": "long"
+            },
+            "read_registers": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "read_start_address": {
+              "type": "long"
+            },
+            "unit_id": {
+              "type": "long"
+            },
+            "values": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "write_registers": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "write_start_address": {
+              "type": "long"
+            }
+          }
+        },
+        "network": {
+          "properties": {
+            "application": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "bytes": {
+              "type": "long"
+            },
+            "community_id": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "connection": {
+              "properties": {
+                "history": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "history_detailed": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "state": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "state_description": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                }
+              }
+            },
+            "direction": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "forwarded_ip": {
+              "type": "ip"
+            },
+            "iana_number": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "icmp_code": {
+              "type": "integer"
+            },
+            "icmp_type": {
+              "type": "integer"
+            },
+            "inner": {
+              "properties": {
+                "vlan": {
+                  "properties": {
+                    "id": {
+                      "type": "long"
+                    }
+                  }
+                }
+              }
+            },
+            "name": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "packets": {
+              "type": "long"
+            },
+            "protocol": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "transport": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "type": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "vlan": {
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "inner": {
+                  "properties": {
+                    "vlan": {
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "notice": {
+          "properties": {
+            "actions": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "dst_ip": {
+              "type": "ip"
+            },
+            "duration": {
+              "type": "long"
+            },
+            "message": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "note": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "number_of_hosts": {
+              "type": "long"
+            },
+            "p": {
+              "type": "long"
+            },
+            "peer_description": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "ports": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "protocol": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "src_ip": {
+              "type": "ip"
+            },
+            "sub_message": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "suppress_duration": {
+              "type": "double"
+            }
+          }
+        },
+        "ntp": {
+          "properties": {
+            "mode": {
+              "type": "long"
+            },
+            "num_exts": {
+              "type": "long"
+            },
+            "org_time": {
+              "type": "date"
+            },
+            "org_time_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "poll": {
+              "type": "double"
+            },
+            "precision": {
+              "type": "double"
+            },
+            "rec_time": {
+              "type": "date"
+            },
+            "rec_time_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "ref_id": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "ref_time": {
+              "type": "date"
+            },
+            "ref_time_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "root_delay": {
+              "type": "double"
+            },
+            "root_disp": {
+              "type": "double"
+            },
+            "stratum": {
+              "type": "long"
+            },
+            "version": {
+              "type": "long"
+            },
+            "xmt_time": {
+              "type": "date"
+            },
+            "xmt_time_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            }
+          }
+        },
+        "observer": {
+          "properties": {
+            "hostname": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "ip": {
+              "type": "ip"
+            },
+            "mac": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "sensor_version": {
+              "type": "keyword"
+            },
+            "serial_number": {
+              "type": "keyword"
+            },
+            "sub_process": {
+              "type": "keyword"
+            },
+            "type": {
+              "type": "keyword"
+            },
+            "vendor": {
+              "type": "keyword"
+            },
+            "version": {
+              "type": "keyword"
+            }
+          }
+        },
+        "radius": {
+          "properties": {
+            "connect_info": {
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "framed": {
+              "properties": {
+                "ip": {
+                  "type": "ip"
+                }
+              }
+            },
+            "mac": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "reply_msg": {
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "time_to_live": {
+              "type": "float"
+            },
+            "tunnel_client": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            }
+          }
+        },
+        "rdp": {
+          "properties": {
+            "auth_success": {
+              "type": "boolean"
+            },
+            "cert_count": {
+              "type": "long"
+            },
+            "cert_permanent": {
+              "type": "boolean"
+            },
+            "cert_type": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "channels_joined": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "client_build": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "client_dig_product_id": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "client_name": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "cookie": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "desktop_height": {
+              "type": "long"
+            },
+            "desktop_width": {
+              "type": "long"
+            },
+            "encryption_level": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "encryption_method": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "inferences": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "keyboard_layout": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "rdfp_hash": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "rdfp_string": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "requested_color_depth": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "result": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "security_protocol": {
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "ssl": {
+              "type": "boolean"
+            }
+          }
+        },
+        "related": {
+          "properties": {
+            "geo": {
+              "type": "geo_point"
+            },
+            "hash": {
+              "type": "keyword"
+            },
+            "hosts": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "type": "keyword"
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "ip": {
+              "type": "ip"
+            },
+            "ip_dst_to_src": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "ip_pair_any_dst_and_src": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "ip_src_to_dst": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "mac": {
+              "type": "keyword"
+            },
+            "network_4tuple_hash": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "network_dst_src_ip_unique": {
+              "type": "boolean"
+            },
+            "user": {
+              "type": "keyword"
+            },
+            "vlan_id": {
+              "type": "integer"
+            }
+          }
+        },
+        "rule": {
+          "properties": {
+            "author": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "type": "keyword"
+            },
+            "category": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "type": "keyword"
+            },
+            "description": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "type": "keyword"
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "license": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "type": "keyword"
+            },
+            "name": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "type": "keyword"
+            },
+            "reference": {
+              "type": "keyword"
+            },
+            "ruleset": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "type": "keyword"
+            },
+            "uuid": {
+              "type": "keyword"
+            },
+            "version": {
+              "type": "keyword"
+            }
+          }
+        },
+        "s7comm": {
+          "properties": {
+            "block_number": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "block_type": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "blocklength": {
+              "type": "long"
+            },
+            "destination_filesystem": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "error_class": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "error_code": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "filename": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "function_code": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "function_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "function_status": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "is_orig": {
+              "type": "boolean"
+            },
+            "method": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "opcode": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "opcode_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "pdu_reference": {
+              "type": "long"
+            },
+            "return_code": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "return_code_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "rosctr_code": {
+              "type": "long"
+            },
+            "rosctr_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "session_id": {
+              "type": "long"
+            },
+            "subfunction_code": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "subfunction_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "szl_id": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "szl_id_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "szl_index": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "version": {
+              "type": "long"
+            }
+          }
+        },
+        "server": {
+          "properties": {
+            "address": {
+              "path": "destination.address",
+              "type": "alias"
+            },
+            "as": {
+              "properties": {
+                "number": {
+                  "type": "long"
+                },
+                "organization": {
+                  "properties": {
+                    "name": {
+                      "fields": {
+                        "text": {
+                          "norms": false,
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            },
+            "bytes": {
+              "type": "long"
+            },
+            "domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "geo": {
+              "properties": {
+                "city_name": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "continent_code": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "continent_name": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "country_iso_code": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "country_name": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "location": {
+                  "type": "geo_point"
+                },
+                "name": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "postal_code": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "region_iso_code": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "region_name": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "timezone": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "ip": {
+              "type": "ip"
+            },
+            "mac": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "nat": {
+              "properties": {
+                "ip": {
+                  "type": "ip"
+                },
+                "port": {
+                  "type": "long"
+                }
+              }
+            },
+            "packets": {
+              "type": "long"
+            },
+            "port": {
+              "type": "long"
+            },
+            "registered_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "subdomain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "top_level_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "user": {
+              "properties": {
+                "domain": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "email": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "full_name": {
+                  "fields": {
+                    "text": {
+                      "norms": false,
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "group": {
+                  "properties": {
+                    "domain": {
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    },
+                    "id": {
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    },
+                    "name": {
+                      "ignore_above": 32000,
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "hash": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "id": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "text": {
+                      "norms": false,
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "roles": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "smb": {
+          "properties": {
+            "action": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "native_file_system": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "path": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "previous_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "service": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "share_type": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            }
+          },
+          "type": "object"
+        },
+        "smtp": {
+          "properties": {
+            "date_non_formatted_date": {
+              "ignore_above": 8192,
+              "type": "keyword"
+            },
+            "first_received": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "helo": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "in_reply_to": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "is_webmail": {
+              "type": "boolean"
+            },
+            "last_reply": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "path": {
+              "type": "ip"
+            },
+            "rcptto": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "second_received": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "tls": {
+              "type": "boolean"
+            },
+            "trans_depth": {
+              "type": "long"
+            },
+            "x_originating_ip": {
+              "type": "ip"
+            }
+          }
+        },
+        "socks": {
+          "properties": {
+            "bound": {
+              "properties": {
+                "ip": {
+                  "type": "ip"
+                },
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "type": "keyword"
+                },
+                "port": {
+                  "type": "long"
+                }
+              }
+            },
+            "request": {
+              "properties": {
+                "ip": {
+                  "type": "ip"
+                },
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "type": "keyword"
+                },
+                "port": {
+                  "type": "long"
+                }
+              }
+            }
+          }
+        },
+        "software": {
+          "properties": {
+            "additional_info": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32766,
+              "type": "keyword"
+            },
+            "ip": {
+              "type": "keyword"
+            },
+            "name": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32766,
+              "type": "keyword"
+            },
+            "original": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32766,
+              "type": "keyword"
+            },
+            "port": {
+              "type": "long"
+            },
+            "type": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32766,
+              "type": "keyword"
+            },
+            "version": {
+              "properties": {
+                "major": {
+                  "type": "long"
+                },
+                "minor": {
+                  "type": "long"
+                },
+                "minor2": {
+                  "type": "long"
+                },
+                "minor3": {
+                  "type": "long"
+                }
+              }
+            }
+          }
+        },
+        "source": {
+          "properties": {
+            "address": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "as": {
+              "properties": {
+                "number": {
+                  "type": "long"
+                },
+                "organization": {
+                  "properties": {
+                    "name": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above": 10000,
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            },
+            "bytes": {
+              "type": "long"
+            },
+            "connection_history": {
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "connection_history_detailed": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "domain": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "file": {
+              "properties": {
+                "extension": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "mime_type": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "fqdn": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "geo": {
+              "properties": {
+                "city_name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "continent_code": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "continent_name": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "country_code2": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "country_code3": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "country_iso_code": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "country_name": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "location": {
+                  "type": "geo_point"
+                },
+                "name": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "postal_code": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "region_iso_code": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "region_name": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "timezone": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                }
+              }
+            },
+            "hostname": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "ip": {
+              "type": "ip"
+            },
+            "ip_public": {
+              "type": "boolean"
+            },
+            "ip_rfc": {
+              "type": "keyword"
+            },
+            "ip_type": {
+              "type": "keyword"
+            },
+            "ip_valid_count": {
+              "type": "integer"
+            },
+            "ip_version": {
+              "type": "keyword"
+            },
+            "is_ipv6": {
+              "type": "boolean"
+            },
+            "level_1n2_ip": {
+              "ignore_above": 1024,
+              "norms": false,
+              "type": "keyword"
+            },
+            "mac": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "packets": {
+              "type": "long"
+            },
+            "port": {
+              "type": "long"
+            },
+            "software": {
+              "properties": {
+                "major_version": {
+                  "type": "keyword"
+                },
+                "minor_version": {
+                  "type": "keyword"
+                },
+                "original": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32766,
+                  "type": "keyword"
+                }
+              }
+            },
+            "user": {
+              "properties": {
+                "full_name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "hash": {
+                  "type": "keyword"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "password": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "ssh": {
+          "properties": {
+            "auth_attempts": {
+              "type": "long"
+            },
+            "auth_successful": {
+              "type": "boolean"
+            },
+            "cipher": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "client": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "compression_algorithm": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "cshka": {
+              "type": "keyword"
+            },
+            "hassh": {
+              "type": "keyword"
+            },
+            "hasshAlgorithms": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "hasshServer": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "hasshServerAlgorithms": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "hasshVersion": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "host_key": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "inferences": {
+              "type": "keyword"
+            },
+            "inferences_detailed": {
+              "type": "keyword"
+            },
+            "key_algorithm": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "key_exchange_algorithm": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "mac_algorithm": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "remote_location": {
+              "type": "keyword"
+            },
+            "server": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "stepping": {
+              "properties": {
+                "direct": {
+                  "type": "boolean"
+                },
+                "dt": {
+                  "type": "float"
+                }
+              }
+            },
+            "version": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "ssl": {
+          "properties": {
+            "connection_history": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "connection_history_detailed": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "last_alert": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "validation_status": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            }
+          }
+        },
+        "suricata": {
+          "properties": {
+            "alert": {
+              "properties": {
+                "action": {
+                  "ignore_above": 8192,
+                  "type": "keyword"
+                },
+                "metadata": {
+                  "properties": {
+                    "affected_product": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "attack_target": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "capec_id": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "classtype": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "created_at": {
+                      "type": "date"
+                    },
+                    "cvss_v2_base": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "cvss_v2_temporal": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "cvss_v3_base": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "cvss_v3_temporal": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "cwe_id": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "deployment": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "deprecation_reason": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "former_category": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "hostile": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "malware_family": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "type": "keyword"
+                    },
+                    "metadata_original": {
+                      "ignore_above": 4096,
+                      "type": "keyword"
+                    },
+                    "performance_impact": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "priority": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "protocols": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "rule_source": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "sid": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "signature_severity": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "tag": {
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "updated_at": {
+                      "type": "date"
+                    }
+                  }
+                },
+                "metadata_original": {
+                  "ignore_above": 12192,
+                  "type": "keyword"
+                }
+              }
+            },
+            "metadata": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "type": "keyword"
+            },
+            "pcap_count": {
+              "type": "long"
+            }
+          }
+        },
+        "tags": {
+          "type": "keyword"
+        },
+        "tds": {
+          "properties": {
+            "command": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "header_type": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "parameters": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "procedure_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "query": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
+        "threat": {
+          "properties": {
+            "framework": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "tactic": {
+              "properties": {
+                "id": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 8192,
+                  "type": "keyword"
+                },
+                "reference": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                }
+              }
+            },
+            "technique": {
+              "properties": {
+                "id": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 8192,
+                  "type": "keyword"
+                },
+                "reference": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "subtechnique": {
+                  "properties": {
+                    "id": {
+                      "ignore_above": 1024,
+                      "type": "keyword"
+                    },
+                    "name": {
+                      "fields": {
+                        "security": {
+                          "analyzer": "es_stk_analyzer",
+                          "type": "text"
+                        }
+                      },
+                      "ignore_above": 8192,
+                      "type": "keyword"
+                    },
+                    "reference": {
+                      "ignore_above": 4096,
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tls": {
+          "properties": {
+            "cipher": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "client": {
+              "properties": {
+                "cert_chain_fingerprints": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "connection_history": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "connection_history_detailed": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "hash": {
+                  "properties": {
+                    "sha1": {
+                      "ignore_above": 4096,
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "issuer": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "ja3": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "server_name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "subject": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "curve": {
+              "type": "keyword"
+            },
+            "established": {
+              "type": "boolean"
+            },
+            "next_protocol": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 2048,
+              "type": "keyword"
+            },
+            "resumed": {
+              "type": "boolean"
+            },
+            "server": {
+              "properties": {
+                "cert_chain_fingerprints": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "connection_history": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "connection_history_detailed": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "hash": {
+                  "properties": {
+                    "sha1": {
+                      "ignore_above": 4096,
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "issuer": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
+                "ja3s": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "subject": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "version": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "version_protocol": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            }
+          }
+        },
+        "url": {
+          "properties": {
+            "domain": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "domain_length": {
+              "type": "long"
+            },
+            "extension": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "extension_length": {
+              "type": "long"
+            },
+            "fragment": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "full": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "has_non_ascii": {
+              "type": "boolean"
+            },
+            "has_whitespace": {
+              "type": "boolean"
+            },
+            "original": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "original_length": {
+              "type": "long"
+            },
+            "password": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "path": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "path_length": {
+              "type": "long"
+            },
+            "port": {
+              "type": "long"
+            },
+            "query": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "query_length": {
+              "type": "long"
+            },
+            "rfc_compliant": {
+              "type": "boolean"
+            },
+            "scheme": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "total_paths": {
+              "type": "long"
+            },
+            "username": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "variables": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 2048,
+              "type": "keyword"
+            }
+          }
+        },
+        "user_agent": {
+          "properties": {
+            "build": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "device": {
+              "properties": {
+                "name": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 10000,
+                  "type": "keyword"
+                }
+              }
+            },
+            "has_non_ascii": {
+              "type": "boolean"
+            },
+            "has_whitespace": {
+              "type": "boolean"
+            },
+            "major": {
+              "type": "long"
+            },
+            "minor": {
+              "type": "long"
+            },
+            "minor2": {
+              "type": "long"
+            },
+            "minor3": {
+              "type": "long"
+            },
+            "name": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "original": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "original_length": {
+              "type": "long"
+            },
+            "os": {
+              "properties": {
+                "family": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "full": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "kernel": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "major": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "minor": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "name": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "platform": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                },
+                "version": {
+                  "ignore_above": 4096,
+                  "type": "keyword"
+                }
+              }
+            },
+            "patch": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            },
+            "version": {
+              "ignore_above": 4096,
+              "type": "keyword"
+            }
+          }
+        },
+        "vpn": {
+          "properties": {
+            "attr_types": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "attr_vals": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "certificates": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "class": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "client_info": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "established": {
+              "type": "boolean"
+            },
+            "exchange_type": {
+              "type": "integer"
+            },
+            "flag_a": {
+              "type": "boolean"
+            },
+            "flag_c": {
+              "type": "boolean"
+            },
+            "flag_e": {
+              "type": "boolean"
+            },
+            "flag_i": {
+              "type": "boolean"
+            },
+            "flag_r": {
+              "type": "boolean"
+            },
+            "flag_v": {
+              "type": "boolean"
+            },
+            "hash": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "inferences": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "inferences_detailed": {
+              "type": "keyword"
+            },
+            "initiations": {
+              "type": "integer"
+            },
+            "initiator_spi": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "is_originating": {
+              "type": "boolean"
+            },
+            "ke_dh_groups": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "lan_addrs": {
+              "type": "ip"
+            },
+            "length": {
+              "type": "integer"
+            },
+            "maj_ver": {
+              "type": "integer"
+            },
+            "message_id": {
+              "type": "long"
+            },
+            "method": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "min_ver": {
+              "type": "integer"
+            },
+            "name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "notify_messages": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "proposals": {
+              "type": "integer"
+            },
+            "responder_spi": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "responses": {
+              "type": "integer"
+            },
+            "server_name": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "transform_attributes": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "transforms": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "vendor_ids": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "wan_addrs": {
+              "type": "ip"
+            },
+            "wan_ports": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  }
+}
