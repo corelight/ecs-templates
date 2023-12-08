@@ -1,3 +1,17 @@
+Note: We have a new release train for now under the new Release. This requires 8.10 and datastreams. This is a breaking change. It will use a new index and some new and optimized field types.
+
+What's new
+1. New install script - THis gives clearer questions and better error handling.
+2. You can change the index name
+3.  you can add custom templates
+4.  You will now have a tryout mode where the script will create all the templates and pipeline but not upload them
+5.  You can also rerun the script with data from the last run this will allow you to easily upload to different clusters or update with new templates
+6.  Password is now masked when running the script
+
+To run the new system, follow the txt document in the New Release folder called install.txt
+
+
+
 # Corelight ECS Elasticsearch Templates
 This repository contains the necessary Elasticsearch templates or component templates for your ECS deployment of Corelight/Zeek.
 
