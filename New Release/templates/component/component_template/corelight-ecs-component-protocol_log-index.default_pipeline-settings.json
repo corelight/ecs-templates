@@ -1,0 +1,13 @@
+{
+  "_meta": {
+    "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates"
+  },
+  "version": 2023120101,
+  "template": {
+    "settings": {
+      "index": {
+        "default_pipeline": "corelight-ecs-main-pipeline"
+      }
+    }
+  }
+}
