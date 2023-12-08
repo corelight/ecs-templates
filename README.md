@@ -1,5 +1,7 @@
 Note: We have a new release train for now under the new Release. This requires 8.10 and datastreams. This is a breaking change. It will use a new index and some new and optimized field types.
 
+Also all production code will be stored in main and test code will now be in Dev
+
 What's new
 1. New install script - THis gives clearer questions and better error handling.
 2. You can change the index name
