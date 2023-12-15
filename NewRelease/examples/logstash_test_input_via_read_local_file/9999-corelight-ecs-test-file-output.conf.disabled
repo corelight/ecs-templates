@@ -1,8 +1,0 @@
-output {
-  file {
-    path => "/tmp/corelight_test.log.parsed"
-    #codec => "json_lines"
-    start_position => "beginning"
-    id => "output-file-ba6f6b19-1094-404b-93f7-099331a5f866"
-  }
-}
