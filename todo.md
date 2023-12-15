@@ -1,7 +1,6 @@
 # To Do
 
 ## Priority 1
-- [ ] automatically create all the custom component templates.
 - [ ] change intel log fields intel.X to threat.X where applicable
 - [ ] finish smtp.X to email.X alias backward compatibility
 - [ ] concat all the logstash files into one file for upload for central pipeline management. basically no matter what, always save a central_pipeline_management.conf file
@@ -22,6 +21,7 @@
         - [ ] related.mac
 - [ ] final change log
   - [ ] remove brasitech references/defaults before finalizing
+- [x] automatically create all the custom component templates but only if they do not exist
 - [x] index template matching an index pattern such as `temporary_corelight_routing_index` that all it does is call the default ingest pipeline
 - [x] for all metric and system logs, perform '.' fields to '_' for ingest pipeline the same as is done in logstash pipelines
 - [x] for suricata_corelight log alert.action/event.type for ingest pipeline (see if logstash does same)
@@ -29,6 +29,7 @@
 - [x] publicly available public version of list of logs and their categories, index pattern, etc..
 - [x] remove or use VAR_CORELIGHT_INDEX_STRATEGY from script and all references in logstash/ingest/settings as only data stream is supported
 - [x] tell user files to modify at the end (logstash input and output)
+- [x] add ability to change master_timeout for certain requests/uri parameters, for huge clusters this sometimes can get in the way. ]
 
 ## Priority 2
 - [ ] ja4 fields https://github.com/FoxIO-LLC/ja4/tree/main/zeek
