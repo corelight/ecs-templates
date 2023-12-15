@@ -14,10 +14,6 @@
     "corelight-ecs-component-unknown_log-base-settings@custom",
     "corelight-ecs-component-unknown_log-ilm-settings@custom",
     "corelight-ecs-component-unknown_log-mappings@custom",
-    "corelight-ecs-component-unknown_log-aliases-unknown@custom",
-    "corelight-ecs-component-unknown_log-base-settings-unknown@custom",
-    "corelight-ecs-component-unknown_log-ilm-settings-unknown@custom",
-    "corelight-ecs-component-unknown_log-mappings-unknown@custom"
   ],
   "data_stream": { },
   "ignore_missing_component_templates": [
@@ -25,10 +21,6 @@
     "corelight-ecs-component-unknown_log-base-settings@custom",
     "corelight-ecs-component-unknown_log-ilm-settings@custom",
     "corelight-ecs-component-unknown_log-mappings@custom",
-    "corelight-ecs-component-unknown_log-aliases-unknown@custom",
-    "corelight-ecs-component-unknown_log-base-settings-unknown@custom",
-    "corelight-ecs-component-unknown_log-ilm-settings-unknown@custom",
-    "corelight-ecs-component-unknown_log-mappings-unknown@custom"
   ],
   "index_patterns": [ "VAR_CL_DS_INDEX_PATTERN_UNKNOWN_LOG" ],
   "priority": VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG
