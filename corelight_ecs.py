@@ -452,42 +452,6 @@ def make_modifications(session=None, baseURI=None, pipeline_type=None, final_tem
         human_path_name = "ingest pipeline"
         es_export_upload_file( session, baseURI, "/_ingest/pipeline/", source_dir=source_dir,  human_path_name=human_path_name,  retry=2, timeout=10 )
 
-def elasticDel(session, baseURI, pipeline, retry=2): #TODO: Keep Or Not
-    """
-    Delete an Elasticsearch ingest pipeline or enrich policy.
-
-    Args:
-        session: requests.Session object
-        baseURI: str, Elasticsearch base URI
-        pipeline: str, name of the pipeline or policy to delete
-        retry: int, number of times to retry the request if it fails
-
-    Returns:
-        int, HTTP status code of the response
-    """
-    uri = baseURI + "/_ingest/pipeline/" + pipeline
-    if pipeline.endswith("-policy"):
-        uri = baseURI + "/_enrich/policy/" + pipeline
-
-    logger.info("Deleting URI = %s" % uri)
-
-    for i in range(retry):
-        response = session.delete(uri, timeout=5)
-        check_status_code = check_request_status_code(response)
-        if check_status_code == 200:
-            logger.info(f"{pipeline} deleted successfully")
-            return check_status_code
-        elif check_status_code in (400, 404):
-            logger.warning(f"Error deleting {pipeline} status code {check_status_code}")
-        else:
-            logger.error(f"Error deleting {pipeline} status code {check_status_code}")
-            logger.error(f"URI = {uri}")
-            #sys.exit(1)
-
-    logger.error(f"Failed to delete {pipeline} after {retry} attempts")
-    #sys.exit(1)
-    #END# #TODO: Keep Or Not #END#
-
 def categorize_ls_files(directory):
     input_files = []
     filter_files = []

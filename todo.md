@@ -1,6 +1,7 @@
 # To Do
 
 ## Priority 1
+- [ ] automatically create all the custom component templates.
 - [ ] change intel log fields intel.X to threat.X where applicable
 - [ ] finish smtp.X to email.X alias backward compatibility
 - [ ] concat all the logstash files into one file for upload for central pipeline management. basically no matter what, always save a central_pipeline_management.conf file
