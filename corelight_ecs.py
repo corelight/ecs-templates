@@ -18,6 +18,7 @@ from urllib3.exceptions import InsecureRequestWarning, HTTPError
 import argparse
 
 git_fork = "brasitech"
+git_branch = "latest"
 ls_output_filename = "9940-elasticsearch-corelight_zeek-output.conf"
 es_default_timeout = 10
 es_default_retry = 2
@@ -25,11 +26,11 @@ es_default_retry = 2
 # Script Version
 script_version = '2023102201'
 # Default Variables
-git_logstash_repo = f"https://github.com/{git_fork}/ecs-logstash-mappings/archive/refs/heads/Dev.zip"
+git_logstash_repo = f"https://github.com/{git_fork}/ecs-logstash-mappings/archive/refs/heads/{git_branch}.zip"
 git_logstash_sub_dir = "pipeline"
-git_ingest_repo = f"https://github.com/{git_fork}/ecs-mapping/archive/refs/heads/dev.zip"
+git_ingest_repo = f"https://github.com/{git_fork}/ecs-mapping/archive/refs/heads/{git_branch}.zip"
 git_ingest_sub_dir = "pipeline"
-git_templates_repo = f"https://github.com/{git_fork}/ecs-templates/archive/refs/heads/dev.zip"
+git_templates_repo = f"https://github.com/{git_fork}/ecs-templates/archive/refs/heads/{git_branch}.zip"
 git_templates_sub_dir = "templates"
 logstash_input_choices = [ 'tcp', 'tcp_ssl', 'kafka', 'hec', 'udp' ]
 # General
