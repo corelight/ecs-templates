@@ -215,6 +215,8 @@ python3 corelight_ecs.py
 - `--debug`: Enable debug level logging.
 - `--es-default-timeout=10`: Change the default timeout waiting for the connection to the elasticsearch.
 - `--es-default-retry=2`: Change the default number of times to retry a connection to the elasticsearch.
+- `--git-repository=corelight`: Change the default number of times to retry a connection to the elasticsearch.
+- `--git-branch=main`: Change the default number of times to retry a connection to the elasticsearch.
 
 
 ## 4. Post Install
