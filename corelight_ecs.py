@@ -11,6 +11,7 @@ import random
 import getpass
 import errno
 import re
+import json
 from urllib.parse import urlparse
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning, HTTPError
@@ -18,6 +19,8 @@ import argparse
 
 git_fork = "brasitech"
 ls_output_filename = "9940-elasticsearch-corelight_zeek-output.conf"
+es_default_timeout = 10
+es_default_retry = 2
 
 # Script Version
 script_version = '2023102201'
@@ -110,7 +113,7 @@ def input_int(question, default=None):
         except ValueError:
             logger.warning("Invalid response, please enter a number")
 
-def check_request_status_code(responseObj, code=None, display_error=True):
+def check_request_status_code(responseObj, code=None, display_error=False):
     if not code:
         code = responseObj.status_code
     if code == 200:
@@ -149,28 +152,32 @@ def test_connection(session, baseURI):
         logger.error(f"Request Error: {e}")
         raise
 
-def es_export_to_elastic(session, baseURI, filepath, filename, path, retry=2, timeout=10):
-    try:
-        with open(filepath) as f:
-            postData = f.read()
-    except FileNotFoundError:
-        logger.error(f"Error: File {filepath} not found")
+def es_export_to_elastic( session, baseURI, req_uri=None, req_resource_name=None, request_body=None, retry=es_default_retry, timeout=es_default_timeout, ignore_status_codes=None ):
+    if ignore_status_codes is None:
+        ignore_status_codes = list()
+    if not req_uri:
+        logger.error(f"Error: No uri path was specified for the request to Elasticsearch for '{req_resource_name}'")
         return
-
-    uri = f'{baseURI}{path}{filename}'
+    uri = f'{baseURI}{req_uri}'
+    if not request_body:
+        logger.error(f"Error: No data was specified for the request to Elasticsearch for '{req_resource_name}' to '{uri}'")
+        return
     response = None
     for i in range(retry):
-        response = session.put(uri, data=postData, timeout=timeout)
+        response = session.put(uri, data=request_body, timeout=timeout)
         response_code = response.status_code
         response_text = response.text
-        check_status_code = check_request_status_code(response, code=response_code)
+        check_status_code = check_request_status_code(response, code=response_code, display_error=False)
         if check_status_code == 200:
-            logger.debug(f"{filename} uploaded successfully")
+            logger.debug(f"{req_resource_name} uploaded successfully")
+            return
+        elif ignore_status_codes and check_status_code in ignore_status_codes:
+            logger.debug(f"{req_resource_name} response ignored with status code '{response_code}' and response '{response_text}'")
             return
         elif check_status_code in (400, 409):
-            logger.error(f"Error uploading '{filename}' to '{uri}' with status code '{response_code}' and response '{response_text}'")
+            logger.error(f"Error uploading '{req_resource_name}' to '{uri}' with status code '{response_code}' and response '{response_text}'")
         else:
-            logger.error(f"Error uploading. '{filename}' to '{uri}' with status code '{response_code}' and response '{response_text}'")
+            logger.error(f"Error uploading. '{req_resource_name}' to '{uri}' with status code '{response_code}' and response '{response_text}'")
 
 def get_elasticsearch_connection_config():
     """Return a baseURI and session"""
@@ -410,7 +417,7 @@ def replace_var_in_directory(directory, replace_var="", replace_var_with=None):
         else:
             logger.debug(f"Successfully replaced {replace_var} with {replace_var_with} {replaced_var_count} times in {sorted(set(replaced_var_files))}")
 
-def es_export_upload_file(session, baseURI, uri_path, source_dir=None, human_path_name=None, retry=2,timeout=10):
+def es_export_upload_file(session, baseURI, uri_path, source_dir=None, human_path_name=None, retry=es_default_retry,timeout=es_default_timeout):
     """Upload files to Elasticsearch. Removes the file extension (only if '.json') from the filename and uses the remaining as the name in Elasticsearch."""
     if source_dir and os.path.isdir(source_dir):
         file_count = sum(1 for _, _, files in os.walk(source_dir) for _ in files)
@@ -419,10 +426,19 @@ def es_export_upload_file(session, baseURI, uri_path, source_dir=None, human_pat
         for root, dirs, files in os.walk( source_dir ):
             for filename in files:
                 # Set the full path variable
-                filePath = os.path.join( root, filename )
-                filename_without_extension = os.path.splitext( filename )[ 0 ]
+                file_path = os.path.join( root, filename )
                 extension = os.path.splitext( filename )[ 1 ]
-                es_export_to_elastic( session, baseURI, filePath, filename_without_extension, uri_path, retry=2, timeout=10 )
+                if extension == ".json":
+                    req_resource_name = os.path.splitext( filename )[ 0 ]
+                else:
+                    req_resource_name = filename
+                try:
+                    with open( file_path ) as f:
+                        request_data = f.read()
+                except FileNotFoundError:
+                    logger.error( f"Error: File {file_path} not found" )
+                    return
+                es_export_to_elastic( session, baseURI, req_uri=f'{uri_path}{req_resource_name}', req_resource_name=req_resource_name, request_body=request_data, retry=es_default_retry, timeout=es_default_timeout )
     else:
         logger.error( f"'{source_dir}' is not specified or is not a directory")
 
@@ -434,15 +450,22 @@ def make_modifications(session=None, baseURI=None, pipeline_type=None, final_tem
             # Component Templates
             source_dir = os.path.join( final_templates_dir, "component_template" )
             human_path_name = "component template"
-            es_export_upload_file( session, baseURI, "/_component_template/", source_dir=source_dir, human_path_name=human_path_name, retry=2, timeout=10 )
+            es_export_upload_file( session, baseURI, "/_component_template/", source_dir=source_dir, human_path_name=human_path_name, retry=es_default_retry, timeout=es_default_timeout )
             # ILM Policies
             source_dir = os.path.join( final_templates_dir, "ilm_policy" )
-            es_export_upload_file( session, baseURI, "/_ilm/policy/", source_dir=source_dir, human_path_name=human_path_name,  retry=2, timeout=10 )
+            es_export_upload_file( session, baseURI, "/_ilm/policy/", source_dir=source_dir, human_path_name=human_path_name,  retry=es_default_retry, timeout=es_default_timeout )
             human_path_name = "ilm policy"
             # Index Templates
             source_dir = os.path.join( final_templates_dir, "index_template" )
-            es_export_upload_file( session, baseURI, "/_index_template/", source_dir=source_dir, human_path_name=human_path_name,  retry=2, timeout=10 )
+            es_export_upload_file( session, baseURI, "/_index_template/", source_dir=source_dir, human_path_name=human_path_name,  retry=es_default_retry, timeout=es_default_timeout )
             human_path_name = "index template"
+            # Create the custom component templates if they don't exist
+            custom_component_templates = set(gather_custom_component_templates(final_templates_dir))
+            if custom_component_templates:
+                for req_resource_name in custom_component_templates:
+                    # Add query parameter '?create=true'. which means, this request cannot replace or update existing component templates"
+                    # https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-component-template.html#put-component-template-api-query-params
+                    es_export_to_elastic(session, baseURI, req_uri=f'/_component_template/{req_resource_name}?create=true', req_resource_name=req_resource_name, request_body='{"template": {}}', retry=es_default_retry, timeout=es_default_timeout, ignore_status_codes=[400])
 
         else: # Unsupported index strategy
             logger.error(f"Unsupported index strategy: {VAR_CORELIGHT_INDEX_STRATEGY}")
@@ -450,7 +473,7 @@ def make_modifications(session=None, baseURI=None, pipeline_type=None, final_tem
     if pipeline_type == 'ingest':
         source_dir = final_pipelines_dir
         human_path_name = "ingest pipeline"
-        es_export_upload_file( session, baseURI, "/_ingest/pipeline/", source_dir=source_dir,  human_path_name=human_path_name,  retry=2, timeout=10 )
+        es_export_upload_file( session, baseURI, "/_ingest/pipeline/", source_dir=source_dir,  human_path_name=human_path_name,  retry=es_default_retry, timeout=es_default_timeout )
 
 def categorize_ls_files(directory):
     input_files = []
@@ -518,6 +541,26 @@ def concat_ls_files(input_files, filter_files, output_files, output_file):
                 outfile.write(f'\n  ######## Begin "{file_name}" ########\n{cleaned_content}')
                 if i == len(output_files) - 1:  # Last output file
                     outfile.write("\n}")
+
+def gather_custom_component_templates(directory):
+    """
+    Custom component templates are designated by meeting all the requirements:
+    1. Value within ignore_missing_component_templates
+    2. Value begins with 'corelight-ecs-component-'
+    3. Value ends with '@custom'
+    """
+    collected_templates = []
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.json'):
+                try:
+                    with open(os.path.join(root, file), 'r') as f:
+                        data = json.load(f)
+                        if "ignore_missing_component_templates" in data and data["ignore_missing_component_templates"]:
+                            collected_templates.extend(data["ignore_missing_component_templates"])
+                except Exception as e:
+                    logger.warning(f"Unable to gather custom component templates from index template '{os.path.join(root,file)}'. Error: {e}")
+    return collected_templates
 
 def setup_logger(no_color, debug):
     # Set up logging
@@ -961,6 +1004,14 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Logger Color Control")
     parser.add_argument('--no-color', action='store_true', help='Disable colors for logging.')
     parser.add_argument('--debug', action='store_true', help='Enable debug level logging.')
+    parser.add_argument(
+        '--es-default-timeout=', dest='es_default_timeout', type=int, required=False, default=es_default_timeout,
+        help='Timeout waiting for the connection to the elasticsearch.\ndefault: %(default)s'
+    )
+    parser.add_argument(
+        '--es-default-retry=', dest='es_default_retry', type=int, required=False, default=es_default_retry,
+        help='Number of times to retry a connection to the elasticsearch.\ndefault: %(default)s'
+    )
     return parser.parse_args()
 
 if __name__ == "__main__":

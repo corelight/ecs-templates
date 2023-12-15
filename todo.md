@@ -19,6 +19,11 @@
         - [ ] related.user
         - [ ] related.hash
         - [ ] related.mac
+- [ ] pass cert for elaticsearch so if wanting to not ignore, can do so
+  - [ ] if user says yes, then
+    - [ ] prompt for cert path
+    - [ ] check path exists
+    - [ ] add to requests session for resuse
 - [ ] final change log
   - [ ] remove brasitech references/defaults before finalizing
 - [x] automatically create all the custom component templates but only if they do not exist
