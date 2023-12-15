@@ -13,7 +13,7 @@
     "corelight-ecs-component-unknown_log-aliases@custom",
     "corelight-ecs-component-unknown_log-base-settings@custom",
     "corelight-ecs-component-unknown_log-ilm-settings@custom",
-    "corelight-ecs-component-unknown_log-mappings@custom",
+    "corelight-ecs-component-unknown_log-mappings@custom"
   ],
   "data_stream": { },
   "ignore_missing_component_templates": [
