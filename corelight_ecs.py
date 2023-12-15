@@ -961,7 +961,6 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Logger Color Control")
     parser.add_argument('--no-color', action='store_true', help='Disable colors for logging.')
     parser.add_argument('--debug', action='store_true', help='Enable debug level logging.')
-    parser.add_argument('--debug', action='store_true', help='Enable debug level logging.')
     return parser.parse_args()
 
 if __name__ == "__main__":
