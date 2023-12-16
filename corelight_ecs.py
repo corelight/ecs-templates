@@ -1031,9 +1031,6 @@ def parse_args():
         '--git-branch', dest='git_branch', type=str, required=False, default=git_branch,
         help='Github Branch.\ndefault: %(default)s'
     )
-    parser.add_argument(
-        '--git-branch', dest='git_branch', action='store_true', required=False, help='Build logstash '
-    )
     return parser.parse_args()
 
 if __name__ == "__main__":
