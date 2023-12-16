@@ -1,38 +1,48 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+try:
+    import logging
+    import shutil
+    import requests
+    import time
+    import sys
+    import zipfile
+    import os
+    import random
+    import getpass
+    import errno
+    import re
+    import json
+    from urllib.parse import urlparse
+    import urllib3
+    from urllib3.exceptions import InsecureRequestWarning, HTTPError
+    import argparse
+    from pathlib import Path, PurePath
+except IndexError as error:
+    print (error)
+    print ('Unable to load python module... Exiting Script!')
+    sys.exit(1)
 
-import logging
-import shutil
-import requests
-import time
-import sys
-import zipfile
-import os
-import random
-import getpass
-import errno
-import re
-import json
-from urllib.parse import urlparse
-import urllib3
-from urllib3.exceptions import InsecureRequestWarning, HTTPError
-import argparse
-
+# Default Variables
+script_version = '2023121801'
 git_repository = "brasitech"
 git_branch = "main"
+git_url_base_domain_and_schema = "https://github.com"
+git_logstash_repo_name = f'ecs-logstash-mappings'
+git_templates_repo_name = f'ecs-templates'
+git_ingest_repo_name = f'ecs-mapping'
 ls_output_filename = "9940-elasticsearch-corelight_zeek-output.conf"
 es_default_timeout = 10
 es_default_retry = 2
-
-# Script Version
-script_version = '2023102201'
-# Default Variables
-git_logstash_repo = f"https://github.com/{git_repository}/ecs-logstash-mappings/archive/refs/heads/{git_branch}.zip"
-git_logstash_sub_dir = "pipeline"
-git_ingest_repo = f"https://github.com/{git_repository}/ecs-mapping/archive/refs/heads/{git_branch}.zip"
-git_ingest_sub_dir = "pipeline"
-git_templates_repo = f"https://github.com/{git_repository}/ecs-templates/archive/refs/heads/{git_branch}.zip"
-git_templates_sub_dir = "templates"
+git_corelight_ecs_script_repo = 'https://github.com/corelight/ecs-templates/tree/main'
 logstash_input_choices = [ 'tcp', 'tcp_ssl', 'kafka', 'hec', 'udp' ]
+git_logstash_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_logstash_repo_name}/archive/refs/heads/{git_branch}.zip'
+git_logstash_sub_dir = "pipeline"
+git_ingest_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_templates_repo_name}/archive/refs/heads/{git_branch}.zip'
+git_ingest_sub_dir = "pipeline"
+git_templates_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_ingest_repo_name}/archive/refs/heads/{git_branch}.zip'
+git_templates_sub_dir = "templates"
+
 # General
 #version = script_version
 time_now = time.time() # Get the current time
@@ -1002,7 +1012,7 @@ def main():
 
 def parse_args():
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Logger Color Control")
+    parser = argparse.ArgumentParser(description="Script that builds everything necessary to convert Corelight Logs into the Elastic Common Schema (ECS) naming standard and store them into an Elastic Stack deployment.")
     parser.add_argument('--no-color', action='store_true', help='Disable colors for output/logging.')
     parser.add_argument('--debug', action='store_true', help='Enable debug level logging.')
     parser.add_argument(
