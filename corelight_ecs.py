@@ -25,6 +25,8 @@ except IndexError as error:
 
 # Default Variables
 script_version = '2023121801'
+script_repo = 'https://github.com/corelight/ecs-templates/tree/main'
+f'\nVersion: {script_version}'
 git_repository = "brasitech"
 git_branch = "main"
 git_url_base_domain_and_schema = "https://github.com"
@@ -34,7 +36,6 @@ git_ingest_repo_name = f'ecs-mapping'
 ls_output_filename = "9940-elasticsearch-corelight_zeek-output.conf"
 es_default_timeout = 10
 es_default_retry = 2
-git_corelight_ecs_script_repo = 'https://github.com/corelight/ecs-templates/tree/main'
 logstash_input_choices = [ 'tcp', 'tcp_ssl', 'kafka', 'hec', 'udp' ]
 git_logstash_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_logstash_repo_name}/archive/refs/heads/{git_branch}.zip'
 git_logstash_sub_dir = "pipeline"
@@ -42,6 +43,11 @@ git_ingest_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_templ
 git_ingest_sub_dir = "pipeline"
 git_templates_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_ingest_repo_name}/archive/refs/heads/{git_branch}.zip'
 git_templates_sub_dir = "templates"
+script_description = f'''
+Script that builds everything necessary to convert Corelight or Zeek Logs into the Elastic Common Schema (ECS) naming standard and store them into an Elastic Stack deployment.
+The repository for this script can be found here: {script_repo}
+Version: {script_version}
+'''
 
 # General
 #version = script_version
@@ -89,6 +95,19 @@ except OSError as e:
 
 
 logger = logging.getLogger(__name__)
+
+def arg_path_and_exists(path):
+    path = Path(path)
+    if Path.is_dir(path):
+        return path
+    else:
+        raise argparse.ArgumentTypeError(f'"{path}" does not exist or is not a directory')
+def arg_file_and_exists(path):
+    path = Path(path)
+    if Path.is_file():
+        return path
+    else:
+        raise argparse.ArgumentTypeError(f'"{path}" does not exist or is not a file')
 
 def input_bool(question, default=None):
     prompt = " [Y/n]:" if default else " [y/N]:"
@@ -1009,12 +1028,26 @@ def main():
         formatted_filenames = "\n".join( [ f'- "{file}"' for file in ls_files_to_modify ] )
         logger.info(f"Please review the following logstash files, for input and output, that you will need to modify for your environment:\n{formatted_filenames}")
 
+def script_usage():
+    #TODO: Finish Usage Examples
+    ran_script_name = sys.argv[0]
+    usage = f'''Usage Examples:
+    # Run the script
+    {ran_script_name}
+    # Build logstash config directory as a single configuration that can be used in Logstash X-Pack Central Management from within Kibana.
+    {ran_script_name} --build-logstash-xpack-mgmt -f "/path/to_last_run_directory"
+    '''
+    return usage
 
 def parse_args():
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Script that builds everything necessary to convert Corelight Logs into the Elastic Common Schema (ECS) naming standard and store them into an Elastic Stack deployment.")
-    parser.add_argument('--no-color', action='store_true', help='Disable colors for output/logging.')
-    parser.add_argument('--debug', action='store_true', help='Enable debug level logging.')
+
+    parser = argparse.ArgumentParser( description=script_description, formatter_class=argparse.RawTextHelpFormatter, epilog=script_usage() )
+    parser.add_argument(
+        '-v', '--version', action='version', version='%(prog)s {version}'.format(version=script_version)
+    )
+    parser.add_argument( '--no-color', action='store_true', help='Disable colors for output/logging.' )
+    parser.add_argument( '--debug', action='store_true', help='Enable debug level logging.' )
     parser.add_argument(
         '--es-default-timeout=', dest='es_default_timeout', type=int, required=False, default=es_default_timeout,
         help='Timeout waiting for the connection to the elasticsearch.\ndefault: %(default)s'
@@ -1030,6 +1063,14 @@ def parse_args():
     parser.add_argument(
         '--git-branch', dest='git_branch', type=str, required=False, default=git_branch,
         help='Github Branch.\ndefault: %(default)s'
+    )
+    parser.add_argument(
+        '--build-logstash-xpack-mgmt', dest='build_logstash_xpack_mgmt', action='store_true', required=False,
+        help='Build logstash config directory as a single configuration that can be used in Logstash X-Pack Central Management from within Kibana.'
+    )
+    parser.add_argument(
+        '-f', '--final-config-dir', dest='final_config_dir', type=arg_path_and_exists, required=False,
+        help='Build logstash config directory as a single configuration that can be used in Logstash X-Pack Central Management from within Kibana.'
     )
     return parser.parse_args()
 
