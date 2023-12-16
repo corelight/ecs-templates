@@ -1003,7 +1003,7 @@ def main():
 def parse_args():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Logger Color Control")
-    parser.add_argument('--no-color', action='store_true', help='Disable colors for logging.')
+    parser.add_argument('--no-color', action='store_true', help='Disable colors for output/logging.')
     parser.add_argument('--debug', action='store_true', help='Enable debug level logging.')
     parser.add_argument(
         '--es-default-timeout=', dest='es_default_timeout', type=int, required=False, default=es_default_timeout,
@@ -1020,6 +1020,9 @@ def parse_args():
     parser.add_argument(
         '--git-branch', dest='git_branch', type=str, required=False, default=git_branch,
         help='Github Branch.\ndefault: %(default)s'
+    )
+    parser.add_argument(
+        '--git-branch', dest='git_branch', action='store_true', required=False, help='Build logstash '
     )
     return parser.parse_args()
 
