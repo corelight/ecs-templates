@@ -1,0 +1,22 @@
+input {
+  file {
+    # copy file from this repository './examples/test_logs/corelight_test.log' to '/tmp/corelight_logs/corelight_test.log'
+    path => "/tmp/corelight_logs/corelight_test.log"
+    #path => "/tmp/corelight_logs/*.log"
+    codec => "json"
+    start_position => "beginning"
+    mode => "tail"
+    sincedb_path => "/dev/null"
+    #sincedb_write_interval => "2 seconds"
+    #sincedb_clean_after => "2 seconds"
+    add_field => {
+      "[@metadata][etl][input_application_protocol]" => "file"
+      "[@metadata][etl][format_is_json]" => "true"
+      "[@metadata][etl][format_applied]" => "json"
+      "[@metadata][etl][format_final_codec]" => "json"
+      "[@metadata][z_no_reuse][event_type]" => "corelight"
+      "[@metadata][etl][pipeline]" => "input-file-48383eeb-993a-4216-9b06-8c66aa204f3c-20220427.01"
+    }
+    id => "input-file-48383eeb-993a-4216-9b06-8c66aa204f3c"
+  }
+}

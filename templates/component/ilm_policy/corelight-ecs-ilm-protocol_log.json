@@ -1,0 +1,43 @@
+{
+  "policy": {
+    "_meta": {
+      "description": "Corelight ECS Templates. For technical issues, questions, and documentation see https://github.com/corelight/ecs-templates",
+      "version": 2023120101
+    },
+    "phases": {
+      "hot": {
+        "min_age": "0ms",
+        "actions": {
+          "rollover": {
+            "max_primary_shard_size": "40gb",
+            "max_age": "2d"
+          },
+          "set_priority": {
+            "priority": 100
+          },
+          "readonly": {}
+        }
+      },
+      "warm": {
+        "min_age": "7d",
+        "actions": {
+          "forcemerge": {
+            "max_num_segments": 5
+          },
+          "set_priority": {
+            "priority": 50
+          },
+          "readonly": {}
+        }
+      },
+      "delete": {
+        "min_age": "90d",
+        "actions": {
+          "delete": {
+            "delete_searchable_snapshot": true
+          }
+        }
+      }
+    }
+  }
+}
