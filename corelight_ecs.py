@@ -27,7 +27,7 @@ except IndexError as error:
 script_version = '2023121801'
 script_repo = 'https://github.com/corelight/ecs-templates/tree/main'
 f'\nVersion: {script_version}'
-git_repository = "brasitech"
+git_repository = "corelight"
 git_branch = "main"
 git_url_base_domain_and_schema = "https://github.com"
 git_logstash_repo_name = f'ecs-logstash-mappings'
