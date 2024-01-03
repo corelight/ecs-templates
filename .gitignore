@@ -19,9 +19,3 @@ __pycache__/
 
 # Repo Specific
 /z_installer/
-/ecs-logstash-mappings-Dev/
-/ecs-mapping-dev/
-/ecs-logstash-mappings-Master/
-/ecs-mapping-master/
-/ecs-logstash-mappings-main/
-/ecs-mapping-main/
