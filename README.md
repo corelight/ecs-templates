@@ -1,5 +1,5 @@
 # Overview
-This repository contains everything necessary to convert Corelight Logs into the Elastic Common Schema (ECS) naming standard and store them into an Elastic Stack deployment. Originally released in 2019, the same year as Elastic Common Schema, this repository is stil actively maintained and updated.
+This repository contains everything necessary to convert Corelight or Zeek Logs into the Elastic Common Schema (ECS) naming standard and store them into an Elastic Stack deployment. Originally released in 2019, the same year as Elastic Common Schema, this repository is stil actively maintained and updated.
 
 It supports over [200 different logs and metrics](https://docs.google.com/spreadsheets/d/1HqRRfvf5vUG3zgI9KG64hAj5oLSae7YbLoTKh846FCc/edit?usp=sharing) and is designed to be able to support all environments while simulatenously being able to customize the required and desired options to support each unique environment.  
 Significant effort has been invested in ensuring support across all environments, while simultaneously allowing for the customization of necessary and desired options to suit each unique and respective deployment. 
@@ -7,7 +7,7 @@ Significant effort has been invested in ensuring support across all environments
 
 The repository is primiarly compromised of two things:
 1. Elasticsearch index templates, component templates, ilm policies, settings, and mappings
-2. Installer script for this repository and the corresponding [Ingest Pipelines](https://github.com/brasitech/ecs-mapping) OR [Logstash Pipelines](https://github.com/brasitech/ecs-logstash-mappings)
+2. Installer script for this repository and the corresponding [Ingest Pipelines](https://github.com/corelight/ecs-mapping) OR [Logstash Pipelines](https://github.com/corelight/ecs-logstash-mappings)
 
 # License
 The files and automation script are open-source under a BSD license. See ``COPYING``for details.
@@ -205,7 +205,7 @@ If you do not create the pipeline the function silently passes it, therefore it 
 ## 3. Install
 ### Script Usage
 ```shell
-git clone https://github.com/brasitech/ecs-templates
+git clone https://github.com/corelight/ecs-templates
 cd ecs-templates
 python3 corelight_ecs.py
 ```
@@ -251,16 +251,16 @@ Fields are added to the each log:
 # Github Repository Definitions
 
 ## Elasticsearch templates (This Repository)
-https://github.com/brasitech/ecs-templates
+https://github.com/corelight/ecs-templates
 - Elasticsearch index templates, component templates, ilm policies, settings, and mappings
 - Install Script
 
 ## Logstash Pipelines
-https://github.com/brasitech/ecs-logstash-mappings
+https://github.com/corelight/ecs-logstash-mappings
 - Logstash pipeline configurations
 
 ## Ingest Pipelines
-https://github.com/brasitech/ecs-mapping
+https://github.com/corelight/ecs-mapping
 - Ingest pipeline configurations
 
 ## Kibana Dashboards and Visualizations

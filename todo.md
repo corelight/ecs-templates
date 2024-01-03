@@ -3,9 +3,6 @@
 ## Priority 1
 - [ ] change intel log fields intel.X to threat.X where applicable
 - [ ] finish smtp.X to email.X alias backward compatibility
-- [ ] concat all the logstash files into one file for upload for central pipeline management. basically no matter what, always save a central_pipeline_management.conf file
-  - [x] create functions and test
-  - [ ] add as an arg parse option to the script, where the prompts for directory and path for output file. default option last run.
 - [ ] related.X fields see gdoc for all. having removed copy_to for related.X fields, finish logic for ingest pipelines and logstash pipelines
     - [x] logstash pipelines
         - [x] related.ip
@@ -26,6 +23,9 @@
     - [ ] add to requests session for resuse
 - [ ] final change log
   - [ ] remove brasitech references/defaults before finalizing
+- [x] concat all the logstash files into one file for upload for central pipeline management. basically no matter what, always save a central_pipeline_management.conf file
+    - [x] create functions and test
+    - [x] add as an arg parse option to the script, where the prompts for directory and path for output file
 - [x] automatically create all the custom component templates but only if they do not exist
 - [x] index template matching an index pattern such as `temporary_corelight_routing_index` that all it does is call the default ingest pipeline
 - [x] for all metric and system logs, perform '.' fields to '_' for ingest pipeline the same as is done in logstash pipelines

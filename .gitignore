@@ -1,3 +1,4 @@
+# General to Ignore
 .DS_Store
 .git
 .vscode/
@@ -15,3 +16,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Repo Specific
+/z_installer/

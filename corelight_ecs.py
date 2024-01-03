@@ -1,38 +1,54 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+try:
+    import logging
+    import shutil
+    import requests
+    import time
+    import sys
+    import zipfile
+    import os
+    import random
+    import getpass
+    import errno
+    import re
+    import json
+    from urllib.parse import urlparse
+    import urllib3
+    from urllib3.exceptions import InsecureRequestWarning, HTTPError
+    import argparse
+    from pathlib import Path, PurePath
+except IndexError as error:
+    print (error)
+    print ('Unable to load python module... Exiting Script!')
+    sys.exit(1)
 
-import logging
-import shutil
-import requests
-import time
-import sys
-import zipfile
-import os
-import random
-import getpass
-import errno
-import re
-import json
-from urllib.parse import urlparse
-import urllib3
-from urllib3.exceptions import InsecureRequestWarning, HTTPError
-import argparse
-
-git_repository = "brasitech"
+# Default Variables
+script_version = '2024010301'
+script_repo = 'https://github.com/corelight/ecs-templates/tree/main'
+f'\nVersion: {script_version}'
+git_repository = "corelight"
 git_branch = "main"
+git_url_base_domain_and_schema = "https://github.com"
+git_logstash_repo_name = f'ecs-logstash-mappings'
+git_templates_repo_name = f'ecs-templates'
+git_ingest_repo_name = f'ecs-mapping'
 ls_output_filename = "9940-elasticsearch-corelight_zeek-output.conf"
 es_default_timeout = 10
 es_default_retry = 2
-
-# Script Version
-script_version = '2023102201'
-# Default Variables
-git_logstash_repo = f"https://github.com/{git_repository}/ecs-logstash-mappings/archive/refs/heads/{git_branch}.zip"
-git_logstash_sub_dir = "pipeline"
-git_ingest_repo = f"https://github.com/{git_repository}/ecs-mapping/archive/refs/heads/{git_branch}.zip"
-git_ingest_sub_dir = "pipeline"
-git_templates_repo = f"https://github.com/{git_repository}/ecs-templates/archive/refs/heads/{git_branch}.zip"
-git_templates_sub_dir = "templates"
 logstash_input_choices = [ 'tcp', 'tcp_ssl', 'kafka', 'hec', 'udp' ]
+git_logstash_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_logstash_repo_name}/archive/refs/heads/{git_branch}.zip'
+git_logstash_sub_dir = "pipeline"
+git_ingest_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_templates_repo_name}/archive/refs/heads/{git_branch}.zip'
+git_ingest_sub_dir = "pipeline"
+git_templates_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_ingest_repo_name}/archive/refs/heads/{git_branch}.zip'
+git_templates_sub_dir = "templates"
+script_description = f'''
+Script that builds everything necessary to convert Corelight or Zeek Logs into the Elastic Common Schema (ECS) naming standard and store them into an Elastic Stack deployment.
+The repository for this script can be found here: {script_repo}
+Version: {script_version}
+'''
+
 # General
 #version = script_version
 time_now = time.time() # Get the current time
@@ -79,6 +95,19 @@ except OSError as e:
 
 
 logger = logging.getLogger(__name__)
+
+def arg_path_and_exists(path):
+    path = Path(path)
+    if Path.is_dir(path):
+        return path
+    else:
+        raise argparse.ArgumentTypeError(f'"{path}" does not exist or is not a directory')
+def arg_file_and_exists(path):
+    path = Path(path)
+    if Path.is_file():
+        return path
+    else:
+        raise argparse.ArgumentTypeError(f'"{path}" does not exist or is not a file')
 
 def input_bool(question, default=None):
     prompt = " [Y/n]:" if default else " [y/N]:"
@@ -507,10 +536,10 @@ def clean_ls_content(content, start_pattern, file_name):
 
     return content
 
-def concat_ls_files(input_files, filter_files, output_files, output_file):
+def concat_ls_files(ls_input_files, ls_filter_files, ls_output_files, output_file):
     with open(output_file, 'w') as outfile:
         # Process input files
-        for i, file_path in enumerate(input_files):
+        for i, file_path in enumerate(ls_input_files):
             file_name = os.path.basename(file_path)
             with open(file_path, 'r') as infile:
                 content = infile.read()
@@ -518,10 +547,10 @@ def concat_ls_files(input_files, filter_files, output_files, output_file):
                 if i == 0:  # First input file
                     outfile.write("\n\ninput {\n")
                 outfile.write(f'\n  ######## Begin "{file_name}" ########\n{cleaned_content}')
-                if i == len(input_files) - 1:  # Last input file
+                if i == len(ls_input_files) - 1:  # Last input file
                     outfile.write("\n}")
         # Process filter files
-        for i, file_path in enumerate(filter_files):
+        for i, file_path in enumerate(ls_filter_files):
             file_name = os.path.basename(file_path)
             with open(file_path, 'r') as infile:
                 content = infile.read()
@@ -529,10 +558,10 @@ def concat_ls_files(input_files, filter_files, output_files, output_file):
                 if i == 0:  # First filter file
                     outfile.write("\n\nfilter {\n")
                 outfile.write(f'\n  ######## Begin "{file_name}" ########\n{cleaned_content}')
-                if i == len(filter_files) - 1:  # Last filter file
+                if i == len(ls_filter_files) - 1:  # Last filter file
                     outfile.write("\n}")
         # Process output files
-        for i, file_path in enumerate(output_files):
+        for i, file_path in enumerate(ls_output_files):
             file_name = os.path.basename(file_path)
             with open(file_path, 'r') as infile:
                 content = infile.read()
@@ -540,7 +569,7 @@ def concat_ls_files(input_files, filter_files, output_files, output_file):
                 if i == 0:  # First output file
                     outfile.write("\n\noutput {\n")
                 outfile.write(f'\n  ######## Begin "{file_name}" ########\n{cleaned_content}')
-                if i == len(output_files) - 1:  # Last output file
+                if i == len(ls_output_files) - 1:  # Last output file
                     outfile.write("\n}")
 
 def gather_custom_component_templates(directory):
@@ -754,6 +783,16 @@ def main():
     Previous_Config_Dir = os.path.join( Config_Dir, "previous", dir_time )
     # List of files to tell user to modify at the end
     ls_files_to_modify = list()
+
+    # Situations to short circuit the rest of script of prompts
+    if args.final_config_dir and args.build_logstash_xpack_mgmt:
+        Final_Config_Dir = args.final_config_dir
+        use_last_run = False
+        print(f"Using logstash configs from: {Final_Config_Dir}")
+        ls_input_files, ls_filter_files, ls_output_files = categorize_ls_files( Final_Config_Dir )
+        ls_xpack_mgmt_out_file = os.path.join( Final_Config_Dir, "all_logstash_config_for_xpack_mgmt.conf" )
+        concat_ls_files( ls_input_files, ls_filter_files, ls_output_files, ls_xpack_mgmt_out_file )
+        sys.exit(1)
 
     # Prompt user if they want to use configs from last run, if they exist
     use_last_run = input_bool(f"Would you like to use configs from a previous run?", default=False)
@@ -999,12 +1038,30 @@ def main():
         formatted_filenames = "\n".join( [ f'- "{file}"' for file in ls_files_to_modify ] )
         logger.info(f"Please review the following logstash files, for input and output, that you will need to modify for your environment:\n{formatted_filenames}")
 
+def script_usage():
+    ran_script_name = sys.argv[0]
+    usage = f'''Usage Examples:
+    # Run the script
+    {ran_script_name}
+    # Build logstash config directory as a single configuration that can be used in Logstash X-Pack Central Management from within Kibana.
+    # saves the generated configuration into the directory with the file name 'all_logstash_config_for_xpack_mgmt.conf'
+    {ran_script_name} --build-logstash-xpack-mgmt -f "/path/to_last_run_directory"
+    # Change the default git repostiory
+    {ran_script_name} --git-repository=brasitech"
+    # Change the default git repostiory and branch
+    {ran_script_name} --git-repository=brasitech --git-branch=main"
+    '''
+    return usage
 
 def parse_args():
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Logger Color Control")
-    parser.add_argument('--no-color', action='store_true', help='Disable colors for logging.')
-    parser.add_argument('--debug', action='store_true', help='Enable debug level logging.')
+
+    parser = argparse.ArgumentParser( description=script_description, formatter_class=argparse.RawTextHelpFormatter, epilog=script_usage() )
+    parser.add_argument(
+        '-v', '--version', action='version', version='%(prog)s {version}'.format(version=script_version)
+    )
+    parser.add_argument( '--no-color', action='store_true', help='Disable colors for output/logging.' )
+    parser.add_argument( '--debug', action='store_true', help='Enable debug level logging.' )
     parser.add_argument(
         '--es-default-timeout=', dest='es_default_timeout', type=int, required=False, default=es_default_timeout,
         help='Timeout waiting for the connection to the elasticsearch.\ndefault: %(default)s'
@@ -1020,6 +1077,14 @@ def parse_args():
     parser.add_argument(
         '--git-branch', dest='git_branch', type=str, required=False, default=git_branch,
         help='Github Branch.\ndefault: %(default)s'
+    )
+    parser.add_argument(
+        '--build-logstash-xpack-mgmt', dest='build_logstash_xpack_mgmt', action='store_true', required=False,
+        help='Build logstash config directory as a single configuration that can be used in Logstash X-Pack Central Management from within Kibana.'
+    )
+    parser.add_argument(
+        '-f', '--final-config-dir', dest='final_config_dir', type=arg_path_and_exists, required=False,
+        help='Build logstash config directory as a single configuration that can be used in Logstash X-Pack Central Management from within Kibana.'
     )
     return parser.parse_args()
 
