@@ -24,7 +24,7 @@ except IndexError as error:
     sys.exit(1)
 
 # Default Variables
-script_version = '2023121801'
+script_version = '2024010301'
 script_repo = 'https://github.com/corelight/ecs-templates/tree/main'
 f'\nVersion: {script_version}'
 git_repository = "corelight"
