@@ -29,7 +29,8 @@ The files and automation script are open-source under a BSD license. See ``COPYI
 
 
 # 2. Customization
-Customizing Index Settings, Mappings, Aliases, and ILM Policies is encouraged. We all know how necessary it is. Therefore, the script is designed to be able to support the following but not limited to, types of customizations.
+Customizing Index Settings, Mappings, Aliases, and ILM Policies is encouraged. Therefore, the script is designed to be able to support many types of customizations (detailed below).  
+Many customizations will not be needed, but it is better to have the option than have not.   It is always recommend to use your own number of shards/replicas and ILM policy, but beyond that you should not need to customize much else. However if you normally customize many things in the index templates, ingest pipelines, and logstash pipelines in all of your deployments then you will still have ability.
 - [Custom Index Names](#custom-index-names)  
   the script will prompt you for this and automatically update any templates, logstash pipelines, and or ingest pipelines that need to be updated
 - [Index Settings](#custom-index-settings-ie-shards-and-replicas)
@@ -49,17 +50,18 @@ Customizing Index Settings, Mappings, Aliases, and ILM Policies is encouraged. W
     - The ability to call your own custom ingest pipeline after all Corelight ingest pipelines are called and without modifying the Corelight ingest pipelines at all
 - Custom logstash pipelines is just matter of creating a file with a lower alphanumeric order and loading in the same directory
 
-Many customizations will not be needed, but it is better to have the option than have not. Always recommend to use your own number of shards/replicas and ILM policy, but beyond that you should not need to customize much else you normally customize many things in the index templates, ingest pipelines, and logstash pipelines in all of your deployments. Which, in that case you will have that ability as well.
+
 
 See each section below for more details.
 
 ## Custom Index Options
 
 ### Custom Index Names
-The script will prompt you if you would look to choose custom index names/patterns. This, allows you to choose your own index naming convention. For example you could chose:
+The script will prompt you if you would look to choose custom index names/patterns for your data streams. This, allows you to choose your own index naming convention. For example you could chose:
 - `logs-corelight.conn-default`
-- `ecs-corelight.conn.default`
-- `call_it_what_you_will.conn.default`
+- `ecs-corelight.conn-default`
+- `call_it_what_you_will.conn-default`
+- `logs-corelight.conn-remotesite1`
 
 It will then update all the necessary index templates as well if you chose ingest pipelines or logstash pipelines.
 It's not recommended to change the defaults, as the Corelight logs are now setup to work with all the other types of ECS data, and be able to be used from within a Kibana data view such as `logs-*`
@@ -94,7 +96,7 @@ _to cover individual logs beyond the above, that commonly need their own setting
 - `corelight-ecs-component-protocol_log-various-base-settings@custom`
 - `corelight-ecs-component-protocol_log-weird-base-settings@custom`
 - `corelight-ecs-component-protocol_log-x509-base-settings@custom`
-- 
+
 ### Customizing Index Mappings ie: fields
 Each index template is specified to call a component template that you can use to override the Index Mappings for things such as field types or names.
 **Therefore you do not need to modify the repository index templates in order to use your own Index Mappings.**
