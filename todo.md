@@ -1,6 +1,7 @@
 # To Do
 
 ## Priority 1
+- [ ] using last run option, still prints `INFO: Please review the following logstash files, for input and output, that you will need to modify for your environment:` 
 - [ ] document in readme that the module `requests` is required.
   - [ ] in try/except print that can install via one of:  
 sudo dnf install python3-requests # rhel8 or centos8  
