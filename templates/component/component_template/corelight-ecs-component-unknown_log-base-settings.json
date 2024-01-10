@@ -6,7 +6,6 @@
   "template": {
     "settings": {
       "index": {
-        "default_pipeline": "corelight-ecs-main-pipeline",
         "mapping": {
           "coerce": true,
           "total_fields.limit": 10000
