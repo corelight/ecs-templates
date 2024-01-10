@@ -18,12 +18,14 @@ pip3 install requests # if not wanting to maintain requests via packager manager
         - [x] related.user
         - [x] related.hash
         - [x] related.mac
+        - [x] related.id
     - [ ] ingest pipelines
         - [ ] related.ip
         - [ ] related.host
         - [ ] related.user
         - [ ] related.hash
         - [ ] related.mac
+        - [ ] related.id
 - [ ] pass cert for elaticsearch so if wanting to not ignore, can do so
   - [ ] if user says yes, then
     - [ ] prompt for cert path
