@@ -1,6 +1,14 @@
 # To Do
 
 ## Priority 1
+- [ ] make not or option or something that related hash uses sha1 and md5 
+- [ ] using last run option, still prints `INFO: Please review the following logstash files, for input and output, that you will need to modify for your environment:` 
+- [ ] document in readme that the module `requests` is required.
+  - [ ] in try/except print that can install via one of:  
+sudo dnf install python3-requests # rhel8 or centos8  
+sudo apt install python3-requests # ubuntu/debian  
+sudo yum install python3-requests # rhel7 or centos7  
+pip3 install requests # if not wanting to maintain requests via packager manager
 - [ ] change intel log fields intel.X to threat.X where applicable
 - [ ] finish smtp.X to email.X alias backward compatibility
 - [ ] related.X fields see gdoc for all. having removed copy_to for related.X fields, finish logic for ingest pipelines and logstash pipelines
@@ -10,12 +18,14 @@
         - [x] related.user
         - [x] related.hash
         - [x] related.mac
+        - [x] related.id
     - [ ] ingest pipelines
         - [ ] related.ip
         - [ ] related.host
         - [ ] related.user
         - [ ] related.hash
         - [ ] related.mac
+        - [ ] related.id
 - [ ] pass cert for elaticsearch so if wanting to not ignore, can do so
   - [ ] if user says yes, then
     - [ ] prompt for cert path
