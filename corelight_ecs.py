@@ -39,9 +39,9 @@ es_default_retry = 2
 logstash_input_choices = [ 'tcp', 'tcp_ssl', 'kafka', 'hec', 'udp' ]
 git_logstash_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_logstash_repo_name}/archive/refs/heads/{git_branch}.zip'
 git_logstash_sub_dir = "pipeline"
-git_ingest_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_templates_repo_name}/archive/refs/heads/{git_branch}.zip'
+git_ingest_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_ingest_repo_name}/archive/refs/heads/{git_branch}.zip'
 git_ingest_sub_dir = "pipeline"
-git_templates_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_ingest_repo_name}/archive/refs/heads/{git_branch}.zip'
+git_templates_repo = f'{git_url_base_domain_and_schema}/{git_repository}/{git_templates_repo_name}/archive/refs/heads/{git_branch}.zip'
 git_templates_sub_dir = "templates"
 script_description = f'''
 Script that builds everything necessary to convert Corelight or Zeek Logs into the Elastic Common Schema (ECS) naming standard and store them into an Elastic Stack deployment.
