@@ -4551,6 +4551,94 @@
             }
           }
         },
+        "ssdp": {
+          "properties": {
+            "is_orig": {
+              "type": "boolean"
+            },
+            "operation": {
+              "type": "keyword"
+            },
+            "host": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "usn": {
+              "type": "keyword"
+            },
+            "target": {
+              "type": "keyword"
+            },
+            "target_sub": {
+              "type": "keyword"
+            },
+            "location": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "user_agent": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "server": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "man": {
+              "type": "keyword"
+            },
+            "mx": {
+              "type": "keyword"
+            },
+            "cache_control": {
+              "type": "keyword"
+            },
+            "remaining_header_names": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "remaining_header_values": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
         "ssh": {
           "properties": {
             "auth_attempts": {
