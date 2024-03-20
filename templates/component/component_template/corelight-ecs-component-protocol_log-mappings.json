@@ -839,6 +839,16 @@
               "ignore_above": 32000,
               "type": "keyword"
             },
+            "domain_noport": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
             "domain_ends_with_integer": {
               "type": "boolean"
             },
@@ -5212,6 +5222,16 @@
         "url": {
           "properties": {
             "domain": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 10000,
+              "type": "keyword"
+            },
+            "domain_noport": {
               "fields": {
                 "security": {
                   "analyzer": "es_stk_analyzer",
