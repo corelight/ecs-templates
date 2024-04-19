@@ -742,6 +742,24 @@
                 },
                 "remote_ip": {
                   "type": "ip"
+                },
+                "cid" :{
+                  "type": "keyword"
+                },
+                "criticality" : {
+                  "type": "keyword"
+                },
+                "desc" : {
+                  "type": "keyword"
+                },
+                "source" : {
+                  "type": "keyword"
+                },
+                "status" : {
+                  "type": "keyword"
+                },
+                "uid" : {
+                  "type": "keyword"
                 }
               },
               "type": "object"
@@ -814,6 +832,18 @@
             },
             "bytes": {
               "type": "long"
+            },
+            "resp_ep_cid": {
+              "type": "keyword"
+            },
+            "resp_ep_source": {
+              "type": "keyword"
+            },
+            "resp_ep_uid": {
+              "type": "keyword"
+            },
+            "resp_ep_status": {
+              "type": "keyword"
             },
             "connection_history": {
               "ignore_above": 2048,
@@ -1187,8 +1217,33 @@
                   "type": "keyword"
                 }
               }
+            },
+          "vulnerable_host": {
+            "properties": {
+              "cve": {
+                "type": "keyword"
+              },
+              "uid": {
+                "type": "keyword"
+              },
+              "cid": {
+                "type": "keyword"
+              },
+              "hostname": {
+                "type": "keyword"
+              },
+              "os_version": {
+                "type": "keyword"
+              },
+              "source": {
+                "type": "keyword"
+              },
+              "criticality": {
+                "type": "keyword"
+              }
             }
           }
+         }
         },
         "dhcp": {
           "properties": {
@@ -2718,7 +2773,30 @@
                   "type": "keyword"
                 }
               }
-            },
+              },
+              "post_body": {
+                "fields": {
+                  "security": {
+                    "analyzer": "es_stk_analyzer",
+                    "type": "text"
+                  }
+                },
+                "ignore_above": 32000,
+                "type": "keyword"
+              },
+              "post_body_decoded": {
+                "fields": {
+                  "security": {
+                    "analyzer": "es_stk_analyzer",
+                    "type": "text"
+                  }
+                },
+                "ignore_above": 32000,
+                "type": "keyword"
+              },
+              "post_body_base64": {
+                "type": "boolean"
+              },
             "response": {
               "properties": {
                 "body": {
@@ -4337,6 +4415,18 @@
             "bytes": {
               "type": "long"
             },
+            "orig_ep_cid": {
+              "type": "keyword"
+            },
+            "orig_ep_source": {
+              "type": "keyword"
+            },
+            "orig_ep_uid": {
+              "type": "keyword"
+            },
+            "orig_ep_status": {
+              "type": "keyword"
+            },
             "connection_history": {
               "ignore_above": 2048,
               "type": "keyword"
@@ -4555,6 +4645,31 @@
                   "type": "keyword"
                 },
                 "password": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "vulnerable_host": {
+              "properties": {
+                "cve": {
+                  "type": "keyword"
+                },
+                "uid": {
+                  "type": "keyword"
+                },
+                "cid": {
+                  "type": "keyword"
+                },
+                "hostname": {
+                  "type": "keyword"
+                },
+                "os_version": {
+                  "type": "keyword"
+                },
+                "source": {
+                  "type": "keyword"
+                },
+                "criticality": {
                   "type": "keyword"
                 }
               }
@@ -5622,3 +5737,4 @@
     }
   }
 }
+
