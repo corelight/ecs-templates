@@ -133,7 +133,7 @@
               "type": "float"
             },
             "severity": {
-              "type": "keyword"
+              "type": "long"
             },
             "start": {
               "type": "date"

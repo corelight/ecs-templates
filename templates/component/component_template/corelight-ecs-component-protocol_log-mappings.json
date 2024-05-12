@@ -705,6 +705,30 @@
             },
             "spcap_url": {
               "type": "keyword"
+            },
+            "id": {
+              "properties": {
+                "orig_h_name": {
+                  "properties": {
+                    "src": {
+                      "type": "keyword"
+                    },
+                    "vals": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "resp_h_name": {
+                  "properties": {
+                    "src": {
+                      "type": "keyword"
+                    },
+                    "vals": {
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -2026,7 +2050,7 @@
               "type": "float"
             },
             "severity": {
-              "type": "keyword"
+              "type": "long"
             },
             "start": {
               "type": "date"
