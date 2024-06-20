@@ -233,7 +233,7 @@ Also, for those who use full automation of all the things, an [example script](e
 See the [Customization](#2-customization) section for more details.
 
 
-# Examples WIP
+# Corelight Sensor Setup
 - to use an index pattern just to be able to hit the ingest pipelines, like for corelight appliance or testing. use the output index `temporary_corelight_routing_index`
 
 
