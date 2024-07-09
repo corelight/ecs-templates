@@ -233,8 +233,10 @@ Also, for those who use full automation of all the things, an [example script](e
 See the [Customization](#2-customization) section for more details.
 
 
-# Corelight Sensor Setup
+# Corelight Sensor Setup - Elastic Exporter 
 - to use an index pattern just to be able to hit the ingest pipelines, like for corelight appliance or testing. Set the prefix to `temporary_corelight_routing_index`
+- Disable system indices
+- Enable Data Streams - Depending on the version it will be a check box in the exporter or in the Advance Configuration you can enable bro.export.elasticsearch.use_data_streams
 
 
 # Changelog WIP
