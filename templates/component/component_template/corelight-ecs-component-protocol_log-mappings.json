@@ -5607,6 +5607,120 @@
             }
           }
         },
+        "amqp": {
+          "properties": {
+            "ver_maj": {
+              "type": "long"
+            },
+            "ver_min": {
+              "type": "long"
+            },
+            "ver_rev": {
+              "type": "long"
+            },
+            "host": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "product": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "version": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "copyright": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "platform": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "information": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "instance": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "delivered_exchanges": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "published_exchanges": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "consumed_queues": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+            }
+          },
+        "telnet":{
+          "properties": {
+            "tn3270": {
+              "type": "boolean"
+            },
+            "tn3270e": {
+              "type": "boolean"
+            },
+            "terminal_type": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "terminal_speed": {
+              "type": "long"
+            },
+            "x_display_location": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "environ_value_names": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "environ_value_values": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "tn3270e_device_type_request": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "tn3270e_device_type_request_associate": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "tn3270e_device_type_request_connect": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "tn3270e_device_type_is": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "tn3270e_device_type_is_associate": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "tn3270e_device_type_is_connect": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "data": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
         "vpn": {
           "properties": {
             "attr_types": {
@@ -5761,4 +5875,5 @@
     }
   }
 }
+
 
