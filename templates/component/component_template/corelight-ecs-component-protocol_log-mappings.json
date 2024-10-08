@@ -3512,9 +3512,25 @@
             },
             "suppress_duration": {
               "type": "double"
+            },
+            "scan": {
+              "properties": {
+                "hosts" : {
+                  "type" : "long"
+                },
+                "ports": {
+                  "ignore_above": 8192,
+                  "type" : "keyword"
+                },
+                "time_sec": {
+                  "type": "long"
+                },
+                "destination": {
+                  "type": "ip"
+                }
+              }
             }
-          }
-        },
+          }       },
         "ntp": {
           "properties": {
             "mode": {
