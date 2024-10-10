@@ -7,7 +7,7 @@
     "settings": {
       "index": {
         "analysis": {
-          "analyzer": {
+         "analyzer": {
             "es_stk_analyzer": {
               "char_filter": [
                 "whitespace_no_way"
@@ -1200,6 +1200,10 @@
               "type": "long"
             },
             "top_level_domain": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "top_level_domain_noport": {
               "ignore_above": 32000,
               "type": "keyword"
             },
