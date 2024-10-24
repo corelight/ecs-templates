@@ -718,12 +718,50 @@
                     }
                   }
                 },
+                "orig_inst" : {
+                  "properties": {
+                    "az": {
+                      "type": "keyword"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "name": {
+                      "type": "keyword"
+                    },
+                    "org_id": {
+                      "type": "keyword"
+                    },
+                    "vpc_id": {
+                      "type": "keyword"
+                    }
+                  }
+                },
                 "resp_h_name": {
                   "properties": {
                     "src": {
                       "type": "keyword"
                     },
                     "vals": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "resp_inst" : {
+                  "properties": {
+                    "az": {
+                      "type": "keyword"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "name": {
+                      "type": "keyword"
+                    },
+                    "org_id": {
+                      "type": "keyword"
+                    },
+                    "vpc_id": {
                       "type": "keyword"
                     }
                   }
