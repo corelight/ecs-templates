@@ -5,7 +5,7 @@
   "version": 2023120101,
   "template": {
     "settings": {
-      "index.lifecycle.name": "corelight-ecs-ilm-unknown"
+      "index.lifecycle.name": "corelight-ecs-ilm-unknown_log"
     }
   }
 }
