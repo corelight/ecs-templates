@@ -405,7 +405,7 @@ def enable_ls_input(source_dir=None, ingest_type=None, raw=None, destination_dir
     file_names = {
         "tcp": "0002-corelight-ecs-tcp-input",
         "tcp_ssl": "0002-corelight-ecs-tcp-ssl_tls-input",
-        "hec": "0002-corelight-ecs-http-for_splunk_hec",
+        "hec": "0002-corelight-ecs-http-input-for_splunk_hec",
         "kafka": "0002-corelight-ecs-kafka-input",
         "udp": "0002-corelight-ecs-udp-input"
     }
