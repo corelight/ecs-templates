@@ -822,6 +822,9 @@
                 },
                 "uid" : {
                   "type": "keyword"
+                },
+                "ts_last" : {
+                  "type": "date"
                 }
               },
               "type": "object"
