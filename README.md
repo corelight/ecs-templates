@@ -23,7 +23,7 @@ The files and automation script are open-source under a BSD license. See ``COPYI
 # 1. Requirements
 - Using the [`corelight_ecs.py`](./corelight_ecs.py) script from this repository. It is not supported to manually install the templates and pipelines because there hundreds of variables throughout the files that get replaced by the script.
 - Python 3.6 and higher
-- Elasticsearch version 8.x and higher or if still on version 7.x than 7.17 and higher
+- Elasticsearch version 8.x and higher
 - If using Logstash, than Logstash version 8.x and higher or if still on version 7.x than 7.17 and higher
 - Elasticsearch Datastream indexing strategy
 
