@@ -5931,6 +5931,58 @@
               "type": "integer"
             }
           }
+        },
+        "websocket": {
+          "properties": {
+            "subprotocol": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "client_protocols": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "server_extensions": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "client_extensions": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "client_key": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "server_accept": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },  
+        "analyzer": {
+          "properties": {
+            "analyzer_kind": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "analyzer_name": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "analyzer_cause": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "failure_data": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "failure_reason": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }  
         }
       }
     }
