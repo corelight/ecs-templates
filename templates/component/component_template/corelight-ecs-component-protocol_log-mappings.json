@@ -124,6 +124,39 @@
           "ignore_above": 1024,
           "type": "keyword"
         },
+        "anomaly": {
+          "properties": {
+          "entity": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "original_entity": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "entity_training_items": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "item_assoc_entities": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
+            "item_score": {
+              "type": "float"
+            },
+            "item_assoc_entities_similarity": {
+              "type": "float"
+            },
+            "ignorable": {
+              "type": "boolean"
+            },
+            "anomaly_type": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            }
+          }
+        },
         "bacnet": {
           "properties": {
             "apdu_type": {
