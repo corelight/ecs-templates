@@ -3434,6 +3434,30 @@
                 }
               }
             },
+            "unknown": {
+              "properties": {
+                "protocol": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                "protocol_history": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                 "protocol_id": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                 "protocol_name": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                },
+                 "first_bytes": {
+                  "ignore_above": 2048,
+                  "type": "keyword"
+                }
+              }
+            },
             "direction": {
               "ignore_above": 4096,
               "type": "keyword"
@@ -5584,6 +5608,20 @@
                 }
               },
               "ignore_above": 2048,
+              "type": "keyword"
+            }
+          }
+        },
+        "user_agents": {
+          "properties": {
+            "original": {
+              "fields": {
+                "security": {
+                  "analyzer": "es_stk_analyzer",
+                  "type": "text"
+                }
+              },
+              "ignore_above": 32000,
               "type": "keyword"
             }
           }
