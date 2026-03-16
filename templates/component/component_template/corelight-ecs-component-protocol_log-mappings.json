@@ -1044,6 +1044,16 @@
                   "ignore_above": 32000,
                   "type": "keyword"
                 },
+                "mime_types": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    }
+                  },
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                },
                 "name": {
                   "fields": {
                     "security": {
@@ -4856,15 +4866,19 @@
               "type": "keyword"
             },
             "user_agent": {
-              "fields": {
-                "security": {
-                  "analyzer": "es_stk_analyzer",
-                  "type": "text"
-                }
-              },
+               "properties": {
+                "original": {
+                  "fields": {
+                    "security": {
+                      "analyzer": "es_stk_analyzer",
+                      "type": "text"
+                    } 
+                  },
               "ignore_above": 32000,
               "type": "keyword"
-            },
+            }
+          }
+        },
             "server": {
               "fields": {
                 "security": {
@@ -6059,5 +6073,6 @@
     }
   }
 }
+
 
 
