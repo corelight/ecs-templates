@@ -805,6 +805,16 @@
         },
         "corelight": {
           "properties": {
+            "source": {
+              "properties": {
+                "ip": "ip"
+              }
+            },
+            "destination": {
+              "properties": {
+                "ip": "ip"
+              }
+            },
             "known": {
               "properties": {
                 "conns_closed": {
