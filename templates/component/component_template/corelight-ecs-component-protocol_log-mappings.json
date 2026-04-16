@@ -807,13 +807,17 @@
           "properties": {
             "source": {
               "properties": {
-                "ip": "ip"
+                "ip": {
+                  "type":"ip"
               }
+            }
             },
             "destination": {
               "properties": {
-                "ip": "ip"
+                "ip": {
+                  "type":"ip"
               }
+            }
             },
             "known": {
               "properties": {
