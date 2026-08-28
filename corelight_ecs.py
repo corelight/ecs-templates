@@ -9,14 +9,12 @@ try:
     import zipfile
     import os
     import random
-    import getpass
     import errno
     import re
     import json
     from urllib.parse import urlparse
     import urllib3
     from urllib3.exceptions import InsecureRequestWarning, HTTPError
-    import argparse
     from pathlib import Path, PurePath
 except IndexError as error:
     print (error)
@@ -81,67 +79,11 @@ LOG_COLORS = {
     'CRITICAL': COLORS[ 'BOLD' ] + COLORS[ 'FAIL' ]
 }
 
-# Create the output directories if they don't exist
-try:
-    os.makedirs( Script_Output_Dir )
-except OSError as e:
-    if e.errno != errno.EEXIST:
-        raise
-try:
-    os.makedirs( Temp_Output_Dir )
-except OSError as e:
-    if e.errno != errno.EEXIST:
-        raise
-
-
 logger = logging.getLogger(__name__)
 
-def arg_path_and_exists(path):
-    path = Path(path)
-    if Path.is_dir(path):
-        return path
-    else:
-        raise argparse.ArgumentTypeError(f'"{path}" does not exist or is not a directory')
-def arg_file_and_exists(path):
-    path = Path(path)
-    if Path.is_file():
-        return path
-    else:
-        raise argparse.ArgumentTypeError(f'"{path}" does not exist or is not a file')
-
-def input_bool(question, default=None):
-    prompt = " [Y/n]:" if default else " [y/N]:"
-    while True:
-        val = input(f"\n{question}{prompt}").strip().lower()
-        if not val:
-            return default
-        if val in ('y', 'yes'):
-            return True
-        if val in ('n', 'no'):
-            return False
-        logger.warning("Invalid response")
-
-def input_string(question=None, default=None):
-    val = None
-    if question:
-        val = input(f"\n{question}. Default: '{default}': ")
-        if not val:
-            return default
-        else:
-            val = val.strip()
-    return val
-
-def input_int(question, default=None):
-    while True:
-        try:
-            val = input(f"\n{question}. Default: '{default}': ")
-            if not val:
-                return default
-            else:
-                int( val )
-                return val
-        except ValueError:
-            logger.warning("Invalid response, please enter a number")
+def _ensure_output_dirs():
+    os.makedirs(Script_Output_Dir, exist_ok=True)
+    os.makedirs(Temp_Output_Dir, exist_ok=True)
 
 def check_request_status_code(responseObj, code=None, display_error=False):
     if not code:
@@ -209,101 +151,49 @@ def es_export_to_elastic( session, baseURI, req_uri=None, req_resource_name=None
         else:
             logger.error(f"Error uploading. '{req_resource_name}' to '{uri}' with status code '{response_code}' and response '{response_text}'")
 
-def get_elasticsearch_connection_config():
-    """Return a baseURI and session"""
-    ignoreCertErrors = False
-    use_https = False
-    while True:
-        baseURI = input("\nEnter the Elasticsearch host including whether http or https and the port (ie: the full URL, http://somedomain:9200 or https://someip:9200 or https://somedomain:9200)\n: ")
-        if not baseURI:
-            logger.warning("Cannot be empty. Please try again.")
-            continue
-        parsed_baseURI = urlparse( baseURI )
-        # Catch common errors
-        if not (baseURI.startswith("http://") or baseURI.startswith("https://") ):
-            logger.warning("Must include http:// or https://. Please try again.")
-            continue
-        # Determine if a port was entered
-        if not parsed_baseURI.port:
-            logger.warning("No port was entered, please try again and specify the port even if port 443 or 80")
-            continue
-        break
+def get_elasticsearch_connection_config(host, username=None, password=None,
+                                         ssl_verify=True, timeout=es_default_timeout, retry=es_default_retry):
+    """Pure function: validate host, build authenticated session, test connection.
+    Returns (baseURI, session). No prompts.
+
+    Raises ValueError if the host is malformed, SSL verification fails, or authentication fails.
+    """
+    parsed = urlparse(host)
+    if not (host.startswith("http://") or host.startswith("https://")):
+        raise ValueError("host must include http:// or https://")
+    if not parsed.port:
+        raise ValueError("host must include a port (e.g. https://elastic:9200)")
 
     s = requests.Session()
-    s.headers={'Content-Type': 'application/json'}
+    s.headers = {'Content-Type': 'application/json'}
 
-    # Prompt if user wants to ignore certificate errors if https
-    if baseURI.startswith( "https://" ):
-        use_https = True
-        ignore_cert_errors = prompt_for_es_ignore_certificate_errors(try_again=False)
-        if ignore_cert_errors:
-            s.verify = False
-            # Suprress SSL Warnings if not verifying SSL
-            urllib3.disable_warnings(category=InsecureRequestWarning)
-    else:
-        #proto = "http"
-        pass
+    if host.startswith("https://") and not ssl_verify:
+        s.verify = False
+        urllib3.disable_warnings(category=InsecureRequestWarning)
 
-    # Prompt for user and password authentication
-    auth = prompt_for_es_user_and_password(try_again=False)
-    if auth and auth[0] and auth[1]:
-        s.auth = (auth[0], auth[1])
-    else:
-        pass
+    if username and password:
+        s.auth = (username, password)
 
-    # Test the connection, so can reprompt if it fails
-    while True:
-        reprompt = test_connection( s, baseURI )
-        if reprompt == "prompt_ignore_cert":
-            ignore_cert_errors = prompt_for_es_ignore_certificate_errors(try_again=True)
-            if ignore_cert_errors:
-                s.verify = False
-                # Suprress SSL Warnings if not verifying SSL
-                urllib3.disable_warnings(category=InsecureRequestWarning)
-            else:
-                logger.error(f"Failed to verify SSL connectivity to Elasticsearch: {baseURI}")
-                sys.exit(1)
-        elif reprompt == "prompt_auth":
-            auth = prompt_for_es_user_and_password(try_again=True)
-            if auth and auth[ 0 ] and auth[ 1 ]:
-                s.auth = (auth[ 0 ], auth[ 1 ])
-            else:
-                logger.error(f"Failed to authenticate to Elasticsearch: {baseURI}")
-                sys.exit(1)
-        else:
-            break
+    result = test_connection(s, host)
+    if result == "prompt_ignore_cert":
+        raise ValueError(f"SSL certificate verification failed for {host}. Pass ssl_verify=False to skip verification.")
+    elif result == "prompt_auth":
+        raise ValueError(f"Authentication failed for {host}. Check username and password.")
 
-    #baseURI = f"{proto}://{ipHost}:{port}"
-    logger.info(f"Successfully connected to Elasticsearch: {baseURI}")
-    return baseURI, s
+    logger.info(f"Successfully connected to Elasticsearch: {host}")
+    return host, s
 
-def prompt_for_es_ignore_certificate_errors(try_again=False):
-    if not try_again:
-        ignore_cert_errors = input_bool("Do you want to ignore certificate errors?", default=True)
-    else:
-        ignore_cert_errors = input_bool(f"{LOG_COLORS['WARNING']}SSL Certificate ERROR ocurred. Do you want to try again and ignore certificate errors? {COLORS['ENDC']}", default=True)
-    return ignore_cert_errors
 
-def prompt_for_es_user_and_password(try_again=False):
-    if not try_again:
-        auth = input_bool("Do you want to use user and password authentication?", default=True)
-    else:
-        auth = input_bool(f"{LOG_COLORS['WARNING']}Authentication failed. Do you want to try to enter the username and password again? {COLORS['ENDC']}", default=True)
-    if auth:
-        user = input("Enter the username: ")
-        password = getpass.getpass("Enter the password: ")
-        return [user, password]
-    else:
-        return None
-
-def unzip_git(filename):
+def unzip_git(filename, temp_dir=None):
+    if temp_dir is None:
+        temp_dir = Temp_Output_Dir
     try:
         fname = os.path.basename(filename)
-        git_unzip_dir_name = os.path.join( Temp_Output_Dir, os.path.splitext(fname)[0] )
+        git_unzip_dir_name = os.path.join( temp_dir, os.path.splitext(fname)[0] )
         with zipfile.ZipFile( filename, 'r' ) as zip_ref:
             unzip_name = zip_ref.namelist()[ 0 ]
-            zip_ref.extractall( Temp_Output_Dir )
-            shutil.move( os.path.join( Temp_Output_Dir, unzip_name ), os.path.join( git_unzip_dir_name ) )
+            zip_ref.extractall( temp_dir )
+            shutil.move( os.path.join( temp_dir, unzip_name ), os.path.join( git_unzip_dir_name ) )
             os.remove( filename )
             logger.debug(f"Successfully unzipped and removed Git file {fname} to: {git_unzip_dir_name}")
             return git_unzip_dir_name
@@ -314,7 +204,9 @@ def unzip_git(filename):
         logger.error(f"Error occurred while unzipping Git file: {e}")
         raise ValueError(f"Error occurred while unzipping Git file: {e}")
 
-def source_repository(name, repo_type, proxy=None, ssl_verify=None):
+def source_repository(name, repo_type, proxy=None, ssl_verify=None, temp_dir=None):
+    if temp_dir is None:
+        temp_dir = Temp_Output_Dir
     # URL
     if name.startswith("http"):
         if proxy:
@@ -326,7 +218,7 @@ def source_repository(name, repo_type, proxy=None, ssl_verify=None):
             proxies = None
         randomNum = random.randint(0, 100)
         timestamp = int(time.time())
-        filename = os.path.join(Temp_Output_Dir, f"{repo_type}_repo_{timestamp}_{randomNum}.zip")
+        filename = os.path.join(temp_dir, f"{repo_type}_repo_{timestamp}_{randomNum}.zip")
         # Download the repository (zip file)
         try:
             with requests.get(name, proxies=proxies, stream=True, verify=ssl_verify) as r:
@@ -337,11 +229,11 @@ def source_repository(name, repo_type, proxy=None, ssl_verify=None):
             logger.error(f"Error occurred while downloading repository: {e}")
             raise ValueError(f"Error occurred while downloading repository: {e}")
         # Unzip the repository
-        name = unzip_git(filename)
+        name = unzip_git(filename, temp_dir=temp_dir)
         return name
     # Zip
     elif name.endswith(".zip") and os.path.isfile(name):
-        name = unzip_git(name)
+        name = unzip_git(name, temp_dir=temp_dir)
         return name
     # Path
     elif os.path.exists(name):
@@ -388,13 +280,8 @@ def copy_configs(src=None, dest=None, sub_dir=None, error_on_overwrites=False, i
                             shutil.copy2( src_file, dest_file )  # copy
                 logger.debug(f"Files sucessfully copied to {dest}")
         else:
-            create_dir = input_bool(f"{LOG_COLORS['WARNING']}The path {dest} does not exist. Would you like to create it?", default=True)
-            if create_dir:
-                os.makedirs(dest)
-                copy_configs(src=src,dest=final_src_dir, sub_dir=sub_dir, error_on_overwrites=error_on_overwrites, ignore_file_extensions=ignore_file_extensions)
-            else:
-                logger.error(f"Installation aborted. The path {dest} does not exist." % dest)
-                raise ValueError(f"Installation aborted. The path {dest} does not exist." % dest)
+            os.makedirs(dest)
+            copy_configs(src=src, dest=dest, sub_dir=sub_dir, error_on_overwrites=error_on_overwrites, ignore_file_extensions=ignore_file_extensions)
     except Exception as e:
         logger.error(f"Error occurred while copying files: {e}")
         raise ValueError(f"Error occurred while copying files: {e}")
@@ -617,483 +504,218 @@ def setup_logger(no_color, debug):
     logger.addHandler(ch)
     return logger
 
-def var_replace_prompt(use_templates=False, use_pipelines=False, Final_Pipelines_Dir=None, Final_Templates_Dir=None):
-
+def apply_variables(
+    templates_dir,
+    pipelines_dir,
     # Protocol Logs / Main Logs / Known Logs / Known Protocol Logs
-    VAR_CL_DS_TYPE_PROTOCOL_LOG = "logs"
-    VAR_CL_DS_PREFIX_PROTOCOL_LOG = "corelight"
-    VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict = {
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_CONN": "conn",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_DNS": "dns",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_FILES": "files",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_HTTP": "http",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SMB": "smb",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SMTP": "smtp",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SSL": "ssl",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SURICATA_CORELIGHT": "suricata_corelight",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SYSLOG": "syslog",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_VARIOUS": "various",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_WEIRD": "weird",
-        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_X509": "x509"
-    }
-    VAR_CL_DS_NAMESPACE_PROTOCOL_LOG = "default"
-    VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG = f'901'
+    protocol_log_type="logs",
+    protocol_log_prefix="corelight",
+    protocol_log_namespace="default",
+    protocol_log_suffix_conn="conn",
+    protocol_log_suffix_dns="dns",
+    protocol_log_suffix_files="files",
+    protocol_log_suffix_http="http",
+    protocol_log_suffix_smb="smb",
+    protocol_log_suffix_smtp="smtp",
+    protocol_log_suffix_ssl="ssl",
+    protocol_log_suffix_suricata_corelight="suricata_corelight",
+    protocol_log_suffix_syslog="syslog",
+    protocol_log_suffix_various="various",
+    protocol_log_suffix_weird="weird",
+    protocol_log_suffix_x509="x509",
+    protocol_log_index_priority="901",
     # Unknown Logs
-    VAR_CL_DS_TYPE_UNKNOWN_LOG = "logs"
-    VAR_CL_DS_PREFIX_UNKNOWN_LOG = "corelight"
-    VAR_CL_DS_SUFFIX_UNKNOWN_LOG = "unknown"
-    VAR_CL_DS_NAMESPACE_UNKNOWN_LOG = "default"
-    VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG = f'901'
-    # Metrics Logs / Non Protocol Log Metrics (Metrics and Stats)
-    VAR_CL_DS_TYPE_METRIC_LOG = "zeek"
-    VAR_CL_DS_PREFIX_METRIC_LOG = "corelight"
-    VAR_CL_DS_SUFFIX_METRIC_LOG = "metric"
-    VAR_CL_DS_NAMESPACE_METRIC_LOG = "default"
-    VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG = f'901'
+    unknown_log_type="logs",
+    unknown_log_prefix="corelight",
+    unknown_log_suffix="unknown",
+    unknown_log_namespace="default",
+    unknown_log_index_priority="901",
+    # Metric Logs / Non Protocol Log Metrics (Metrics and Stats)
+    metric_log_type="zeek",
+    metric_log_prefix="corelight",
+    metric_log_suffix="metric",
+    metric_log_namespace="default",
+    metric_log_index_priority="901",
     # System Logs / Non Protocol Log System (System, IAM, Netcontrol, and Audit)
-    VAR_CL_DS_TYPE_SYSTEM_LOG = "zeek"
-    VAR_CL_DS_PREFIX_SYSTEM_LOG = "corelight"
-    VAR_CL_DS_SUFFIX_SYSTEM_LOG = "system"
-    VAR_CL_DS_NAMESPACE_SYSTEM_LOG = "default"
-    VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG = f'901'
+    system_log_type="zeek",
+    system_log_prefix="corelight",
+    system_log_suffix="system",
+    system_log_namespace="default",
+    system_log_index_priority="901",
     # Parse Failures / Failed Logs / pipeline_error
-    VAR_CL_DS_TYPE_PARSE_FAILURES_LOG = "parse_failures"
-    VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG = "corelight"
-    VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG = "pipeline_error"
-    VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG = "default"
-    VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG = f'901'
+    parse_failures_log_type="parse_failures",
+    parse_failures_log_prefix="corelight",
+    parse_failures_log_suffix="pipeline_error",
+    parse_failures_log_namespace="default",
+    parse_failures_log_index_priority="901",
+):
+    """Apply variable substitutions to templates and pipelines dirs (always together).
 
-    USE_CUSTOM_INDEX_NAMES = input_bool( f"\nDo you want to use custom index names?", default=False )
-    if USE_CUSTOM_INDEX_NAMES:
-        # Protocol Logs / Main Logs / Known Logs / Known Protocol Logs
-        VAR_CL_DS_TYPE_PROTOCOL_LOG = input_string( question=f"Enter the Datastream 'type' for Protocol Logs", default=f"{VAR_CL_DS_TYPE_PROTOCOL_LOG}" )
-        VAR_CL_DS_PREFIX_PROTOCOL_LOG = input_string( question=f"Enter the Datastream 'prefix' for Protocol Logs", default=f"{VAR_CL_DS_PREFIX_PROTOCOL_LOG}" )
-        VAR_CL_DS_NAMESPACE_PROTOCOL_LOG = input_string( question=f"Enter the Datastream 'namespace' for Protocol Logs", default=f"{VAR_CL_DS_NAMESPACE_PROTOCOL_LOG}" )
-        # Unknown Logs
-        VAR_CL_DS_TYPE_UNKNOWN_LOG = input_string( question=f"Enter the Datastream 'type' for Unknown Protocol Logs", default=f"{VAR_CL_DS_TYPE_UNKNOWN_LOG}" )
-        VAR_CL_DS_PREFIX_UNKNOWN_LOG = input_string( question=f"Enter the Datastream 'prefix' for Unknown Protocol Logs", default=f"{VAR_CL_DS_PREFIX_UNKNOWN_LOG}" )
-        VAR_CL_DS_SUFFIX_UNKNOWN_LOG = input_string( question=f"Enter the Datastream 'suffix' for Unknown Protocol Logs", default=f"{VAR_CL_DS_SUFFIX_UNKNOWN_LOG}" )
-        VAR_CL_DS_NAMESPACE_UNKNOWN_LOG = input_string( question=f"Enter the Datastream 'namespace' for Protocol Logs Unknown", default=f"{VAR_CL_DS_NAMESPACE_UNKNOWN_LOG}" )
-        # Metrics Logs / Non Protocol Log Metrics (Metrics and Stats)
-        VAR_CL_DS_TYPE_METRIC_LOG = input_string( question=f"Enter the Datastream 'type' for Metric Logs", default=f"{VAR_CL_DS_TYPE_METRIC_LOG}" )
-        VAR_CL_DS_PREFIX_METRIC_LOG = input_string( question=f"Enter the Datastream 'prefix' for Metric Logs", default=f"{VAR_CL_DS_PREFIX_METRIC_LOG}" )
-        VAR_CL_DS_SUFFIX_METRIC_LOG = input_string( question=f"Enter the Datastream 'suffix' for Metric Logs", default=f"{VAR_CL_DS_SUFFIX_METRIC_LOG}" )
-        VAR_CL_DS_NAMESPACE_METRIC_LOG = input_string( question=f"Enter the Datastream 'namespace' for Metric Logs", default=f"{VAR_CL_DS_NAMESPACE_METRIC_LOG}" )
-        # System Logs / Non Protocol Log System (System, IAM, Netcontrol, and Audit)
-        VAR_CL_DS_TYPE_SYSTEM_LOG = input_string( question=f"Enter the Datastream 'type' for System Logs", default=f"{VAR_CL_DS_TYPE_SYSTEM_LOG}" )
-        VAR_CL_DS_PREFIX_SYSTEM_LOG = input_string( question=f"Enter the Datastream 'prefix' for System Logs", default=f"{VAR_CL_DS_PREFIX_SYSTEM_LOG}" )
-        VAR_CL_DS_SUFFIX_SYSTEM_LOG = input_string( question=f"Enter the Datastream 'suffix' for System Logs", default=f"{VAR_CL_DS_SUFFIX_SYSTEM_LOG}" )
-        VAR_CL_DS_NAMESPACE_SYSTEM_LOG = input_string( question=f"Enter the Datastream 'namespace' for System Logs", default=f"{VAR_CL_DS_NAMESPACE_SYSTEM_LOG}" )
-        # Parse Failures / Failed Logs / pipeline_error
-        VAR_CL_DS_TYPE_PARSE_FAILURES_LOG = input_string( question=f"Enter the Datastream 'type' for Parse Failures", default=f"{VAR_CL_DS_TYPE_PARSE_FAILURES_LOG}" )
-        VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG = input_string( question=f"Enter the Datastream 'prefix' for Parse Failures", default=f"{VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG}" )
-        VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG = input_string( question=f"Enter the Datastream 'suffix' for Parse Failures", default=f"{VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG}" )
-        VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG = input_string( question=f"Enter the Datastream 'namespace' for Parse Failures", default=f"{VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG}" )
-
-    # Set Index Patterns after choice to use custom index names
-    VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_dict = {
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_CONN": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_CONN")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_DNS": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_DNS")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_FILES": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_FILES")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_HTTP": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_HTTP")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SMB": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SMB")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SMTP": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SMTP")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SSL": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SSL")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SURICATA_CORELIGHT": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SURICATA_CORELIGHT")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SYSLOG": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SYSLOG")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_VARIOUS": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_VARIOUS")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_WEIRD": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_WEIRD")}-*',
-        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_X509": f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}.{VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.get("VAR_CL_DS_SUFFIX_PROTOCOL_LOG_X509")}-*',
+    templates_dir and pipelines_dir must be staging directories from fetch_templates /
+    fetch_pipelines — not arbitrary existing paths.
+    """
+    suffix_dict = {
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_CONN": protocol_log_suffix_conn,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_DNS": protocol_log_suffix_dns,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_FILES": protocol_log_suffix_files,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_HTTP": protocol_log_suffix_http,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SMB": protocol_log_suffix_smb,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SMTP": protocol_log_suffix_smtp,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SSL": protocol_log_suffix_ssl,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SURICATA_CORELIGHT": protocol_log_suffix_suricata_corelight,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_SYSLOG": protocol_log_suffix_syslog,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_VARIOUS": protocol_log_suffix_various,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_WEIRD": protocol_log_suffix_weird,
+        "VAR_CL_DS_SUFFIX_PROTOCOL_LOG_X509": protocol_log_suffix_x509,
     }
-    VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG = f'{VAR_CL_DS_TYPE_PROTOCOL_LOG}-{VAR_CL_DS_PREFIX_PROTOCOL_LOG}'
-    VAR_CL_DS_INDEX_PATTERN_UNKNOWN_LOG = f'{VAR_CL_DS_TYPE_UNKNOWN_LOG}-{VAR_CL_DS_PREFIX_UNKNOWN_LOG}.{VAR_CL_DS_SUFFIX_UNKNOWN_LOG}-*'
-    VAR_CL_DS_INDEX_PATTERN_METRIC_LOG = f'{VAR_CL_DS_TYPE_METRIC_LOG}-{VAR_CL_DS_PREFIX_METRIC_LOG}.{VAR_CL_DS_SUFFIX_METRIC_LOG}-*'
-    VAR_CL_DS_INDEX_PATTERN_SYSTEM_LOG = f'{VAR_CL_DS_TYPE_SYSTEM_LOG}-{VAR_CL_DS_PREFIX_SYSTEM_LOG}.{VAR_CL_DS_SUFFIX_SYSTEM_LOG}-*'
-    VAR_CL_DS_INDEX_PATTERN_PARSE_FAILURES_LOG = f'{VAR_CL_DS_TYPE_PARSE_FAILURES_LOG}-{VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG}.{VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG}-*'
+    index_pattern_dict = {
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_CONN":               f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_conn}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_DNS":                f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_dns}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_FILES":              f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_files}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_HTTP":               f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_http}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SMB":                f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_smb}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SMTP":               f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_smtp}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SSL":                f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_ssl}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SURICATA_CORELIGHT": f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_suricata_corelight}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_SYSLOG":             f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_syslog}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_VARIOUS":            f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_various}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_WEIRD":              f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_weird}-*',
+        "VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_X509":               f'{protocol_log_type}-{protocol_log_prefix}.{protocol_log_suffix_x509}-*',
+    }
 
-    if use_pipelines:
-        # Protocol Logs / Main Logs / Known Logs / Known Protocol Logs
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_TYPE_PROTOCOL_LOG", replace_var_with=VAR_CL_DS_TYPE_PROTOCOL_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_PREFIX_PROTOCOL_LOG", replace_var_with=VAR_CL_DS_PREFIX_PROTOCOL_LOG )
-        for key, value in VAR_CL_DS_SUFFIX_PROTOCOL_LOG_dict.items():
-            replace_var_in_directory( Final_Pipelines_Dir, replace_var=f"{key}", replace_var_with=f"{value}" )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_NAMESPACE_PROTOCOL_LOG", replace_var_with=VAR_CL_DS_NAMESPACE_PROTOCOL_LOG )
-        # Unknown Logs
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_TYPE_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_TYPE_UNKNOWN_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_PREFIX_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_PREFIX_UNKNOWN_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_SUFFIX_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_SUFFIX_UNKNOWN_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_NAMESPACE_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_NAMESPACE_UNKNOWN_LOG )
-        # Metrics Logs / Non Protocol Log Metrics (Metrics and Stats)
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_TYPE_METRIC_LOG", replace_var_with=VAR_CL_DS_TYPE_METRIC_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_PREFIX_METRIC_LOG", replace_var_with=VAR_CL_DS_PREFIX_METRIC_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_SUFFIX_METRIC_LOG", replace_var_with=VAR_CL_DS_SUFFIX_METRIC_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_NAMESPACE_METRIC_LOG", replace_var_with=VAR_CL_DS_NAMESPACE_METRIC_LOG )
-        # System Logs / Non Protocol Log System (System, IAM, Netcontrol, and Audit)
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_TYPE_SYSTEM_LOG", replace_var_with=VAR_CL_DS_TYPE_SYSTEM_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_PREFIX_SYSTEM_LOG", replace_var_with=VAR_CL_DS_PREFIX_SYSTEM_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_SUFFIX_SYSTEM_LOG", replace_var_with=VAR_CL_DS_SUFFIX_SYSTEM_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_NAMESPACE_SYSTEM_LOG", replace_var_with=VAR_CL_DS_NAMESPACE_SYSTEM_LOG )
-        # Parse Failures / Failed Logs / pipeline_error
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_TYPE_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_TYPE_PARSE_FAILURES_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG )
-        replace_var_in_directory( Final_Pipelines_Dir, replace_var="VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG )
+    # --- Pipelines substitutions ---
+    # Protocol Logs
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_TYPE_PROTOCOL_LOG",      replace_var_with=protocol_log_type )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_PREFIX_PROTOCOL_LOG",     replace_var_with=protocol_log_prefix )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_NAMESPACE_PROTOCOL_LOG",  replace_var_with=protocol_log_namespace )
+    for key, value in suffix_dict.items():
+        replace_var_in_directory( pipelines_dir, replace_var=key, replace_var_with=value )
+    # Unknown Logs
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_TYPE_UNKNOWN_LOG",      replace_var_with=unknown_log_type )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_PREFIX_UNKNOWN_LOG",     replace_var_with=unknown_log_prefix )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_SUFFIX_UNKNOWN_LOG",     replace_var_with=unknown_log_suffix )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_NAMESPACE_UNKNOWN_LOG",  replace_var_with=unknown_log_namespace )
+    # Metric Logs
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_TYPE_METRIC_LOG",      replace_var_with=metric_log_type )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_PREFIX_METRIC_LOG",     replace_var_with=metric_log_prefix )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_SUFFIX_METRIC_LOG",     replace_var_with=metric_log_suffix )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_NAMESPACE_METRIC_LOG",  replace_var_with=metric_log_namespace )
+    # System Logs
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_TYPE_SYSTEM_LOG",      replace_var_with=system_log_type )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_PREFIX_SYSTEM_LOG",     replace_var_with=system_log_prefix )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_SUFFIX_SYSTEM_LOG",     replace_var_with=system_log_suffix )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_NAMESPACE_SYSTEM_LOG",  replace_var_with=system_log_namespace )
+    # Parse Failures
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_TYPE_PARSE_FAILURES_LOG",      replace_var_with=parse_failures_log_type )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_PREFIX_PARSE_FAILURES_LOG",     replace_var_with=parse_failures_log_prefix )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_SUFFIX_PARSE_FAILURES_LOG",     replace_var_with=parse_failures_log_suffix )
+    replace_var_in_directory( pipelines_dir, replace_var="VAR_CL_DS_NAMESPACE_PARSE_FAILURES_LOG",  replace_var_with=parse_failures_log_namespace )
 
-    if use_templates:
-        USE_CUSTOM_INDEX_PRIORITIES = input_bool( f"\nDo you want to use custom index priorities?", default=False )
-        if USE_CUSTOM_INDEX_PRIORITIES:
-            # Protocol Logs / Main Logs / Known Logs / Known Protocol Logs
-            VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG = input_int( question=f"Enter the Index Priority for Protocol Logs", default=f"{VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG}" )
-            VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG = input_int( question=f"Enter the Index Priority for Unknown Logs", default=f"{VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG}" )
-            VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG = input_int( question=f"Enter the Index Priority for Metric Logs", default=f"{VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG}" )
-            VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG = input_int( question=f"Enter the Index Priority for System Logs", default=f"{VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG}" )
-            VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG = input_int( question=f"Enter the Index Priority for Parse Failures", default=f"{VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG}" )
+    # --- Templates substitutions ---
+    # Protocol Logs: per-log-type index patterns + priority
+    for key, value in index_pattern_dict.items():
+        replace_var_in_directory( templates_dir, replace_var=key, replace_var_with=value )
+    replace_var_in_directory( templates_dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG",      replace_var_with=protocol_log_index_priority )
+    # Unknown Logs
+    replace_var_in_directory( templates_dir, replace_var="VAR_CL_DS_INDEX_PATTERN_UNKNOWN_LOG",        replace_var_with=f'{unknown_log_type}-{unknown_log_prefix}.{unknown_log_suffix}-*' )
+    replace_var_in_directory( templates_dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG",        replace_var_with=unknown_log_index_priority )
+    # Metric Logs
+    replace_var_in_directory( templates_dir, replace_var="VAR_CL_DS_INDEX_PATTERN_METRIC_LOG",         replace_var_with=f'{metric_log_type}-{metric_log_prefix}.{metric_log_suffix}-*' )
+    replace_var_in_directory( templates_dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG",         replace_var_with=metric_log_index_priority )
+    # System Logs
+    replace_var_in_directory( templates_dir, replace_var="VAR_CL_DS_INDEX_PATTERN_SYSTEM_LOG",         replace_var_with=f'{system_log_type}-{system_log_prefix}.{system_log_suffix}-*' )
+    replace_var_in_directory( templates_dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG",         replace_var_with=system_log_index_priority )
+    # Parse Failures
+    replace_var_in_directory( templates_dir, replace_var="VAR_CL_DS_INDEX_PATTERN_PARSE_FAILURES_LOG", replace_var_with=f'{parse_failures_log_type}-{parse_failures_log_prefix}.{parse_failures_log_suffix}-*' )
+    replace_var_in_directory( templates_dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG", replace_var_with=parse_failures_log_index_priority )
 
 
-        # Protocol Logs / Main Logs / Known Logs / Known Protocol Logs
-        for key, value in VAR_CL_DS_INDEX_PATTERN_PROTOCOL_LOG_dict.items():
-            replace_var_in_directory( Final_Templates_Dir, replace_var=f"{key}", replace_var_with=f"{value}" )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_PROTOCOL_LOG )
-        # Unknown Logsa
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PATTERN_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_INDEX_PATTERN_UNKNOWN_LOG )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_UNKNOWN_LOG )
-        # System Logs / Non Protocol Log System (System, IAM, Netcontrol, and Audit)
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PATTERN_METRIC_LOG", replace_var_with=VAR_CL_DS_INDEX_PATTERN_METRIC_LOG )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_METRIC_LOG )
-        # Parse Failures / Failed Logs / pipeline_error
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PATTERN_SYSTEM_LOG", replace_var_with=VAR_CL_DS_INDEX_PATTERN_SYSTEM_LOG )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_SYSTEM_LOG )
+def fetch_templates(source, dest_dir, proxy=None, ssl_verify=True):
+    """Download or locate templates. Returns path to dest_dir.
 
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PATTERN_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_INDEX_PATTERN_PARSE_FAILURES_LOG )
-        replace_var_in_directory( Final_Templates_Dir, replace_var="VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG", replace_var_with=VAR_CL_DS_INDEX_PRIORITY_PARSE_FAILURES_LOG )
+    source: URL to git zip, local zip path, or local directory path.
+    dest_dir: directory where templates will be staged.
+    """
+    _ensure_output_dirs()
+    os.makedirs(dest_dir, exist_ok=True)
+    ssl_verify_param = None if ssl_verify is True else ssl_verify
+    if proxy and not ssl_verify:
+        urllib3.disable_warnings(category=InsecureRequestWarning)
+    source_dir = source_repository(source, repo_type="templates", proxy=proxy, ssl_verify=ssl_verify_param)
+    source_dir = os.path.join(source_dir, git_templates_sub_dir, "component")
+    copy_configs(src=source_dir, dest=dest_dir)
+    logger.info(f"Templates staged to: {dest_dir}")
+    return dest_dir
 
-def main():
-    # Gather args
-    args = parse_args()
-    # Setup logging
-    setup_logger(args.no_color, args.debug)
 
-    create_es_connection = False
-    dry_run = False
+def fetch_pipelines(source, pipeline_type, dest_dir, proxy=None, ssl_verify=True):
+    """Download or locate pipelines. Returns path to dest_dir.
 
-    # Final config directory
-    Final_Config_Dir = os.path.join( Config_Dir, "last_run" )
-    Final_Pipelines_Dir = os.path.join( Final_Config_Dir,  "pipelines" )
-    Final_Templates_Dir = os.path.join( Final_Config_Dir, "templates" )
-    Previous_Config_Dir = os.path.join( Config_Dir, "previous", dir_time )
-    # List of files to tell user to modify at the end
-    ls_files_to_modify = list()
-
-    # Situations to short circuit the rest of script of prompts
-    if args.final_config_dir and args.build_logstash_xpack_mgmt:
-        Final_Config_Dir = args.final_config_dir
-        use_last_run = False
-        print(f"Using logstash configs from: {Final_Config_Dir}")
-        ls_input_files, ls_filter_files, ls_output_files = categorize_ls_files( Final_Config_Dir )
-        ls_xpack_mgmt_out_file = os.path.join( Final_Config_Dir, "all_logstash_config_for_xpack_mgmt.conf" )
-        concat_ls_files( ls_input_files, ls_filter_files, ls_output_files, ls_xpack_mgmt_out_file )
-        sys.exit(1)
-
-    # Prompt user if they want to use configs from last run, if they exist
-    use_last_run = input_bool(f"Would you like to use configs from a previous run?", default=False)
-    # Prompt user for the directory of the last run
-    if use_last_run:
-        Final_Config_Dir = input_string(f"Enter the directory of the last run",default=Final_Config_Dir)
-        Final_Pipelines_Dir = os.path.join( Final_Config_Dir, "pipelines" )
-        Final_Templates_Dir = os.path.join( Final_Config_Dir, "templates" )
-        if os.path.exists(Final_Config_Dir):
-            logger.info(f"Using configs from last run: {Final_Config_Dir}")
-        else:
-            logger.error(f"Unable to find last run directory: '{Final_Config_Dir}'")
-            raise ValueError(f"Unable to find last run directory: '{Final_Config_Dir}'")
-    else:
-        # Recreate final config directory before use
-        try:
-            shutil.rmtree(Final_Config_Dir) # Delete the directory
-        except FileNotFoundError:
-            pass
-        try:
-            os.makedirs( Final_Config_Dir )
-        except OSError as e:
-            logger.error( f"Unable to create necessary directories: {e}" )
-            sys.exit( 1 )
-        # Create the output directories if they don't exist
-        try:
-            os.makedirs( Final_Pipelines_Dir )
-        except OSError as e:
-            logger.error( f"Unable to create necessary directories: {e}" )
-            sys.exit( 1 )
-        try:
-            os.makedirs( Final_Templates_Dir )
-        except OSError as e:
-            logger.error( f"Unable to create necessary directories: {e}" )
-            sys.exit( 1 )
-        try:
-            os.makedirs( Previous_Config_Dir )
-        except OSError as e:
-            logger.error( f"Unable to create necessary directories: {e}" )
-            sys.exit( 1 )
-        dry_run = input_bool(f"Is this a dry run? All configurations and files will be prepared and stored, however no changes will be installed/uploaded.", default=True)
-        install_templates = input_bool(f"Will you be installing Elasticsearch templates, mappings, and settings? Recommended with any updates.", default=True)
-        pipeline_type = input(f"\nWill you be installing Pipelines? Ingest Pipelines, Logstash Pipelines, or no (Enter 'ingest'/'i', 'logstash'/'l', or 'no'/'n'/'none'): ").strip("'").strip().lower()
-        while pipeline_type.lower() not in ['ingest', 'i', 'logstash', 'l', 'no', 'n']:
-            pipeline_type = input(f"{LOG_COLORS['WARNING']}Invalid input. Please enter one of:"
-                                  f"\n'ingest' or 'i' for Ingest Pipelines"
-                                  f"\n'logstash' or 'l' for Logstash Pipelines"
-                                  f"\n'no' or 'n' for skipping installation of pipelines"
-                                  f"\n: {COLORS['ENDC']}")
-        if pipeline_type == 'i':
-            create_es_connection = True
-            pipeline_type = 'ingest'
-        elif pipeline_type == 'l':
-            pipeline_type = 'logstash'
-        elif pipeline_type == 'n':
-            pipeline_type = 'no'
-        VAR_CORELIGHT_INDEX_STRATEGY = "datastream"
-        #VAR_CORELIGHT_INDEX_STRATEGY = input(f"\nWhat index strategy will you be using? (Enter 'datastream'/'d'): ").strip().lower() #, 'legacy'/'l'): ").strip().lower()
-        #while VAR_CORELIGHT_INDEX_STRATEGY.strip("'").strip().lower() not in ['datastream', 'd']:#, 'legacy', 'l']:
-        #    VAR_CORELIGHT_INDEX_STRATEGY = input(f"{LOG_COLORS['WARNING']}Invalid input. Please enter one of:"
-        #                                         f"\n'datastream' or 'd' for datastream index strategy"
-        #                                         #f"\n'legacacy' or 'l' for legacy index strategy"
-        #                                         f"\n: {COLORS['ENDC']}")
-        #if VAR_CORELIGHT_INDEX_STRATEGY == "datastream" or "d":
-        #    VAR_CORELIGHT_INDEX_STRATEGY = "datastream"
-        #elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy" or "l":
-        #    VAR_CORELIGHT_INDEX_STRATEGY = "legacy"
-
-        use_pipeline = False if pipeline_type == 'no' else True
-        use_templates = install_templates
-
-        if use_templates:
-            create_es_connection = True
-            # Source templates
-            # Get source from user
-            templates_source = input(f"\nHow will you source the templates?"
-                                    f"\n  - Download git zip of repository. Requires the full URL. ({git_templates_repo})"
-                                    f"\n  - Local zip path of a repistory. Requires the full path ending in .zip"
-                                    f"\n  - Local path or git clone. Requires the full path (default {script_dir})"
-                                    f"\nEnter the url, path, or press enter for '{script_dir}': ")
-            # Use default if no input
-            if not templates_source:
-                templates_source = script_dir
-            if templates_source.startswith('http'):
-                proxy = input( f"\nEnter proxy URL if desired (leave empty or 'n'/'no' if not using a proxy): " )
-                if proxy and not proxy in ["n", "no"]:
-                    ignore_proxy_cert_errors = input_bool( f"Do you want to ignore proxy certificate errors?", default=True )
-                else:
-                    ignore_proxy_cert_errors = None
-                    proxy = None
-            else:
-                ignore_proxy_cert_errors = None
-                proxy = None
-            if ignore_proxy_cert_errors:
-                ssl_verify = False
-                urllib3.disable_warnings( category=InsecureRequestWarning )
-            else:
-                ssl_verify = None
-            # Set source
-            templates_source_directory =  source_repository(templates_source, repo_type="templates", proxy=proxy, ssl_verify=ssl_verify)
-            templates_source_directory = os.path.join(templates_source_directory, git_templates_sub_dir)
-            if VAR_CORELIGHT_INDEX_STRATEGY == "datastream":
-                templates_sub_dir = "component"
-            elif VAR_CORELIGHT_INDEX_STRATEGY == "legacy":
-                templates_sub_dir = "legacy"
-            else:
-                templates_sub_dir = ""
-            templates_source_directory = os.path.join(templates_source_directory, "component")
-            logger.debug(f"Using {templates_source_directory} as the source for the templates.")
-
-            # Copy all sourced files to temporary directory
-            copy_configs(src=templates_source_directory, dest=Final_Templates_Dir)
-            logger.info(f"Using {Final_Templates_Dir} as the temporary directory for the templates.")
-
-        if use_pipeline:
-            # Logstash Pipelines
-            if pipeline_type == 'logstash':
-                git_pipeline_repo = git_logstash_repo
-                pipeline_sub_dir = git_logstash_sub_dir
-                pipeline_destination_directory = None
-            elif pipeline_type == 'ingest':
-                git_pipeline_repo = git_ingest_repo
-                pipeline_sub_dir = git_ingest_sub_dir
-                pipeline_destination_directory = None
-            else:
-                logger.error(f"Invalid pipeline type: {pipeline_type}")
-                raise ValueError(f"Invalid pipeline type: {pipeline_type}")
-
-            # Source Pipeline
-            # Get source from user
-            pipeline_source = input(f"\nHow will you source the {pipeline_type} pipelines?"
-                                    f"\n  - Download git zip of repository. Requires the full URL. ({git_pipeline_repo})"
-                                    f"\n  - Local zip path of a repistory. Requires the full path ending in .zip"
-                                    f"\n  - Local path or git clone. Requires the full path"
-                                    f"\nEnter the url, path, or press enter for '{git_pipeline_repo}': ")
-            # Use default if no input
-            if not pipeline_source:
-                pipeline_source = git_pipeline_repo
-            if pipeline_source.startswith('http'):
-                proxy = input( f"\nEnter proxy URL if desired (leave empty, press enter, if not using a proxy): " )
-                if proxy:
-                    ignore_proxy_cert_errors = input_bool( f"Do you want to ignore proxy certificate errors?", default=True )
-                else:
-                    ignore_proxy_cert_errors = None
-                    proxy = None
-            else:
-                ignore_proxy_cert_errors = None
-                proxy = None
-            if ignore_proxy_cert_errors:
-                ssl_verify = False
-                urllib3.disable_warnings( category=InsecureRequestWarning )
-            else:
-                ssl_verify = None
-            # Set source
-            pipeline_source_directory =  source_repository(pipeline_source, repo_type=pipeline_type, proxy=proxy, ssl_verify=ssl_verify)
-            pipeline_source_directory = os.path.join(pipeline_source_directory, pipeline_sub_dir)
-            logger.debug(f"Using {pipeline_source_directory} as the source for the {pipeline_type} pipelines.")
-
-            # Copy all sourced files to temporary directory
-            copy_configs(src=pipeline_source_directory, dest=Final_Pipelines_Dir, ignore_file_extensions=['.disabled'])
-            logger.info(f"Using {Final_Pipelines_Dir} as the temporary directory for the {pipeline_type} pipelines.")
-
-            # Logstash Pipelines Specifics
-            if pipeline_type == 'logstash':
-
-                # Get specifics and change variables
-                input_type = input(f"\nHow will send data to Logstash?"
-                                   f"\n  tcp        - JSON over TCP"
-                                   f"\n  tcp_ssl    - JSON over TCP with SSL/TLS enabled"
-                                   f"\n  hec        - HTTP Event Collector"
-                                   f"\n  kafka      - Kafka"
-                                   f"\n  udp        - UDP"
-                                   f"\n Enter one of {logstash_input_choices}: ")
-                while input_type.strip().lower() not in logstash_input_choices:
-                    input_type = input(f"{LOG_COLORS['WARNING']}Invalid input. Please enter one of {logstash_input_choices}: {COLORS['ENDC']}")
-                keep_raw = input_bool( "Do you want to keep the raw message? (This will increase storage space but is useful in certain environments for data integrity or troubleshooting)", default=False )
-                ls_files_to_modify.append(enable_ls_input( source_dir=pipeline_source_directory, ingest_type=input_type, raw=keep_raw, destination_dir=Final_Pipelines_Dir))
-                ls_files_to_modify.append(os.path.join(Final_Pipelines_Dir, ls_output_filename))
-
-            # Ingest Pipelines Specifics
-            elif pipeline_type == 'ingest':
-                pass
-
-        var_replace_prompt(use_templates=use_templates, use_pipelines=use_pipeline, Final_Pipelines_Dir=Final_Pipelines_Dir, Final_Templates_Dir=Final_Templates_Dir)
-
-        # Save parameters to file
-        param_path = None
-        try:
-            param_path = f"{Final_Config_Dir}/param_pipeline_type.var"
-            with open(f"{param_path}", "w") as f:
-                f.write(str(pipeline_type))
-            param_path = f"{Final_Config_Dir}/param_create_es_connection.var"
-            with open(f"{param_path}", "w") as f:
-                f.write(str(create_es_connection))
-            param_path = f"{Final_Config_Dir}/param_VAR_CORELIGHT_INDEX_STRATEGY.var"
-            with open(f"{param_path}", "w") as f:
-                f.write(str(VAR_CORELIGHT_INDEX_STRATEGY))
-            param_path = f"{Final_Config_Dir}/param_use_templates.var"
-            with open(f"{param_path}", "w") as f:
-                f.write(str(use_templates))
-        except Exception as e:
-            logger.error(f"Error occurred while saving parameters to file: {e}")
-            raise ValueError(f"Error occurred while saving parameters to file: {e}")
-
-        # Copy all files to Previous_Config_Dir
-        copy_configs(src=Final_Config_Dir, dest=Previous_Config_Dir)
-        logger.info(f"Configurations for this specific time of run has been saved in {Previous_Config_Dir}")
-
-    if use_last_run or not dry_run:
-        if use_last_run: # Set parameters from file if using last run
-            param_path = None
-            try:
-                param_path = f"{Final_Config_Dir}/param_create_es_connection.var"
-                with open(f"{param_path}", "r") as f:
-                    create_es_connection = f.read().strip()
-                param_path = f"{Final_Config_Dir}/param_pipeline_type.var"
-                with open(f"{param_path}", "r") as f:
-                    pipeline_type = f.read().strip()
-                param_path = f"{Final_Config_Dir}/param_VAR_CORELIGHT_INDEX_STRATEGY.var"
-                with open(f"{param_path}", "r") as f:
-                    VAR_CORELIGHT_INDEX_STRATEGY = f.read().strip()
-                param_path = f"{Final_Config_Dir}/param_use_templates.var"
-                with open(f"{param_path}", "r") as f:
-                    use_templates = f.read().strip()
-            except:
-                logger.error(f"Unable to read parameters from {param_path}")
-                raise ValueError(f"Unable to read parameters from {param_path}")
-        if create_es_connection:
-            baseURI, session = get_elasticsearch_connection_config()
-            make_modifications(
-                session=session,
-                baseURI=baseURI,
-                pipeline_type=pipeline_type,
-                final_templates_dir=Final_Templates_Dir,
-                final_pipelines_dir=Final_Pipelines_Dir,
-                use_templates=use_templates,
-                VAR_CORELIGHT_INDEX_STRATEGY=VAR_CORELIGHT_INDEX_STRATEGY
-            )
-
-    # Final config placement
-    logger.info(f"Script has finished. You can review the final configurations in {Final_Config_Dir}")
+    source: URL to git zip, local zip path, or local directory path.
+    pipeline_type: 'ingest' or 'logstash'.
+    dest_dir: directory where pipelines will be staged.
+    """
     if pipeline_type == 'logstash':
-        formatted_filenames = "\n".join( [ f'- "{file}"' for file in ls_files_to_modify ] )
-        logger.info(f"Please review the following logstash files, for input and output, that you will need to modify for your environment:\n{formatted_filenames}")
+        sub_dir = git_logstash_sub_dir
+    elif pipeline_type == 'ingest':
+        sub_dir = git_ingest_sub_dir
+    else:
+        raise ValueError(f"Invalid pipeline_type '{pipeline_type}'. Must be 'ingest' or 'logstash'.")
+    _ensure_output_dirs()
+    os.makedirs(dest_dir, exist_ok=True)
+    ssl_verify_param = None if ssl_verify is True else ssl_verify
+    if proxy and not ssl_verify:
+        urllib3.disable_warnings(category=InsecureRequestWarning)
+    source_dir = source_repository(source, repo_type=pipeline_type, proxy=proxy, ssl_verify=ssl_verify_param)
+    source_dir = os.path.join(source_dir, sub_dir)
+    copy_configs(src=source_dir, dest=dest_dir, ignore_file_extensions=['.disabled'])
+    logger.info(f"Pipelines staged to: {dest_dir}")
+    return dest_dir
 
-def script_usage():
-    ran_script_name = sys.argv[0]
-    usage = f'''Usage Examples:
-    # Run the script
-    {ran_script_name}
-    # Build logstash config directory as a single configuration that can be used in Logstash X-Pack Central Management from within Kibana.
-    # saves the generated configuration into the directory with the file name 'all_logstash_config_for_xpack_mgmt.conf'
-    {ran_script_name} --build-logstash-xpack-mgmt -f "/path/to_last_run_directory"
-    # Change the default git repostiory
-    {ran_script_name} --git-repository=brasitech"
-    # Change the default git repostiory and branch
-    {ran_script_name} --git-repository=brasitech --git-branch=main"
-    '''
-    return usage
 
-def parse_args():
-    # Parse command line arguments
+def write_logstash_input(source_dir, input_type, dest_dir, keep_raw=False):
+    """Write Logstash input config file into dest_dir. Returns path to the written file.
 
-    parser = argparse.ArgumentParser( description=script_description, formatter_class=argparse.RawTextHelpFormatter, epilog=script_usage() )
-    parser.add_argument(
-        '-v', '--version', action='version', version='%(prog)s {version}'.format(version=script_version)
+    source_dir: directory returned by fetch_pipelines.
+    input_type: one of 'tcp', 'tcp_ssl', 'kafka', 'hec', 'udp'.
+    dest_dir: destination directory (typically same as the pipelines dir).
+    keep_raw: if True, enable the codec-disabled variant to preserve raw messages.
+    """
+    if input_type not in logstash_input_choices:
+        raise ValueError(f"Invalid input_type '{input_type}'. Must be one of {logstash_input_choices}.")
+    return enable_ls_input(source_dir=source_dir, ingest_type=input_type, raw=keep_raw, destination_dir=dest_dir)
+
+
+def upload_to_elasticsearch(host, username=None, password=None,
+                             templates_dir=None, pipelines_dir=None, pipeline_type=None,
+                             ssl_verify=True, timeout=es_default_timeout, retry=es_default_retry):
+    """Connect to Elasticsearch and upload templates and/or pipelines.
+
+    host: full URL including scheme and port (e.g. 'https://elastic:9200').
+    templates_dir: directory returned by fetch_templates, or None to skip template upload.
+    pipelines_dir: directory returned by fetch_pipelines, or None to skip pipeline upload.
+    pipeline_type: 'ingest' or 'logstash' (required when pipelines_dir is set).
+    """
+    baseURI, session = get_elasticsearch_connection_config(
+        host, username=username, password=password, ssl_verify=ssl_verify,
+        timeout=timeout, retry=retry,
     )
-    parser.add_argument( '--no-color', action='store_true', help='Disable colors for output/logging.' )
-    parser.add_argument( '--debug', action='store_true', help='Enable debug level logging.' )
-    parser.add_argument(
-        '--es-default-timeout=', dest='es_default_timeout', type=int, required=False, default=es_default_timeout,
-        help='Timeout waiting for the connection to the elasticsearch.\ndefault: %(default)s'
+    make_modifications(
+        session=session,
+        baseURI=baseURI,
+        pipeline_type=pipeline_type,
+        final_templates_dir=templates_dir,
+        final_pipelines_dir=pipelines_dir,
+        use_templates=templates_dir is not None,
+        VAR_CORELIGHT_INDEX_STRATEGY="datastream",
     )
-    parser.add_argument(
-        '--es-default-retry=', dest='es_default_retry', type=int, required=False, default=es_default_retry,
-        help='Number of times to retry a connection to the elasticsearch.\ndefault: %(default)s'
-    )
-    parser.add_argument(
-        '--git-repository', dest='git_repository', type=str, required=False, default=git_repository,
-        help='Github Repository.\ndefault: %(default)s'
-    )
-    parser.add_argument(
-        '--git-branch', dest='git_branch', type=str, required=False, default=git_branch,
-        help='Github Branch.\ndefault: %(default)s'
-    )
-    parser.add_argument(
-        '--build-logstash-xpack-mgmt', dest='build_logstash_xpack_mgmt', action='store_true', required=False,
-        help='Build logstash config directory as a single configuration that can be used in Logstash X-Pack Central Management from within Kibana.'
-    )
-    parser.add_argument(
-        '-f', '--final-config-dir', dest='final_config_dir', type=arg_path_and_exists, required=False,
-        help='Build logstash config directory as a single configuration that can be used in Logstash X-Pack Central Management from within Kibana.'
-    )
-    return parser.parse_args()
+
 
 if __name__ == "__main__":
+    from corelight_ecs_cli import main
     try:
         main()
         sys.exit(0)
     except KeyboardInterrupt:
         print("\n\nInstallation aborted.")
         sys.exit(1)
-else:
-    main()
