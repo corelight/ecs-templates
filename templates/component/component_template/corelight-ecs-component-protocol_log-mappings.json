@@ -3059,7 +3059,7 @@
             },
             "error_code": {
               "ignore_above": 10000,
-              "type": "keywoard"
+              "type": "keyword"
             },
             "request": {
               "properties": {
@@ -3090,15 +3090,15 @@
                     },
                     "name": {
                       "ignore_above": 32000,
-                      "type": "keywoard"
+                      "type": "keyword"
                     },
                     "cipher_req": {
                       "ignore_above": 32000,
-                      "type": "keywoard"
+                      "type": "keyword"
                     },
                     "cipher_negotiated": {
                       "ignore_above": 32000,
-                      "type": "keywoard"
+                      "type": "keyword"
                     },
                     "hash": {
                       "properties": {
@@ -3107,8 +3107,7 @@
                           "type": "keyword"
                         }
                       }
-                    }
-                },
+                    },
                 "type": {
                   "fields": {
                     "security": {
@@ -3120,6 +3119,7 @@
                   "type": "keyword"
                 }
               }
+            }
             },
             "ticket": {
               "properties": {
