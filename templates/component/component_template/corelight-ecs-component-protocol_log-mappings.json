@@ -6163,7 +6163,7 @@
             },
             "user_agent": {
               "ignore_above": 32000,
-              "type": "keywoard"
+              "type": "keyword"
             }
           }
         },  
