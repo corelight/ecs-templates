@@ -3107,6 +3107,8 @@
                           "type": "keyword"
                         }
                       }
+                    }
+                      }
                     },
                 "type": {
                   "fields": {
@@ -3119,7 +3121,6 @@
                   "type": "keyword"
                 }
               }
-            }
             },
             "ticket": {
               "properties": {
@@ -6194,7 +6195,7 @@
       }
     }
   }
-}
+
 
 
 
