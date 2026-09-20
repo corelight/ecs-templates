@@ -3045,7 +3045,7 @@
             }
           }
         },
-        "kerberos": {
+          "kerberos": {
           "properties": {
             "error_message": {
               "fields": {
@@ -3108,8 +3108,8 @@
                         }
                       }
                     }
-                      }
-                    },
+                  }
+                },
                 "type": {
                   "fields": {
                     "security": {
@@ -3145,15 +3145,14 @@
                   "ignore_above": 8192,
                   "type": "keyword"
                 },
-                    "realm": {
-                        "ignore_above": 32000,
-                        "type": "keyword"
-                    }
-                  } 
+                "realm": {
+                  "ignore_above": 32000,
+                  "type": "keyword"
+                }
               }
             },
             "response": {
-              "properties":{
+              "properties": {
                 "ticket": {
                   "properties": {
                     "hash": {
@@ -6195,6 +6194,7 @@
       }
     }
   }
+}
 
 
 
