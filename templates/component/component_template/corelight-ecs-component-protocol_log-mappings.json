@@ -142,6 +142,10 @@
               "ignore_above": 32000,
               "type": "keyword"
             },
+            "item": {
+              "ignore_above": 32000,
+              "type": "keyword"
+            },
             "item_score": {
               "type": "float"
             },
@@ -5448,6 +5452,34 @@
             }
           }
         },
+        "net_perf": {
+          "properties": {
+            "local_entity": {
+              "type": "boolean"
+            },
+            "recv_bytes": {
+              "type": "integer"
+            },
+            "reply_rate": {
+              "type": "keyword",
+              "ignore_above": 2048
+            },
+            "sent_bytes": {
+              "type": "integer"
+            },
+            "total" :{
+              "type": "integer"
+            },
+            "trigger": {
+              "type": "keyword",
+              "ignore_above": 2048
+            },
+            "window": {
+              "type": "integer"
+            }
+          }
+          },
+
         "tls": {
           "properties": {
             "cipher": {
